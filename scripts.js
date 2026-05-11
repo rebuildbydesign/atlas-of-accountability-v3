@@ -309,14 +309,14 @@ map.on('click', () => {
         },
 
         // Energy Reliability — SAIDI minutes (System Average Interruption
-        // Duration Index, EIA 2023). Higher = longer customer outages.
+        // Duration Index, EIA 2022). Higher = longer customer outages.
         // This lens has TWO sub-modes:
         //   • avg → SAIDI_MIN_AVG (mean across utilities) — typical experience
         //   • max → SAIDI_MIN_MAX (worst utility per county) — plan-for-worst
         // Bins (60/120/240/456) and colors are shared so the visual jump
         // between modes encodes the disparity directly.
         energy: {
-            label: 'Energy Reliability (2023)',
+            label: 'Energy Reliability (2022)',
             defaultSubMode: 'avg',
             subModes: {
                 avg: {
@@ -879,7 +879,7 @@ map.on('click', () => {
             { subheader: 'CDC Social Vulnerability Index (2022)' },
             { key: 'svi',  label: 'Vulnerability score', value: fmtSVIWithCategory(p['CDC SVI (2022)']) },
 
-            { subheader: 'U.S. Energy Reliability (2023)' },
+            { subheader: 'U.S. Energy Reliability (2022)' },
             { key: 'energy', label: 'Average outage',     value: fmtSAIDI(p.SAIDI_MIN_AVG) },
             { key: 'energy', label: 'Worst-case outage',  value: fmtSAIDI(p.SAIDI_MIN_MAX) },
 
@@ -1026,7 +1026,7 @@ map.on('click', () => {
             +       '</div>'
             +     '</div>'
             +     governorBlock
-            +     '<p class="atlas-report-lead">For more information, read our report below:</p>'
+            +     '<p class="atlas-report-lead">For more information, read our report:</p>'
             +     '<a href="' + c.ATLAS_URL + '" target="_blank" class="atlas-report-button">'
             +       '<span class="atlas-report-cta">Atlas of Disaster (2011–2024):</span>'
             +       '<span class="atlas-report-state">' + stateName + '</span>'
