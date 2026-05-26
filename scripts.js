@@ -205,10 +205,52 @@ map.on('click', () => {
         data: 'data/Atlas_FEMA_V2.geojson'
     });
 
+    // Quick polygon centroid by vertex averaging — fine for placing one
+    // dot per county. Picks the largest ring in a MultiPolygon so we
+    // anchor on the main landmass instead of an offshore island.
+    function featureCentroid(feature) {
+        const geom = feature.geometry;
+        if (!geom) return null;
+        let coords = null;
+        if (geom.type === 'Polygon') {
+            coords = geom.coordinates[0];
+        } else if (geom.type === 'MultiPolygon') {
+            let best = geom.coordinates[0];
+            for (const poly of geom.coordinates) {
+                if (poly[0].length > best[0].length) best = poly;
+            }
+            coords = best[0];
+        }
+        if (!coords || !coords.length) return null;
+        let sx = 0, sy = 0;
+        for (const [x, y] of coords) { sx += x; sy += y; }
+        return [sx / coords.length, sy / coords.length];
+    }
+
+    // Shared paint expression: red disaster-count ramp keyed off
+    // COUNTY_DISASTER_COUNT. Used by both the Disaster lens (as the
+    // primary choropleth) and the Older Adults > "Where older adults
+    // live" sub-mode (as the background behind the proportional dots),
+    // so the two views read the same disaster intensity at a glance.
+    const DISASTER_RAMP = [
+        'step',
+        ['to-number', ['coalesce', ['get', 'COUNTY_DISASTER_COUNT'], 0]],
+        '#ffffff',         //  0
+        1,  '#fee5d9',     //  1–2
+        3,  '#fcae91',     //  3–4
+        5,  '#fb6a4a',     //  5–6
+        7,  '#de2d26',     //  7–9
+        10, '#a50f15',     //  10–11
+        12, '#710005'      //  12+
+    ];
+
 
     // -------------------------------------------------------------
     // DATA LENS CONFIG — paint expressions + legend HTML per lens.
     // Each lens drives the choropleth color of `atlas-fema-layer`.
+    // The Older Adults > "concentration" sub-mode is special: it uses
+    // a `renderMode: 'dots'` flag that swaps a proportional-circle
+    // overlay (`atlas-fema-dots-layer`) in for the choropleth.
     // Adding a new lens? Add an entry here and a radio button in
     // index.html with matching value attribute.
     // -------------------------------------------------------------
@@ -216,17 +258,7 @@ map.on('click', () => {
         // Default lens — # of Major Disaster Declarations (existing red ramp)
         disaster: {
             label: '# of Major Disaster Declarations',
-            paintExpression: [
-                'step',
-                ['to-number', ['coalesce', ['get', 'COUNTY_DISASTER_COUNT'], 0]],
-                '#ffffff',         //  0
-                1,  '#fee5d9',     //  1–2
-                3,  '#fcae91',     //  3–4
-                5,  '#fb6a4a',     //  5–6
-                7,  '#de2d26',     //  7–9
-                10, '#a50f15',     //  10–11
-                12, '#710005'      //  12+
-            ],
+            paintExpression: DISASTER_RAMP,
             legendHTML: `
                 <div class="legend-title"><b># of Major Disaster Declarations</b></div>
                 <div class="color-bar lens-disaster">
@@ -397,81 +429,84 @@ map.on('click', () => {
             }
         },
 
-        // Older Adults & Disaster Risk — two sub-modes, plain-English
-        // labels so a first-time user understands what they're looking at:
-        //   • concentration → PCT POP 60+ (where seniors live, demographically)
-        //   • inHighRisk    → PCT POP 60+ AND HIGH NRI (which seniors live
-        //                     in places FEMA flags as high disaster risk)
+        // Older Adults — two sub-modes (federal Older Americans Act term;
+        // "older adult" = age 60+):
+        //   • concentration   → Proportional dots map. The choropleth uses
+        //                       the shared DISASTER_RAMP underneath so the
+        //                       red shading shows disaster intensity while
+        //                       forest-green dots overlay the older-adult
+        //                       population. True bivariate read at a glance.
+        //   • disastersFaced  → Filtered graded choropleth. Only counties
+        //                       with 25%+ adults 60+ are colored; the color
+        //                       encodes disaster-declaration tiers on a
+        //                       5-step green ramp (0 / 1+ / 5+ / 10+ / 15+).
+        //                       Thresholds mirror the headline finding bins:
+        //                       94.8% / 50% / 3.5% / 0.18% of older adults
+        //                       fall in each cumulative tier.
         older: {
             label: 'Older Adults',
             defaultSubMode: 'concentration',
             subModes: {
                 concentration: {
-                    subLabel: 'Where seniors live',
-                    paintExpression: [
-                        'case',
-                        ['==', ['typeof', ['get', 'county-level-older-adults_PCT POP 60+']], 'number'],
-                        [
-                            'step',
-                            ['get', 'county-level-older-adults_PCT POP 60+'],
-                            '#f2f0f7',          //   <25% (below average)
-                            25, '#cbc9e2',      //  25–30% (aging)
-                            30, '#9e9ac8',      //  30–35% (aged)
-                            35, '#756bb1',      //  35–50% (super-aged)
-                            50, '#54278f'       //  50%+ (majority senior)
-                        ],
-                        '#C9C9C9'
-                    ],
+                    subLabel: 'Where older adults live',
+                    renderMode: 'dots',
+                    choroplethPaint: DISASTER_RAMP,
                     legendHTML: `
-                        <div class="legend-title"><b>Older Adults</b><br><span class="legend-mode-name">Where seniors live</span></div>
-                        <div class="color-bar lens-older">
-                            <div class="color-description">
-                                <span>&lt;25%</span>
-                                <span>25</span>
-                                <span>30</span>
-                                <span>35</span>
-                                <span>50%+</span>
-                            </div>
+                        <div class="legend-title"><b>Older Adults</b><br><span class="legend-mode-name">Where older adults live</span></div>
+                        <div class="legend-units">Dots show where older adults live; background shading shows disaster declarations.</div>
+                        <div class="dot-scale-legend">
+                            <div class="dot-group"><span class="legend-dot" style="width:4px;height:4px"></span><span class="dot-label">10K</span></div>
+                            <div class="dot-group"><span class="legend-dot" style="width:11px;height:11px"></span><span class="dot-label">100K</span></div>
+                            <div class="dot-group"><span class="legend-dot" style="width:22px;height:22px"></span><span class="dot-label">500K</span></div>
+                            <div class="dot-group"><span class="legend-dot" style="width:32px;height:32px"></span><span class="dot-label">1M+</span></div>
                         </div>
-                        <div class="legend-units">% of county residents age 60+</div>
-                        <div class="legend-no-data">
-                            <span class="no-data-swatch"></span>
-                            <span>No data</span>
+                        <div style="margin-top:10px;font-size:11px;color:#555;">Disaster declarations (2011–2024):</div>
+                        <div class="color-bar lens-disaster">
+                            <div class="color-description">
+                                <span>0</span><span>2</span><span>4</span><span>6</span><span>8</span><span>10</span><span>12+</span>
+                            </div>
                         </div>
                     `
                 },
-                inHighRisk: {
-                    subLabel: 'In high-risk areas',
+                disastersFaced: {
+                    subLabel: 'Older adults & disaster declarations',
+                    // Two-step expression: filter to 25%+ age 60+, then
+                    // step on COUNTY_DISASTER_COUNT through a 4-bin green
+                    // ramp. Bin colors intentionally start at MEDIUM green
+                    // (#66c2a4) for "1+" rather than at a pale teal — so
+                    // the 94.8% headline (older adults in 1+-declaration
+                    // counties) actually reads visually instead of fading
+                    // into the background. The 15+ tier from the finding
+                    // table is folded into 10+ here: only ~13 counties
+                    // nationally hit 15+, too few to be visually striking
+                    // as a standalone bin.
                     paintExpression: [
                         'case',
-                        ['==', ['typeof', ['get', 'county-level-older-adults_PCT POP 60+ AND HIGH NRI']], 'number'],
+                        ['>=', ['to-number', ['coalesce', ['get', 'county-level-older-adults_PCT POP 60+'], 0]], 25],
                         [
                             'step',
-                            ['get', 'county-level-older-adults_PCT POP 60+ AND HIGH NRI'],
-                            '#f2f0f7',          //   0–20%
-                            20, '#cbc9e2',      //  20–40%
-                            40, '#9e9ac8',      //  40–60%
-                            60, '#756bb1',      //  60–80%
-                            80, '#54278f'       //  80–100%
+                            ['to-number', ['coalesce', ['get', 'COUNTY_DISASTER_COUNT'], 0]],
+                            '#edf8fb',          //   0 disasters
+                            1,  '#66c2a4',      //   1–4   (skipped #b2e2e2 — too pale to read)
+                            5,  '#2ca25f',      //   5–9
+                            10, '#006d2c'       //  10+    (folds in the former 15+ tier)
                         ],
-                        '#C9C9C9'
+                        '#ECECEC'   // counties with <25% age 60+ (or null)
                     ],
                     legendHTML: `
-                        <div class="legend-title"><b>Older Adults</b><br><span class="legend-mode-name">In high disaster-risk areas</span></div>
-                        <div class="color-bar lens-older">
+                        <div class="legend-title"><b>Older Adults</b><br><span class="legend-mode-name">Older adults &amp; disaster declarations</span></div>
+                        <div class="color-bar lens-older-disasters">
                             <div class="color-description">
-                                <span>0%</span>
-                                <span>20</span>
-                                <span>40</span>
-                                <span>60</span>
-                                <span>80</span>
-                                <span>100%</span>
+                                <span>0</span>
+                                <span>1+</span>
+                                <span>5+</span>
+                                <span>10+</span>
                             </div>
                         </div>
-                        <div class="legend-units">% of seniors (60+) in FEMA high-risk census tracts</div>
+                        <div class="legend-units">Counties where 25%+ are age 60+, colored by federal disaster declarations (2011–2024).</div>
                         <div class="legend-no-data">
-                            <span class="no-data-swatch"></span>
-                            <span>No data</span>
+                            <span class="no-data-swatch" style="background:#ECECEC"></span>
+                            <span>Counties with &lt;25% age 60+</span>
                         </div>
                     `
                 }
@@ -490,6 +525,61 @@ map.on('click', () => {
             'fill-opacity': 1
         }
     }, 'state-label');
+
+    // Proportional-dots overlay for the Older Adults > "Where older adults
+    // live" sub-mode. We fetch the geojson again (the browser caches the
+    // first one Mapbox loaded) to compute centroids client-side, then add
+    // a Point source and a circle layer sized by sqrt(60+ POP) so circle
+    // AREA — not radius — scales linearly with population (the
+    // perceptually honest mapping for proportional symbols). Hidden by
+    // default; toggled by `applyActiveStyling` when the dots sub-mode is
+    // active. Added without a beforeId so it sits on top of all other
+    // atlas layers including county borders.
+    fetch('data/Atlas_FEMA_V2.geojson').then(function (r) { return r.json(); }).then(function (data) {
+        const pointFeatures = [];
+        for (const f of data.features) {
+            const c = featureCentroid(f);
+            if (!c) continue;
+            pointFeatures.push({
+                type: 'Feature',
+                geometry: { type: 'Point', coordinates: c },
+                properties: f.properties
+            });
+        }
+        map.addSource('atlas-fema-points', {
+            type: 'geojson',
+            data: { type: 'FeatureCollection', features: pointFeatures }
+        });
+        map.addLayer({
+            id: 'atlas-fema-dots-layer',
+            type: 'circle',
+            source: 'atlas-fema-points',
+            layout: { visibility: 'none' },
+            paint: {
+                // sqrt(2,000,000) ≈ 1414 → 22px radius caps the largest
+                // counties (LA, Cook, Maricopa). 0 pop → 0px.
+                'circle-radius': [
+                    'interpolate', ['linear'],
+                    ['sqrt', ['to-number', ['coalesce', ['get', 'county-level-older-adults_60+ POP'], 0]]],
+                    0,    0,
+                    1414, 22
+                ],
+                // Dot color = darkest tone in the Older Adults palette
+                // (same #006d2c that anchors the "Older adults & disaster
+                // declarations" gradient). Keeps both sub-modes visually
+                // consistent within the lens. Don't drift this without
+                // updating the Disasters sub-mode ramp too.
+                'circle-color': '#006d2c',
+                'circle-opacity': 0.6,
+                'circle-stroke-color': '#ffffff',
+                'circle-stroke-width': 0.6
+            }
+        });
+        // If the user's already on the dots sub-mode (e.g. via deep-link or
+        // by selecting it before the fetch resolved), re-run styling so
+        // the layer becomes visible immediately.
+        applyActiveStyling();
+    });
 
 
     // -------------------------------------------------------------
@@ -558,36 +648,90 @@ map.on('click', () => {
 
     // Apply the current lens + filter combo to the map and update the
     // legend. Called by both setLens and setOMBFilter so any change
-    // re-renders consistently. Also refreshes the click popup's
-    // Indicators block (if open) so the active-row highlight follows
-    // the lens change in real time.
+    // re-renders consistently. Two render paths:
+    //   - 'choropleth' (default): paint atlas-fema-layer with the lens
+    //     expression, hide the dots layer.
+    //   - 'dots' (Older Adults > Where older adults live): paint
+    //     atlas-fema-layer a uniform muted color so the underlying dot
+    //     overlay reads cleanly; show the dots layer.
+    // Also refreshes the click popup's Indicators block (if open) so
+    // the active-row highlight follows the lens change in real time.
     function applyActiveStyling() {
         const spec = resolveLensSpec(activeLens);
         if (!spec) return;
-        const expr = applyOMBFilter(spec.paintExpression, activeOMBFilter);
-        map.setPaintProperty('atlas-fema-layer', 'fill-color', expr);
+
+        const isDots = spec.renderMode === 'dots';
+
+        if (isDots) {
+            // The dots sub-mode paints the choropleth too — either a
+            // single color (legacy) or a full expression (e.g. the shared
+            // DISASTER_RAMP underneath the older-adults dots). Wrap in the
+            // urban/rural filter so a "Rural only" selection still mutes
+            // urban counties under the dots.
+            const base = spec.choroplethPaint || spec.choroplethColor || '#F4F1EA';
+            map.setPaintProperty('atlas-fema-layer', 'fill-color', applyOMBFilter(base, activeOMBFilter));
+            if (map.getLayer('atlas-fema-dots-layer')) {
+                map.setLayoutProperty('atlas-fema-dots-layer', 'visibility', 'visible');
+                applyDotsFilter(activeOMBFilter);
+            }
+        } else {
+            const expr = applyOMBFilter(spec.paintExpression, activeOMBFilter);
+            map.setPaintProperty('atlas-fema-layer', 'fill-color', expr);
+            if (map.getLayer('atlas-fema-dots-layer')) {
+                map.setLayoutProperty('atlas-fema-dots-layer', 'visibility', 'none');
+            }
+        }
+
         const legendBody = document.getElementById('legend-body');
         if (legendBody) legendBody.innerHTML = spec.legendHTML;
         updateFilterBadgeInLegend();
         refreshIndicatorsIfPopupOpen();
     }
 
+    // Mirror the urban/rural filter into the dot layer so a "Rural only"
+    // selection actually drops urban dots (otherwise the muted choropleth
+    // says one thing but the dots keep showing every county).
+    function applyDotsFilter(filter) {
+        if (!map.getLayer('atlas-fema-dots-layer')) return;
+        if (filter === 'all') {
+            map.setFilter('atlas-fema-dots-layer', null);
+            return;
+        }
+        const target = filter === 'rural' ? 'Rural' : 'Urban';
+        map.setFilter('atlas-fema-dots-layer', ['==', ['get', 'OMB_CLASS'], target]);
+    }
+
+    // The disaster-count headline doubles as the active "row" for any
+    // lens whose color ramp is driven by COUNTY_DISASTER_COUNT — that's
+    // the Disaster lens, and the Older Adults > "Disasters faced"
+    // sub-mode (which filters to 25%+ counties then steps on
+    // disaster count). Returns the lens key whose color scheme tints
+    // the headline, or null if no lens claims it.
+    function headlineLensKey() {
+        if (activeLens === 'disaster') return 'disaster';
+        if (activeLens === 'older' && activeSubModes.older === 'disastersFaced') return 'older';
+        return null;
+    }
+
     // Re-render the Indicators table inside the open popup so the
     // active-lens highlight tracks lens / sub-mode changes. Also
     // toggles the lens-active class on the disaster-count headline
-    // (which serves as the Disaster lens's "row"). No-op if no popup
-    // is open or the user clicked an area without FEMA data.
+    // (which serves as the "row" for any disaster-count-driven lens).
+    // No-op if no popup is open or the user clicked an area without
+    // FEMA data.
     function refreshIndicatorsIfPopupOpen() {
         if (typeof popup === 'undefined' || !popup.isOpen()) return;
         if (!lastClickedFemaProps) return;
         const block = document.getElementById('indicators-block');
         if (block) block.innerHTML = buildIndicatorsTable(lastClickedFemaProps);
 
-        // Toggle the lens-active class on the disaster-count headline.
+        // Sync the headline tint with whichever lens is driving it.
         const headline = document.getElementById('disaster-count-block');
         if (headline) {
-            headline.classList.toggle('lens-active', activeLens === 'disaster');
-            headline.classList.toggle('lens-disaster', activeLens === 'disaster');
+            const key = headlineLensKey();
+            headline.classList.toggle('lens-active', !!key);
+            headline.classList.toggle('lens-disaster', key === 'disaster');
+            headline.classList.toggle('lens-older', key === 'older');
         }
     }
 
@@ -735,33 +879,6 @@ map.on('click', () => {
         if (parens.length) s += ' (' + parens.join(', ') + ')';
         return s;
     }
-    // Compound-risk row: shows the % AND the absolute "X of Y seniors"
-    // so a 100% reading on a tiny rural county reads honestly as
-    // "all 630 seniors here" instead of suggesting a huge population.
-    function fmtCompoundRisk(p) {
-        var pct = p['county-level-older-adults_PCT POP 60+ AND HIGH NRI'];
-        var atRisk = p['county-level-older-adults_TOTAL 60+ POP WITH HIGH NRI'];
-        var total = p['county-level-older-adults_60+ POP'];
-        if (typeof pct !== 'number') return 'No data';
-        var s = pct.toFixed(1) + '%';
-        if (typeof atRisk === 'number' && typeof total === 'number') {
-            s += ' (' + Math.round(atRisk).toLocaleString('en-US')
-              + ' of ' + Math.round(total).toLocaleString('en-US') + ')';
-        }
-        return s;
-    }
-    // Simpler "seniors in high-risk areas" formatter — matches the
-    // "Population age 60+" row format (count first, % in parens) so
-    // both rows in the Older Adults section read consistently.
-    function fmtSeniorsHighRisk(p) {
-        var atRisk = p['county-level-older-adults_TOTAL 60+ POP WITH HIGH NRI'];
-        var pct = p['county-level-older-adults_PCT POP 60+ AND HIGH NRI'];
-        if (typeof atRisk !== 'number') return 'No data';
-        var s = Math.round(atRisk).toLocaleString('en-US');
-        if (typeof pct === 'number') s += ' (' + pct.toFixed(1) + '%)';
-        return s;
-    }
-
     // Returns the active lens's headline value as a short string for
     // the hover tooltip (e.g. "SVI: 0.34", "SAIDI avg: 568 min").
     function activeLensSummary(props) {
@@ -783,16 +900,21 @@ map.on('click', () => {
         }
         if (activeLens === 'older') {
             var sub = activeSubModes.older || 'concentration';
-            if (sub === 'inHighRisk') {
-                var pctRisk = props['county-level-older-adults_PCT POP 60+ AND HIGH NRI'];
-                return (typeof pctRisk === 'number'
-                    ? pctRisk.toFixed(1) + '% of seniors live in high disaster-risk areas'
-                    : 'No senior disaster-risk data');
+            var older = Number(props['county-level-older-adults_60+ POP']);
+            var pctO = Number(props['county-level-older-adults_PCT POP 60+']);
+            var dis = Number(props.COUNTY_DISASTER_COUNT) || 0;
+            var olderTxt = isFinite(older) ? Math.round(older).toLocaleString('en-US') : '—';
+            var pctTxt = isFinite(pctO) ? pctO.toFixed(1) + '%' : '—';
+            if (sub === 'concentration') {
+                return olderTxt + ' adults 60+' + (isFinite(pctO) ? ' (' + pctTxt + ' of county)' : '')
+                     + ' · ' + dis + ' disasters';
             }
-            var pctSr = props['county-level-older-adults_PCT POP 60+'];
-            return (typeof pctSr === 'number'
-                ? pctSr.toFixed(1) + '% of residents are age 60+'
-                : 'No senior population data');
+            // disastersFaced — flag whether this county is in the
+            // filtered set (25%+ age 60+) and show both criteria.
+            if (!isFinite(pctO) || pctO < 25) {
+                return pctTxt + ' age 60+ · not in filter';
+            }
+            return dis + ' disasters · ' + pctTxt + ' age 60+ · ' + olderTxt + ' older adults';
         }
         return '';
     }
@@ -884,11 +1006,8 @@ map.on('click', () => {
             { key: 'energy', label: 'Worst-case outage',  value: fmtSAIDI(p.SAIDI_MIN_MAX) },
 
             { subheader: 'Older Adults' },
-            { key: 'older', subKey: 'concentration', label: 'Seniors (60+)',
-              value: fmtOlderPop(p) },
-            { key: 'older', subKey: 'inHighRisk', label: 'In high-NRI tracts*',
-              value: fmtSeniorsHighRisk(p) },
-            { footnote: '*FEMA NRI is a 0–100 score of a county\'s relative disaster risk (hazard exposure, social vulnerability, community resilience). "High-NRI tracts" = census tracts with NRI &gt; 60.' }
+            { key: 'older', label: 'Older adults (60+)',
+              value: fmtOlderPop(p) }
         ];
         var html = '<table class="indicators-table">';
         // Collect any footnote entries; rendered below the table so they
@@ -991,7 +1110,7 @@ map.on('click', () => {
             +       '<h3>' + countyName + ', ' + stateName + '</h3>'
             +       subLine
             +     '</div>'
-            +     '<div id="disaster-count-block" class="disaster-count' + (activeLens === 'disaster' ? ' lens-active lens-disaster' : '') + '">'
+            +     '<div id="disaster-count-block" class="disaster-count' + (function () { var k = headlineLensKey(); return k ? ' lens-active lens-' + k : ''; })() + '">'
             +       '<div class="count">' + disasterCount + '</div>'
             +       '<div class="count-description">Federally Declared Extreme Weather Disasters (2011–2024)</div>'
             +     '</div>'

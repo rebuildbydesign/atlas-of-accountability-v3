@@ -238,8 +238,8 @@ a:active {
     box-shadow: inset 3px 0 0 #C24400;
 }
 .indicators-table tr.indicator-active.lens-older {
-    background: #f2f0f7;
-    box-shadow: inset 3px 0 0 #54278f;
+    background: #edf8fb;
+    box-shadow: inset 3px 0 0 #006d2c;
 }
 
 .color-bar {
@@ -264,8 +264,50 @@ a:active {
     background: linear-gradient(to right, #F9ECDC, #F4C69A, #F07F2E, #C24400, #6E2800);
 }
 .color-bar.lens-older {
-    background: linear-gradient(to right, #f2f0f7, #cbc9e2, #9e9ac8, #756bb1, #54278f);
+    background: linear-gradient(to right, #edf8fb, #b2e2e2, #66c2a4, #2ca25f, #006d2c);
 }
+/* Older Adults > "Older adults & disaster declarations" — stepped
+   4-color green ramp. Bin edges (0 / 1+ / 5+ / 10+) collapse the
+   former 15+ tier into 10+ (only ~13 counties hit 15+, too few to
+   read) and skip the palest #b2e2e2 stop, so the 94.8% headline
+   (older adults in 1+-disaster counties) lands at a medium green
+   instead of fading into the background. Equal 25% widths so the
+   4 labels align with their bins. Painted only on counties with
+   25%+ age 60+; everywhere else is muted gray. */
+.color-bar.lens-older-disasters {
+    background: linear-gradient(to right, #edf8fb 0 25%, #66c2a4 25% 50%, #2ca25f 50% 75%, #006d2c 75% 100%);
+}
+
+/* Proportional-dots legend for the Older Adults > "Where older adults
+   live" sub-mode. Each .legend-dot is sized inline (data-driven) to
+   match the radii produced by the map's sqrt scale at 10K / 100K /
+   500K / 1M+ adults 60+. */
+.dot-scale-legend {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    margin-top: 10px;
+    padding: 4px 4px 0;
+}
+.dot-scale-legend .dot-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+.dot-scale-legend .legend-dot {
+    display: inline-block;
+    background: #006d2c;
+    opacity: 0.6;
+    border-radius: 50%;
+    border: 0.6px solid #ffffff;
+    box-shadow: 0 0 0 0.5px rgba(0,0,0,0.12);
+}
+.dot-scale-legend .dot-label {
+    font-size: 10px;
+    color: #555;
+}
+
 
 /* Optional unit caption sitting below a lens gradient. */
 .legend-units {
@@ -817,6 +859,12 @@ a:active {
 .disaster-count.lens-active.lens-disaster {
     background: #fee5d9;
     box-shadow: inset 3px 0 0 #de2d26;
+}
+/* Older Adults > "Disasters faced" tints the headline green because that
+   sub-mode's color ramp is also keyed off COUNTY_DISASTER_COUNT. */
+.disaster-count.lens-active.lens-older {
+    background: #edf8fb;
+    box-shadow: inset 3px 0 0 #006d2c;
 }
 
 .namelsad {
