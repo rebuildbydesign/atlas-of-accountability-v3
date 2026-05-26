@@ -61,7 +61,8 @@
         </button>
         <div id="control-panel-body" class="control-panel-body">
             <div class="control-section">
-                <div class="control-title">Data Lens</div>
+                <!-- Group 1: Atlas Data — the project's primary indicators. -->
+                <div class="control-subgroup-title">Atlas Data</div>
                 <div class="control-options">
                     <label class="control-option">
                         <input type="radio" name="lens" value="disaster" checked>
@@ -90,11 +91,27 @@
                             <span>Worst-case outage</span>
                         </label>
                     </div>
+                </div>
+
+                <!-- Group 2: Communities & Disasters — population-overlay lenses. -->
+                <div class="control-subgroup-title">Communities &amp; Disasters</div>
+                <div class="control-options">
+                    <label class="control-option">
+                        <input type="radio" name="lens" value="urban">
+                        <span>Urban Counties</span>
+                    </label>
+                    <label class="control-option">
+                        <input type="radio" name="lens" value="rural">
+                        <span>Rural Counties</span>
+                    </label>
                     <label class="control-option">
                         <input type="radio" name="lens" value="older">
-                        <span>Older Adults</span>
+                        <span>Older Adults 60+</span>
                     </label>
-                    <!-- Sub-toggle revealed only when Older Adults lens is active -->
+                    <!-- Older Adults sub-options hidden for now. Lens defaults
+                         straight to the "Older adults & disaster declarations"
+                         view via lensConfig.older.defaultSubMode in scripts.js.
+                         To restore the dual-mode toggle, uncomment this block:
                     <div class="control-suboptions" data-lens="older" style="display:none;">
                         <label class="control-suboption">
                             <input type="radio" name="older-mode" value="concentration" checked>
@@ -105,9 +122,12 @@
                             <span>Older adults &amp; disaster declarations</span>
                         </label>
                     </div>
+                    -->
+
                 </div>
             </div>
-            <div class="control-section">
+            <!-- Classification Filter hidden — superseded by the Urban/Rural lenses above. -->
+            <div class="control-section" style="display: none;">
                 <div class="control-title">Classification Filter</div>
                 <div class="control-options">
                     <label class="control-option">

@@ -277,6 +277,19 @@ a:active {
 .color-bar.lens-older-disasters {
     background: linear-gradient(to right, #edf8fb 0 25%, #66c2a4 25% 50%, #2ca25f 50% 75%, #006d2c 75% 100%);
 }
+/* Urban Counties & Disaster Declarations — purple ramp, civic /
+   government coding. Intentionally non-political (no party association).
+   Same break scheme as the Older Adults disaster ramp (0/1+/5+/10+). */
+.color-bar.lens-urban {
+    background: linear-gradient(to right, #f2f0f7 0 25%, #9e9ac8 25% 50%, #756bb1 50% 75%, #54278f 75% 100%);
+}
+/* Rural Counties — blue ramp. Chosen for visual contrast against
+   the Urban purple ramp and to avoid the warm amber/yellow that read
+   as unpleasant. Distinct from Social Vulnerability (which leans teal /
+   green-blue) — this is a cleaner pale-to-navy progression. */
+.color-bar.lens-rural {
+    background: linear-gradient(to right, #eff3ff 0 25%, #6baed6 25% 50%, #3182bd 50% 75%, #08519c 75% 100%);
+}
 
 /* Proportional-dots legend for the Older Adults > "Where older adults
    live" sub-mode. Each .legend-dot is sized inline (data-driven) to
@@ -426,6 +439,25 @@ a:active {
     text-transform: uppercase;
     letter-spacing: 0.4px;
     color: #333;
+}
+
+/* Sub-grouping inside a control-section. Used to split the data
+   lens list into "Atlas Data" and "Communities & Disasters" groups
+   so the population overlay lenses read as a distinct family. */
+.control-subgroup-title {
+    font-weight: bold;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #555;
+    margin: 12px 0 6px 0;
+    padding-top: 8px;
+    border-top: 1px dashed #d8d8d8;
+}
+.control-subgroup-title:first-child {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
 }
 
 .control-options {
@@ -658,12 +690,12 @@ a:active {
     line-height: 1.4;
 }
 .classification-badge.classification-rural {
-    background: #F4C842;  /* warm yellow — agriculture / openness */
-    color: #3a2d05;       /* dark gold for legibility on yellow */
+    background: #3182bd;  /* blue — matches Rural lens palette */
+    color: #fff;
 }
 .classification-badge.classification-urban {
-    background: #FF6B35;  /* coral-orange — distinct from FEMA earth-oranges */
-    color: #4a1d04;       /* dark brown for legibility on coral */
+    background: #756bb1;  /* purple — matches Urban lens palette */
+    color: #fff;
 }
 
 /* State context — always visible (no collapse). Same label/value
@@ -865,6 +897,16 @@ a:active {
 .disaster-count.lens-active.lens-older {
     background: #edf8fb;
     box-shadow: inset 3px 0 0 #006d2c;
+}
+/* Urban Counties & Disaster Declarations — purple tint on the headline. */
+.disaster-count.lens-active.lens-urban {
+    background: #f2f0f7;
+    box-shadow: inset 3px 0 0 #54278f;
+}
+/* Rural Counties — blue tint on the headline. */
+.disaster-count.lens-active.lens-rural {
+    background: #eff3ff;
+    box-shadow: inset 3px 0 0 #08519c;
 }
 
 .namelsad {

@@ -444,15 +444,19 @@ map.on('click', () => {
         //                       94.8% / 50% / 3.5% / 0.18% of older adults
         //                       fall in each cumulative tier.
         older: {
-            label: 'Older Adults',
-            defaultSubMode: 'concentration',
+            label: 'Older Adults 60+',
+            // Default lands directly on the disaster-overlay view so the
+            // Older Adults lens behaves as a single-action button. The
+            // 'concentration' (proportional dots) sub-mode is still defined
+            // below — its UI toggle is just hidden in index.html for now.
+            defaultSubMode: 'disastersFaced',
             subModes: {
                 concentration: {
                     subLabel: 'Where older adults live',
                     renderMode: 'dots',
                     choroplethPaint: DISASTER_RAMP,
                     legendHTML: `
-                        <div class="legend-title"><b>Older Adults</b><br><span class="legend-mode-name">Where older adults live</span></div>
+                        <div class="legend-title"><b>Older Adults 60+</b><br><span class="legend-mode-name">Where older adults live</span></div>
                         <div class="legend-units">Dots show where older adults live; background shading shows disaster declarations.</div>
                         <div class="dot-scale-legend">
                             <div class="dot-group"><span class="legend-dot" style="width:4px;height:4px"></span><span class="dot-label">10K</span></div>
@@ -494,7 +498,7 @@ map.on('click', () => {
                         '#ECECEC'   // counties with <25% age 60+ (or null)
                     ],
                     legendHTML: `
-                        <div class="legend-title"><b>Older Adults</b><br><span class="legend-mode-name">Older adults &amp; disaster declarations</span></div>
+                        <div class="legend-title"><b>Older Adults 60+</b><br><span class="legend-mode-name">Older adults &amp; disaster declarations</span></div>
                         <div class="color-bar lens-older-disasters">
                             <div class="color-description">
                                 <span>0</span>
@@ -511,6 +515,82 @@ map.on('click', () => {
                     `
                 }
             }
+        },
+
+        // Urban Counties — disaster-overlay lens with no sub-modes.
+        // Same break scheme as Older Adults > "Disasters faced"
+        // (0 / 1+ / 5+ / 10+) applied across all OMB-classified Urban
+        // counties. Palette: purples — civic/government coding, no party
+        // association. Skip pale tone (#cbc9e2) so 1+ already reads.
+        urban: {
+            label: 'Urban Counties',
+            paintExpression: [
+                'case',
+                ['==', ['get', 'OMB_CLASS'], 'Urban'],
+                [
+                    'step',
+                    ['to-number', ['coalesce', ['get', 'COUNTY_DISASTER_COUNT'], 0]],
+                    '#f2f0f7',         //   0 disasters
+                    1,  '#9e9ac8',     //   1–4   (skipped #cbc9e2 — too pale)
+                    5,  '#756bb1',     //   5–9
+                    10, '#54278f'      //  10+
+                ],
+                '#ECECEC'   // Rural counties (or unclassified)
+            ],
+            legendHTML: `
+                <div class="legend-title"><b>Urban Counties</b></div>
+                <div class="color-bar lens-urban">
+                    <div class="color-description">
+                        <span>0</span>
+                        <span>1+</span>
+                        <span>5+</span>
+                        <span>10+</span>
+                    </div>
+                </div>
+                <div class="legend-units">OMB-classified urban counties, colored by federal disaster declarations (2011–2024).</div>
+                <div class="legend-no-data">
+                    <span class="no-data-swatch" style="background:#ECECEC"></span>
+                    <span>Rural counties</span>
+                </div>
+            `
+        },
+
+        // Rural Counties — parallel to the Urban lens. Palette: blue ramp.
+        // Blue chosen for visual contrast against the purple Urban palette
+        // and to avoid the warm yellow/amber that read as unpleasant in the
+        // previous draft. Distinct from Social Vulnerability (which leans
+        // teal/green-blue) — this is a cleaner navy-blue progression.
+        rural: {
+            label: 'Rural Counties',
+            paintExpression: [
+                'case',
+                ['==', ['get', 'OMB_CLASS'], 'Rural'],
+                [
+                    'step',
+                    ['to-number', ['coalesce', ['get', 'COUNTY_DISASTER_COUNT'], 0]],
+                    '#eff3ff',         //   0 disasters
+                    1,  '#6baed6',     //   1–4   (skipped #c6dbef / #9ecae1 — too pale)
+                    5,  '#3182bd',     //   5–9
+                    10, '#08519c'      //  10+
+                ],
+                '#ECECEC'   // Urban counties (or unclassified)
+            ],
+            legendHTML: `
+                <div class="legend-title"><b>Rural Counties</b></div>
+                <div class="color-bar lens-rural">
+                    <div class="color-description">
+                        <span>0</span>
+                        <span>1+</span>
+                        <span>5+</span>
+                        <span>10+</span>
+                    </div>
+                </div>
+                <div class="legend-units">OMB-classified rural counties, colored by federal disaster declarations (2011–2024).</div>
+                <div class="legend-no-data">
+                    <span class="no-data-swatch" style="background:#ECECEC"></span>
+                    <span>Urban counties</span>
+                </div>
+            `
         }
     };
 
@@ -702,14 +782,15 @@ map.on('click', () => {
     }
 
     // The disaster-count headline doubles as the active "row" for any
-    // lens whose color ramp is driven by COUNTY_DISASTER_COUNT — that's
-    // the Disaster lens, and the Older Adults > "Disasters faced"
-    // sub-mode (which filters to 25%+ counties then steps on
-    // disaster count). Returns the lens key whose color scheme tints
-    // the headline, or null if no lens claims it.
+    // lens whose color ramp is driven by COUNTY_DISASTER_COUNT — Disaster,
+    // Older Adults > "Disasters faced", and the Urban/Rural Counties &
+    // Disaster Declarations lenses. Each gets its own headline tint via a
+    // matching CSS class. Returns the key, or null if no lens claims it.
     function headlineLensKey() {
         if (activeLens === 'disaster') return 'disaster';
         if (activeLens === 'older' && activeSubModes.older === 'disastersFaced') return 'older';
+        if (activeLens === 'urban') return 'urban';
+        if (activeLens === 'rural') return 'rural';
         return null;
     }
 
@@ -915,6 +996,13 @@ map.on('click', () => {
                 return pctTxt + ' age 60+ · not in filter';
             }
             return dis + ' disasters · ' + pctTxt + ' age 60+ · ' + olderTxt + ' older adults';
+        }
+        if (activeLens === 'urban' || activeLens === 'rural') {
+            var cls = props.OMB_CLASS || '—';
+            var target = activeLens === 'urban' ? 'Urban' : 'Rural';
+            var d2 = Number(props.COUNTY_DISASTER_COUNT) || 0;
+            if (cls !== target) return cls + ' county · not in this lens';
+            return d2 + ' disasters · ' + cls + ' county';
         }
         return '';
     }
