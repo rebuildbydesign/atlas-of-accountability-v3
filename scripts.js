@@ -1265,9 +1265,9 @@ map.on('load', function () {
             +       '</div>'
             +     '</div>'
             +     governorBlock
-            +     '<p class="atlas-report-lead">For more information, read our report:</p>'
+            +     '<p class="atlas-report-lead">For more info, read the Atlas report:</p>'
             +     '<a href="' + c.ATLAS_URL + '" target="_blank" rel="noopener" class="atlas-report-button">'
-            +       '<span class="atlas-report-cta">Atlas of Accountability (2011–2024):</span>'
+            +       '<span class="atlas-report-cta">Atlas of Disaster (2011–2024):</span>'
             +       '<span class="atlas-report-state">' + stateName + '</span>'
             +     '</a>'
             +   '</div>'
