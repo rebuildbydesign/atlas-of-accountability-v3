@@ -1397,7 +1397,7 @@ map.on('load', function () {
         accessToken: mapboxgl.accessToken,
         mapboxgl: mapboxgl,
         marker: false,
-        placeholder: 'Search any U.S. address',
+        placeholder: 'Search An Address',
         flyTo: {
             zoom: 6.5, // Ensures the map zooms to level 6.5
             bearing: 0,
