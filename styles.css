@@ -239,7 +239,7 @@ a:active {
 }
 .indicators-table tr.indicator-active.lens-older {
     background: #edf8fb;
-    box-shadow: inset 3px 0 0 #006d2c;
+    box-shadow: inset 3px 0 0 #005824;
 }
 
 .color-bar {
@@ -266,29 +266,24 @@ a:active {
 .color-bar.lens-older {
     background: linear-gradient(to right, #edf8fb, #b2e2e2, #66c2a4, #2ca25f, #006d2c);
 }
-/* Older Adults > "Older adults & disaster declarations" — stepped
-   4-color green ramp. Bin edges (0 / 1+ / 5+ / 10+) collapse the
-   former 15+ tier into 10+ (only ~13 counties hit 15+, too few to
-   read) and skip the palest #b2e2e2 stop, so the 94.8% headline
-   (older adults in 1+-disaster counties) lands at a medium green
-   instead of fading into the background. Equal 25% widths so the
-   4 labels align with their bins. Painted only on counties with
-   25%+ age 60+; everywhere else is muted gray. */
+/* Older Adults > "Older adults & disaster declarations" — smooth
+   7-stop green spectrum, matching the FEMA Disaster Declarations
+   lens visual style (0/2/4/6/8/10/12+). Painted only on counties
+   with 25%+ age 60+; everywhere else is muted gray. */
 .color-bar.lens-older-disasters {
-    background: linear-gradient(to right, #edf8fb 0 25%, #66c2a4 25% 50%, #2ca25f 50% 75%, #006d2c 75% 100%);
+    background: linear-gradient(to right, #edf8fb, #ccece6, #99d8c9, #66c2a4, #41ae76, #238b45, #005824);
 }
-/* Urban Counties & Disaster Declarations — purple ramp, civic /
-   government coding. Intentionally non-political (no party association).
-   Same break scheme as the Older Adults disaster ramp (0/1+/5+/10+). */
+/* Urban Counties & Disaster Declarations — smooth 7-stop purple
+   spectrum, matching the FEMA Disaster Declarations lens visual
+   style. Civic/government coding, intentionally non-political. */
 .color-bar.lens-urban {
-    background: linear-gradient(to right, #f2f0f7 0 25%, #9e9ac8 25% 50%, #756bb1 50% 75%, #54278f 75% 100%);
+    background: linear-gradient(to right, #efedf5, #dadaeb, #bcbddc, #9e9ac8, #807dba, #6a51a3, #4a1486);
 }
-/* Rural Counties — blue ramp. Chosen for visual contrast against
-   the Urban purple ramp and to avoid the warm amber/yellow that read
-   as unpleasant. Distinct from Social Vulnerability (which leans teal /
-   green-blue) — this is a cleaner pale-to-navy progression. */
+/* Rural Counties — smooth 7-stop blue spectrum, matching the FEMA
+   Disaster Declarations lens visual style. Distinct from Social
+   Vulnerability (which leans teal/green-blue). */
 .color-bar.lens-rural {
-    background: linear-gradient(to right, #eff3ff 0 25%, #6baed6 25% 50%, #3182bd 50% 75%, #08519c 75% 100%);
+    background: linear-gradient(to right, #eff3ff, #c6dbef, #9ecae1, #6baed6, #4292c6, #2171b5, #084594);
 }
 
 /* Proportional-dots legend for the Older Adults > "Where older adults
@@ -549,9 +544,81 @@ a:active {
 }
 
 /* TOP LEFT HOW TO USE INFO BOX */
+#info-icon {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 1001;
+    cursor: pointer;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    line-height: 0;
+}
+#info-icon .fa-question-circle {
+    font-size: 25px;
+    color: #000;
+}
 #info-icon:hover {
     opacity: 0.8;
 }
+#close-info-panel {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    line-height: 0;
+}
+#close-info-panel .fa-times {
+    font-size: 20px;
+    color: #000;
+}
+#info-icon:focus-visible,
+#close-info-panel:focus-visible {
+    outline: 2px solid #de2d26;
+    outline-offset: 2px;
+}
+
+/* Brand-red accent for the info-panel header. Replaces a deprecated
+   <font color> tag so the markup stays HTML5-clean and the color lives
+   in CSS where designers can adjust it. */
+.info-panel-title {
+    color: #de2d26;
+}
+
+/* Partner mailto link inside info-panel step 5. Styled as a soft red
+   pill so a foundation officer scanning the panel can spot the
+   conversion path without it competing with the body text. */
+.info-panel-partner-link {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 4px 10px;
+    background: #de2d26;
+    color: #fff !important;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.3px;
+    border-radius: 3px;
+}
+.info-panel-partner-link:hover { background: #000; }
+
+/* Methodology / data-sources caption at the bottom of the info panel.
+   Small, italic, links out to rebuildbydesign.org where the full
+   methodology is hosted. */
+.info-panel-meta {
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(0,0,0,0.1);
+    font-size: 11px;
+    color: #555;
+    font-style: italic;
+}
+.info-panel-meta a { color: #555; }
+.info-panel-meta a:hover { color: #de2d26; }
 
 #info-panel {
     display: block;
@@ -782,6 +849,62 @@ a:active {
     text-transform: uppercase;
 }
 
+/* Partner CTA shown directly under the state report button in the
+   popup's Representatives column. Black ground so it reads as a
+   *different* action from the red report button (research vs.
+   partnership) — same shape so they feel like a pair. */
+.partner-cta-button {
+    display: block;
+    margin-top: 6px;
+    padding: 10px 8px;
+    background: #111;
+    text-align: center;
+    text-decoration: none !important;
+    transition: background 0.15s;
+    border-radius: 2px;
+}
+.partner-cta-button:hover { background: #de2d26; }
+.partner-cta-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.2;
+    letter-spacing: 0.2px;
+}
+.partner-cta-sub {
+    display: block;
+    margin-top: 2px;
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: rgba(255,255,255,0.75);
+}
+
+/* Toast that replaces the native alert() on a failed geocoder lookup.
+   Positioned under the geocoder control (top-right) so the message
+   lands next to the input that triggered it. */
+.aoa-toast {
+    position: fixed;
+    top: 64px;
+    right: 12px;
+    max-width: 280px;
+    padding: 10px 14px;
+    background: rgba(20, 20, 20, 0.92);
+    color: #fff;
+    font-size: 13px;
+    line-height: 1.35;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 1100;
+    animation: aoa-toast-in 180ms ease-out;
+}
+@keyframes aoa-toast-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
 /* Desktop: if the popup content is taller than the viewport, let it scroll
    inside the popup instead of being clipped by the map container. */
 .mapboxgl-popup-content {
@@ -896,17 +1019,17 @@ a:active {
    sub-mode's color ramp is also keyed off COUNTY_DISASTER_COUNT. */
 .disaster-count.lens-active.lens-older {
     background: #edf8fb;
-    box-shadow: inset 3px 0 0 #006d2c;
+    box-shadow: inset 3px 0 0 #005824;
 }
 /* Urban Counties & Disaster Declarations — purple tint on the headline. */
 .disaster-count.lens-active.lens-urban {
-    background: #f2f0f7;
-    box-shadow: inset 3px 0 0 #54278f;
+    background: #efedf5;
+    box-shadow: inset 3px 0 0 #4a1486;
 }
 /* Rural Counties — blue tint on the headline. */
 .disaster-count.lens-active.lens-rural {
     background: #eff3ff;
-    box-shadow: inset 3px 0 0 #08519c;
+    box-shadow: inset 3px 0 0 #084594;
 }
 
 .namelsad {

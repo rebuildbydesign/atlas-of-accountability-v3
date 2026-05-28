@@ -49,11 +49,8 @@ map.on('load', function () {
         }
     };
 
-
-map.on('click', () => {
-    map.scrollZoom.enable();
-});
-
+    // Scroll-zoom is enabled by the top-level `map.on('click', …)` handler
+    // at the top of this file — no duplicate handler needed inside `load`.
 
     const layersToUpdate = [
         'country-label-sm',
@@ -275,9 +272,13 @@ map.on('click', () => {
             `
         },
 
-        // FEMA Obligations — Federal share dollar bins (orange ramp)
+        // FEMA Disaster Funding — total federal dollars FEMA committed to
+        // each county (Public Assistance + Hazard Mitigation Assistance).
+        // Plain language replaces the prior "Obligations / Federal Share"
+        // labeling, which read as gov-accounting jargon to non-specialists.
+        // Scope is clarified in the legend caption.
         fema: {
-            label: 'FEMA Obligations (Federal Share)',
+            label: 'FEMA Disaster Funding',
             paintExpression: [
                 'step',
                 ['to-number', ['coalesce', ['get', 'COUNTY_TOTAL_FEMA'], 0]],
@@ -289,7 +290,7 @@ map.on('click', () => {
                 100000000, '#9A4B02'      //  $100M+
             ],
             legendHTML: `
-                <div class="legend-title"><b>FEMA Obligations (Federal Share)</b></div>
+                <div class="legend-title"><b>FEMA Disaster Funding</b></div>
                 <div class="color-bar lens-fema">
                     <div class="color-description">
                         <span>$0</span>
@@ -300,6 +301,7 @@ map.on('click', () => {
                         <span>100M+</span>
                     </div>
                 </div>
+                <div class="legend-units">FEMA's federal share of disaster costs — Public Assistance + Hazard Mitigation Assistance, 2011–2024.</div>
             `
         },
 
@@ -438,11 +440,11 @@ map.on('click', () => {
         //                       population. True bivariate read at a glance.
         //   • disastersFaced  → Filtered graded choropleth. Only counties
         //                       with 25%+ adults 60+ are colored; the color
-        //                       encodes disaster-declaration tiers on a
-        //                       5-step green ramp (0 / 1+ / 5+ / 10+ / 15+).
-        //                       Thresholds mirror the headline finding bins:
-        //                       94.8% / 50% / 3.5% / 0.18% of older adults
-        //                       fall in each cumulative tier.
+        //                       encodes disaster-declaration tiers on the
+        //                       same 7-bin scheme as the FEMA Disaster
+        //                       Declarations lens (0/2/4/6/8/10/12+),
+        //                       rendered in a green palette so the lens
+        //                       stays in the older-adults visual family.
         older: {
             label: 'Older Adults 60+',
             // Default lands directly on the disaster-overlay view so the
@@ -457,7 +459,7 @@ map.on('click', () => {
                     choroplethPaint: DISASTER_RAMP,
                     legendHTML: `
                         <div class="legend-title"><b>Older Adults 60+</b><br><span class="legend-mode-name">Where older adults live</span></div>
-                        <div class="legend-units">Dots show where older adults live; background shading shows disaster declarations.</div>
+                        <div class="legend-units">Dots show where older adults live; background shading shows disaster declarations. 60+ is the federal Older Americans Act threshold (1965).</div>
                         <div class="dot-scale-legend">
                             <div class="dot-group"><span class="legend-dot" style="width:4px;height:4px"></span><span class="dot-label">10K</span></div>
                             <div class="dot-group"><span class="legend-dot" style="width:11px;height:11px"></span><span class="dot-label">100K</span></div>
@@ -474,26 +476,24 @@ map.on('click', () => {
                 },
                 disastersFaced: {
                     subLabel: 'Older adults & disaster declarations',
-                    // Two-step expression: filter to 25%+ age 60+, then
-                    // step on COUNTY_DISASTER_COUNT through a 4-bin green
-                    // ramp. Bin colors intentionally start at MEDIUM green
-                    // (#66c2a4) for "1+" rather than at a pale teal — so
-                    // the 94.8% headline (older adults in 1+-declaration
-                    // counties) actually reads visually instead of fading
-                    // into the background. The 15+ tier from the finding
-                    // table is folded into 10+ here: only ~13 counties
-                    // nationally hit 15+, too few to be visually striking
-                    // as a standalone bin.
+                    // Filter to 25%+ age 60+, then step on COUNTY_DISASTER_COUNT
+                    // through the same 7-bin scheme as the FEMA Disaster
+                    // Declarations lens (bins at 0/1/3/5/7/10/12) — green
+                    // palette so it stays in the older-adults visual family
+                    // but reads as the same spectrum as the disaster lens.
                     paintExpression: [
                         'case',
                         ['>=', ['to-number', ['coalesce', ['get', 'county-level-older-adults_PCT POP 60+'], 0]], 25],
                         [
                             'step',
                             ['to-number', ['coalesce', ['get', 'COUNTY_DISASTER_COUNT'], 0]],
-                            '#edf8fb',          //   0 disasters
-                            1,  '#66c2a4',      //   1–4   (skipped #b2e2e2 — too pale to read)
-                            5,  '#2ca25f',      //   5–9
-                            10, '#006d2c'       //  10+    (folds in the former 15+ tier)
+                            '#edf8fb',          //  0
+                            1,  '#ccece6',      //  1–2
+                            3,  '#99d8c9',      //  3–4
+                            5,  '#66c2a4',      //  5–6
+                            7,  '#41ae76',      //  7–9
+                            10, '#238b45',      //  10–11
+                            12, '#005824'       //  12+
                         ],
                         '#ECECEC'   // counties with <25% age 60+ (or null)
                     ],
@@ -502,12 +502,15 @@ map.on('click', () => {
                         <div class="color-bar lens-older-disasters">
                             <div class="color-description">
                                 <span>0</span>
-                                <span>1+</span>
-                                <span>5+</span>
-                                <span>10+</span>
+                                <span>2</span>
+                                <span>4</span>
+                                <span>6</span>
+                                <span>8</span>
+                                <span>10</span>
+                                <span>12+</span>
                             </div>
                         </div>
-                        <div class="legend-units">Counties where 25%+ are age 60+, colored by federal disaster declarations (2011–2024).</div>
+                        <div class="legend-units">Counties where 25%+ are age 60+. 60+ is the federal Older Americans Act threshold (1965).</div>
                         <div class="legend-no-data">
                             <span class="no-data-swatch" style="background:#ECECEC"></span>
                             <span>Counties with &lt;25% age 60+</span>
@@ -518,10 +521,10 @@ map.on('click', () => {
         },
 
         // Urban Counties — disaster-overlay lens with no sub-modes.
-        // Same break scheme as Older Adults > "Disasters faced"
-        // (0 / 1+ / 5+ / 10+) applied across all OMB-classified Urban
-        // counties. Palette: purples — civic/government coding, no party
-        // association. Skip pale tone (#cbc9e2) so 1+ already reads.
+        // Same 7-bin scheme as the FEMA Disaster Declarations lens
+        // (0/1/3/5/7/10/12) applied across all OMB-classified Urban
+        // counties. Palette: purples — civic/government coding, no
+        // party association.
         urban: {
             label: 'Urban Counties',
             paintExpression: [
@@ -530,10 +533,13 @@ map.on('click', () => {
                 [
                     'step',
                     ['to-number', ['coalesce', ['get', 'COUNTY_DISASTER_COUNT'], 0]],
-                    '#f2f0f7',         //   0 disasters
-                    1,  '#9e9ac8',     //   1–4   (skipped #cbc9e2 — too pale)
-                    5,  '#756bb1',     //   5–9
-                    10, '#54278f'      //  10+
+                    '#efedf5',         //  0
+                    1,  '#dadaeb',     //  1–2
+                    3,  '#bcbddc',     //  3–4
+                    5,  '#9e9ac8',     //  5–6
+                    7,  '#807dba',     //  7–9
+                    10, '#6a51a3',     //  10–11
+                    12, '#4a1486'      //  12+
                 ],
                 '#ECECEC'   // Rural counties (or unclassified)
             ],
@@ -542,12 +548,15 @@ map.on('click', () => {
                 <div class="color-bar lens-urban">
                     <div class="color-description">
                         <span>0</span>
-                        <span>1+</span>
-                        <span>5+</span>
-                        <span>10+</span>
+                        <span>2</span>
+                        <span>4</span>
+                        <span>6</span>
+                        <span>8</span>
+                        <span>10</span>
+                        <span>12+</span>
                     </div>
                 </div>
-                <div class="legend-units">OMB-classified urban counties, colored by federal disaster declarations (2011–2024).</div>
+                <div class="legend-units">Urban counties: population 50,000 or more.</div>
                 <div class="legend-no-data">
                     <span class="no-data-swatch" style="background:#ECECEC"></span>
                     <span>Rural counties</span>
@@ -568,10 +577,13 @@ map.on('click', () => {
                 [
                     'step',
                     ['to-number', ['coalesce', ['get', 'COUNTY_DISASTER_COUNT'], 0]],
-                    '#eff3ff',         //   0 disasters
-                    1,  '#6baed6',     //   1–4   (skipped #c6dbef / #9ecae1 — too pale)
-                    5,  '#3182bd',     //   5–9
-                    10, '#08519c'      //  10+
+                    '#eff3ff',         //  0
+                    1,  '#c6dbef',     //  1–2
+                    3,  '#9ecae1',     //  3–4
+                    5,  '#6baed6',     //  5–6
+                    7,  '#4292c6',     //  7–9
+                    10, '#2171b5',     //  10–11
+                    12, '#084594'      //  12+
                 ],
                 '#ECECEC'   // Urban counties (or unclassified)
             ],
@@ -580,12 +592,15 @@ map.on('click', () => {
                 <div class="color-bar lens-rural">
                     <div class="color-description">
                         <span>0</span>
-                        <span>1+</span>
-                        <span>5+</span>
-                        <span>10+</span>
+                        <span>2</span>
+                        <span>4</span>
+                        <span>6</span>
+                        <span>8</span>
+                        <span>10</span>
+                        <span>12+</span>
                     </div>
                 </div>
-                <div class="legend-units">OMB-classified rural counties, colored by federal disaster declarations (2011–2024).</div>
+                <div class="legend-units">Rural counties: population under 50,000.</div>
                 <div class="legend-no-data">
                     <span class="no-data-swatch" style="background:#ECECEC"></span>
                     <span>Urban counties</span>
@@ -945,19 +960,19 @@ map.on('click', () => {
         if (typeof v !== 'number') return 'No data';
         return v.toFixed(1) + '%';
     }
-    // Older-adults popup: combine 60+ count, % of total, and the
-    // AGE CLASS label all on one line.
-    // e.g. "8,234 (50.1%, Super-Aged)"
+    // Older-adults popup: combine 60+ count + % of total on one line.
+    // e.g. "8,234 (50.1%)". The Census AGE CLASS label ("Super-Aged" etc.)
+    // is intentionally NOT shown — it's not defined anywhere in the tool
+    // or on the Rebuild by Design website, so surfacing it would read as
+    // alarmist jargon to funders. The 25%+ threshold used by the Older
+    // Adults lens serves as the working definition of an "older-adults
+    // concentrated" county.
     function fmtOlderPop(p) {
         var pop = p['county-level-older-adults_60+ POP'];
         var pct = p['county-level-older-adults_PCT POP 60+'];
-        var cls = p['county-level-older-adults_AGE CLASS'];
         if (typeof pop !== 'number') return '—';
         var s = Math.round(pop).toLocaleString('en-US');
-        var parens = [];
-        if (typeof pct === 'number') parens.push(pct.toFixed(1) + '%');
-        if (cls && cls !== 'None') parens.push(cls);
-        if (parens.length) s += ' (' + parens.join(', ') + ')';
+        if (typeof pct === 'number') s += ' (' + pct.toFixed(1) + '%)';
         return s;
     }
     // Returns the active lens's headline value as a short string for
@@ -976,8 +991,10 @@ map.on('click', () => {
         if (activeLens === 'energy') {
             var sub = activeSubModes.energy || 'avg';
             var key = sub === 'max' ? 'SAIDI_MIN_MAX' : 'SAIDI_MIN_AVG';
-            var label = sub === 'max' ? 'SAIDI worst' : 'SAIDI avg';
-            return label + ': ' + fmtSAIDI(props[key]);
+            // Hover is the first interaction — keep SAIDI in the legend
+            // caption, not in the user-facing tooltip.
+            var label = sub === 'max' ? 'Energy outage (worst)' : 'Energy outage (typical)';
+            return label + ': ' + fmtSAIDI(props[key]) + '/yr';
         }
         if (activeLens === 'older') {
             var sub = activeSubModes.older || 'concentration';
@@ -1078,13 +1095,28 @@ map.on('click', () => {
     //   - U.S. Energy Reliability (SAIDI)
     // Rows without a `key` are non-highlightable context (state stats).
     function buildIndicatorsTable(p) {
+        // Combined federal assistance (FEMA + HUD CDBG-DR) at the state
+        // level — surfaces the single number a funder is most likely to
+        // quote. Falls back to 0 for either side if missing so a partial
+        // value still renders rather than collapsing to "—".
+        var stateFema = Number(p.STATE_FEMA_TOTAL);
+        var stateCdbg = Number(p.STATE_CDBG_TOTAL);
+        var stateCombinedFederal = (!isFinite(stateFema) && !isFinite(stateCdbg))
+            ? '—'
+            : fmtUSD((isFinite(stateFema) ? stateFema : 0) + (isFinite(stateCdbg) ? stateCdbg : 0));
+
         var rows = [
-            { subheader: 'Atlas of Accountability (2011–2024)' },
-            { key: 'fema', label: 'County FEMA total (federal share)', value: fmtUSD(p.COUNTY_TOTAL_FEMA) },
-            { key: 'fema', label: 'County FEMA per capita',            value: formatCountyPerCapita(p) },
-            { label: 'State FEMA total',     value: fmtUSD(p.STATE_FEMA_TOTAL) },
-            { label: 'State HUD CDBG-DR',    value: fmtUSD(p.STATE_CDBG_TOTAL) },
-            { label: 'State per capita',     value: fmtUSD(p.STATE_PER_CAPITA) },
+            { subheader: 'Federal Disaster Funding (2011–2024)' },
+            // All six rows carry key='fema' so the entire Federal Disaster
+            // Funding block lights up when the FEMA lens is active. Reads
+            // as a single navigable unit for funders, rather than letting
+            // the county rows "float" above un-highlighted state context.
+            { key: 'fema', label: 'County FEMA Total (PA+HM)',          value: fmtUSD(p.COUNTY_TOTAL_FEMA) },
+            { key: 'fema', label: 'Per Capita',                         value: formatCountyPerCapita(p) },
+            { key: 'fema', label: 'State FEMA Total (PA+HM)',           value: fmtUSD(p.STATE_FEMA_TOTAL) },
+            { key: 'fema', label: 'State CDBG Disaster Recovery',       value: fmtUSD(p.STATE_CDBG_TOTAL) },
+            { key: 'fema', label: 'State Total Federal Assistance (FEMA + HUD)', value: stateCombinedFederal },
+            { key: 'fema', label: 'State Per Capita',                   value: fmtUSD(p.STATE_PER_CAPITA) },
 
             { subheader: 'CDC Social Vulnerability Index (2022)' },
             { key: 'svi',  label: 'Vulnerability score', value: fmtSVIWithCategory(p['CDC SVI (2022)']) },
@@ -1093,7 +1125,7 @@ map.on('click', () => {
             { key: 'energy', label: 'Average outage',     value: fmtSAIDI(p.SAIDI_MIN_AVG) },
             { key: 'energy', label: 'Worst-case outage',  value: fmtSAIDI(p.SAIDI_MIN_MAX) },
 
-            { subheader: 'Older Adults' },
+            { subheader: 'Older Adults 60+' },
             { key: 'older', label: 'Older adults (60+)',
               value: fmtOlderPop(p) }
         ];
@@ -1234,8 +1266,8 @@ map.on('click', () => {
             +     '</div>'
             +     governorBlock
             +     '<p class="atlas-report-lead">For more information, read our report:</p>'
-            +     '<a href="' + c.ATLAS_URL + '" target="_blank" class="atlas-report-button">'
-            +       '<span class="atlas-report-cta">Atlas of Disaster (2011–2024):</span>'
+            +     '<a href="' + c.ATLAS_URL + '" target="_blank" rel="noopener" class="atlas-report-button">'
+            +       '<span class="atlas-report-cta">Atlas of Accountability (2011–2024):</span>'
             +       '<span class="atlas-report-state">' + stateName + '</span>'
             +     '</a>'
             +   '</div>'
@@ -1360,25 +1392,12 @@ map.on('click', () => {
 
 
 
-    // Toggle disaster data layer visibility document.getElementById('toggle-counties').addEventListener('click', function () {
-    //  var visibility = map.getLayoutProperty('atlas-fema-layer', 'visibility');
-    //  if (visibility === 'visible' || visibility === undefined) {
-    //       map.setLayoutProperty('atlas-fema-layer', 'visibility', 'none');
-    //        this.textContent = 'Show Disaster Data';
-    //  } else {
-    //    map.setLayoutProperty('atlas-fema-layer', 'visibility', 'visible');
-    //  this.textContent = 'Hide Disaster Data';
-    //}
-    //});
-
-
-
     // Initialize the geocoder
     var geocoder = new MapboxGeocoder({
         accessToken: mapboxgl.accessToken,
         mapboxgl: mapboxgl,
         marker: false,
-        placeholder: 'Search Address Here',
+        placeholder: 'Search any U.S. address',
         flyTo: {
             zoom: 6.5, // Ensures the map zooms to level 6.5
             bearing: 0,
@@ -1409,6 +1428,29 @@ map.on('click', () => {
 
     map.on('mousemove', removeNudgeOnInteraction);
 
+    // Non-blocking replacement for alert() on a failed geocoder lookup.
+    // Anchored under the geocoder control so the message lands next to
+    // the input that triggered it. Auto-dismisses after 4.5s.
+    var geocoderToastTimer = null;
+    function showGeocoderToast(message) {
+        var existing = document.getElementById('aoa-geocoder-toast');
+        if (existing) existing.remove();
+        if (geocoderToastTimer) { clearTimeout(geocoderToastTimer); geocoderToastTimer = null; }
+
+        var toast = document.createElement('div');
+        toast.id = 'aoa-geocoder-toast';
+        toast.className = 'aoa-toast';
+        toast.setAttribute('role', 'status');
+        toast.setAttribute('aria-live', 'polite');
+        toast.textContent = message;
+        document.body.appendChild(toast);
+
+        geocoderToastTimer = setTimeout(function () {
+            if (toast && toast.parentNode) toast.parentNode.removeChild(toast);
+            geocoderToastTimer = null;
+        }, 4500);
+    }
+
 
     // Handle the result event from the geocoder
     geocoder.on('result', function (e) {
@@ -1424,9 +1466,12 @@ map.on('click', () => {
             var femaFeatures = map.queryRenderedFeatures(map.project(lngLat), { layers: ['atlas-fema-layer'] });
             var congressFeatures = map.queryRenderedFeatures(map.project(lngLat), { layers: ['congress-layer'] });
 
-            // Check for general location match and handle appropriately
+            // Check for general location match and handle appropriately.
+            // Native alert() reads as amateurish to foundation-facing users;
+            // we surface the message as a non-blocking toast under the
+            // geocoder instead.
             if (femaFeatures.length === 0) {
-                alert("No detailed match found. Try a more specific address.");
+                showGeocoderToast('No detailed match found. Try a more specific address.');
                 return;
             }
 

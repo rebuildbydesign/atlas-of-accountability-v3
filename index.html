@@ -3,8 +3,23 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Atlas of Accountability - Federal Disaster Declarations & Legislative Districts</title>
+    <title>Atlas of Accountability — Federal Disaster Declarations & Legislative Districts</title>
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+
+    <!-- SEO + social-share preview. og:image is a project key visual hosted on
+         rebuildbydesign.org so links shared by partners, funders, and press
+         unfurl into a rich card instead of a blank tile. -->
+    <meta name="description" content="Interactive map of federal disaster declarations and FEMA recovery funding across U.S. counties and congressional districts, 2011–2024. A tool from Rebuild by Design to support resilience planning, policy, and partnership.">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Atlas of Accountability — Rebuild by Design">
+    <meta property="og:description" content="Interactive map of federal disaster declarations and FEMA recovery funding across U.S. counties and congressional districts, 2011–2024.">
+    <meta property="og:image" content="https://rebuildbydesign.org/wp-content/uploads/AOA-tool.jpg">
+    <meta property="og:url" content="https://rebuildbydesign.org/atlas-of-disaster">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Atlas of Accountability — Rebuild by Design">
+    <meta name="twitter:description" content="Federal disaster declarations and FEMA recovery funding across U.S. counties and congressional districts, 2011–2024.">
+    <meta name="twitter:image" content="https://rebuildbydesign.org/wp-content/uploads/AOA-tool.jpg">
+
     <link href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" rel="stylesheet">
 
     <!-- CUSTOM GOOGLE FONT -->
@@ -29,9 +44,9 @@
 </head>
 
 <body>
-    <!-- ATLAS OF DISASTER LOGO FILE -->
+    <!-- ATLAS OF ACCOUNTABILITY LOGO -->
     <div class="css-atlas-title">
-        <img src="img/atlas-logo.png">
+        <img src="img/atlas-logo.png" alt="Atlas of Accountability">
     </div>
 
 
@@ -54,15 +69,16 @@
 
     <!-- DATA LENS CONTROL PANEL — radio toggle to swap the choropleth -->
     <div id="control-panel">
-        <button id="control-collapse-toggle" class="control-collapse-toggle" type="button" aria-expanded="true" aria-controls="control-panel-body" aria-label="Toggle map controls">
+        <button id="control-collapse-toggle" class="control-collapse-toggle" type="button" aria-expanded="true" aria-controls="control-panel-body" aria-label="Toggle data layers">
             <i class="fas fa-layer-group control-collapse-glyph" aria-hidden="true"></i>
-            <span class="control-collapse-label">Map Controls</span>
+            <span class="control-collapse-label">Data Layers</span>
             <span class="control-collapse-icon" aria-hidden="true">−</span>
         </button>
         <div id="control-panel-body" class="control-panel-body">
             <div class="control-section">
-                <!-- Group 1: Atlas Data — the project's primary indicators. -->
-                <div class="control-subgroup-title">Atlas Data</div>
+                <!-- Group 1: Federal Disaster Response — disaster counts +
+                     federal funding lenses keyed off FEMA data. -->
+                <div class="control-subgroup-title">Federal Data</div>
                 <div class="control-options">
                     <label class="control-option">
                         <input type="radio" name="lens" value="disaster" checked>
@@ -70,7 +86,7 @@
                     </label>
                     <label class="control-option">
                         <input type="radio" name="lens" value="fema">
-                        <span>FEMA Obligations</span>
+                        <span>FEMA Disaster Funding</span>
                     </label>
                     <label class="control-option">
                         <input type="radio" name="lens" value="svi">
@@ -93,8 +109,9 @@
                     </div>
                 </div>
 
-                <!-- Group 2: Communities & Disasters — population-overlay lenses. -->
-                <div class="control-subgroup-title">Communities &amp; Disasters</div>
+                <!-- Group 2: Who's Affected — population-overlay lenses that
+                     surface which communities sit under the disaster ramp. -->
+                <div class="control-subgroup-title">Who's Affected</div>
                 <div class="control-options">
                     <label class="control-option">
                         <input type="radio" name="lens" value="urban">
@@ -126,43 +143,30 @@
 
                 </div>
             </div>
-            <!-- Classification Filter hidden — superseded by the Urban/Rural lenses above. -->
-            <div class="control-section" style="display: none;">
-                <div class="control-title">Classification Filter</div>
-                <div class="control-options">
-                    <label class="control-option">
-                        <input type="radio" name="omb-filter" value="all" checked>
-                        <span>All counties</span>
-                    </label>
-                    <label class="control-option">
-                        <input type="radio" name="omb-filter" value="rural">
-                        <span>Rural only</span>
-                    </label>
-                    <label class="control-option">
-                        <input type="radio" name="omb-filter" value="urban">
-                        <span>Urban only</span>
-                    </label>
-                </div>
-            </div>
         </div>
     </div>
 
 
-       <!-- INFORMATION BOX TOP LEFT WITH METHODOLOGY -->
-       <div id="info-icon" style="position: absolute; top: 10px; left: 10px; cursor: pointer; z-index: 1001;">
-        <i class="fas fa-question-circle" style="font-size: 25px; color: #000000;"></i>
-    </div>
+    <!-- INFORMATION BOX TOP LEFT WITH METHODOLOGY -->
+    <button id="info-icon" type="button" aria-label="Open About panel" aria-controls="info-panel">
+        <i class="fas fa-question-circle" aria-hidden="true"></i>
+    </button>
     <div id="info-panel">
-        <div id="close-info-panel" style="position: absolute; top: 10px; right: 10px; cursor: pointer;">
-            <i class="fas fa-times" style="font-size: 20px; color: #000000;"></i>
-        </div>
-        <img src="img/rebuildbydesign.png" style="width: 200px; height: 34px">
-        <h3><font color="#de2d26">HOW TO USE THIS INTERACTIVE MAP</font></h3>
+        <button id="close-info-panel" type="button" aria-label="Close About panel">
+            <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+        <img src="img/rebuildbydesign.png" alt="Rebuild by Design" style="width: 200px; height: 34px">
+        <h3 class="info-panel-title">HOW TO USE THIS INTERACTIVE MAP</h3>
         <p><b>1) CLICK ON A COUNTY</b> to view the number of major disaster declarations, post-disaster federal funding, and detailed information about your congressional and state representatives.</p>
         <p><b>2) SEARCH AN ADDRESS</b> located at the top right corner of the map to enter a specific address. This will reveal county-level data and provide information about the corresponding congressional and state representatives.</p>
         <p><b>3) NAVIGATE THE MAP</b> by clicking and dragging with your mouse. Zoom in and out to explore other parts of the country.</p>
-        <p><b>4) TAKE ACTION</b> by contacting your representatives. If you are a representative, collaborate with other policymakers whose constituents are experiencing increased and severe disasters. Together, we can advocate for stronger, more resilient infrastructure in our communities</p>
-    
+        <p><b>4) TAKE ACTION</b> by contacting your representatives. If you are a representative, collaborate with other policymakers whose constituents are experiencing increased and severe disasters. Together, we can advocate for stronger, more resilient infrastructure in our communities.</p>
+        <p><b>5) PARTNER WITH US</b> if your foundation, agency, or organization wants to use this data to inform funding, policy, or resilience strategy. We collaborate with funders, governments, and NGOs on tailored analyses and briefings.
+            <a class="info-panel-partner-link" href="mailto:info@rebuildbydesign.org?subject=Partner%20with%20Rebuild%20by%20Design%20%E2%80%94%20Atlas%20of%20Accountability">info@rebuildbydesign.org</a>
+        </p>
+
+        <!-- 
+        <p class="info-panel-meta">Data sources &amp; methodology: <a href="https://rebuildbydesign.org/atlas-of-disaster#methodology" target="_blank" rel="noopener">rebuildbydesign.org/atlas-of-accountability</a></p>-->
     </div>
 
 

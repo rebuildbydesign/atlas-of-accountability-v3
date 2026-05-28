@@ -1,30 +1,51 @@
 # Atlas of Accountability
 
-Welcome to the repository for the **Atlas of Accountability**, is an interactive map that visualizes the impact of FEMA's federally declared climate disasters across U.S. counties and congressional districts from 2011 to 2024, providing tools to explore disaster data, reveal county-specific impacts, and engage with representatives to promote resilient infrastructure initiatives.
+An interactive map from [Rebuild by Design](https://rebuildbydesign.org) that visualizes the impact of federally declared climate disasters across U.S. counties and congressional districts from **2011–2024** — pairing FEMA recovery data with social vulnerability, energy reliability, and demographic context to surface where climate risk and federal response intersect.
 
-## Mission
+The Atlas is built to support resilience planning, public-interest research, and partnership between funders, government, and community organizations.
 
-The mission of the Atlas of Disasters is to empower citizens, policymakers, and researchers with accurate and accessible geographical data on natural disasters. By making this information available and easy to understand, we aim to foster informed decision-making and encourage proactive measures towards building resilient infrastructure.
+## Who this tool is for
 
-### Features
+- **Foundations and funders** evaluating where climate-resilience investment will have the highest impact.
+- **City, county, and state planners** building hazard mitigation and capital plans grounded in federal data.
+- **NGOs and advocacy organizations** working to hold representatives accountable for climate and infrastructure policy.
+- **Researchers and journalists** investigating disaster patterns, recovery funding, and inequity.
 
-- **Interactive Map**: Users can click on any county or congressional district to view specific data about disaster occurrences and elected representative.
-- **Data Layers**: The map includes separate layers for counties and congressional districts, which can be toggled on or off to customize the viewing experience.
-- **Responsive Design**: The web map is designed to be responsive, providing a seamless experience on both desktop and mobile devices.
+## What you can do
 
-## Links
+- **Explore six data lenses** over every U.S. county: FEMA Disaster Declarations, FEMA Obligations, CDC Social Vulnerability Index, Energy Reliability (SAIDI), Urban Counties, Rural Counties, and Older Adults 60+.
+- **Click any county** to view disaster counts, federal share, per-capita figures, and the corresponding congressional and state representatives.
+- **Search any address** to jump to the county-level context for a specific community.
+- **Share findings** with funders, policymakers, and partners via direct links and the project report.
 
-Visit the live version of the Atlas of Disasters at [Atlas of Accountability Live](https://rebuildbydesign.github.io/atlas-of-accountability-v2/).
+## Partner with us
 
-The source code for this project is hosted on GitHub. You can access and contribute to the code at [Atlas of Disasters Repo](https://github.com/rebuildbydesign/atlas-of-accountability-v2).
+If your foundation, agency, or organization wants to use this data to inform funding, policy, or resilience strategy, contact **[info@rebuildbydesign.org](mailto:info@rebuildbydesign.org?subject=Partner%20with%20Rebuild%20by%20Design%20%E2%80%94%20Atlas%20of%20Accountability)**. Rebuild by Design collaborates with funders, governments, and NGOs on tailored analyses, briefings, and resilience-strategy work.
+
+## Live tool & methodology
+
+- **Live tool:** [rebuildbydesign.org/atlas-of-disaster](https://rebuildbydesign.org/atlas-of-disaster)
+- **Methodology & data sources:** [rebuildbydesign.org/atlas-of-disaster#methodology](https://rebuildbydesign.org/atlas-of-disaster#methodology)
+- **Source code:** this repository.
+
+## Data sources
+
+| Layer | Source | Vintage |
+| --- | --- | --- |
+| FEMA Disaster Declarations (climate events) | iParametric | 2011–2024 |
+| FEMA Obligations (Federal Share) | iParametric / FEMA OpenFEMA | 2011–2024 |
+| CDC Social Vulnerability Index | CDC/ATSDR | 2022 |
+| Energy Reliability (SAIDI minutes) | U.S. Energy Information Administration | 2022 |
+| Older adults (age 60+) | U.S. Census Bureau ACS | latest release |
+| County boundaries | ESRI | 2020 |
+| Congressional district boundaries | USDOT Bureau of Transportation Statistics | 2025 |
+| Current legislative members | U.S. Government (github.com/unitedstates) | rolling |
+
+## Tech stack
+
+- [Mapbox GL JS](https://docs.mapbox.com/mapbox-gl-js/) for the interactive map.
+- Vanilla HTML, CSS, and JavaScript — no build step required. Open `index.html` to run locally.
 
 ## Credits
 
-[Judy Huynh](https://github.com/judy-huynh), Rebuild by Design
-
-## Data Sources
-
-- Disaster declarations for climate events occurring 2011-2024, courtesy iParametric
-- County District shapefiles from ESRI (2020)
-- Congress District shapefiles from USDOT BTS (2025)
-- Current Legislative Members from U.S. Government Github Repository 
+Built by [Judy Huynh](https://github.com/judy-huynh) for [Rebuild by Design](https://rebuildbydesign.org).
