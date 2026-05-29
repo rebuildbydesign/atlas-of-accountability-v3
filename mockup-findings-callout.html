@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Atlas of Accountability — Findings callout mockups</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+<style>
+/* =========================================================
+   Page chrome — mockup explainer styles, not production.
+   ========================================================= */
+* { box-sizing: border-box; }
+body {
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 32px;
+    background: #f6f5f3;
+    color: #222;
+    line-height: 1.45;
+}
+header { max-width: 1400px; margin: 0 auto 28px; }
+h1 { margin: 0 0 6px 0; font-size: 26px; font-weight: 600; letter-spacing: -0.01em; }
+.intro { color: #555; margin: 0 0 4px; max-width: 920px; font-size: 14px; }
+.intro b { color: #222; }
+
+h2.section-title {
+    max-width: 1400px;
+    margin: 32px auto 4px;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+h2.section-title .pill {
+    display: inline-block;
+    background: #222;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 999px;
+    vertical-align: middle;
+    margin-right: 10px;
+    letter-spacing: 0.04em;
+}
+.section-sub {
+    max-width: 1400px;
+    margin: 0 auto 18px;
+    color: #555;
+    font-size: 13.5px;
+    max-width: 920px;
+}
+
+/* Two-column grid of mockup tiles. Each tile holds a faux-map
+   "stage" and a caption explaining the trade-offs of that placement. */
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+@media (max-width: 1100px) { .grid { grid-template-columns: 1fr; } }
+
+.tile {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+}
+.tile h3 {
+    font-size: 14px;
+    margin: 0 0 4px 0;
+    font-weight: 600;
+}
+.tile .tile-letter {
+    display: inline-block;
+    background: #de2d26;
+    color: #fff;
+    font-weight: 700;
+    width: 22px;
+    height: 22px;
+    line-height: 22px;
+    text-align: center;
+    border-radius: 50%;
+    margin-right: 8px;
+    font-size: 12px;
+    vertical-align: middle;
+}
+.tile .caption {
+    margin-top: 12px;
+    font-size: 12.5px;
+    color: #444;
+    line-height: 1.5;
+}
+.tile .caption b { color: #111; }
+.tile .pros-cons {
+    margin-top: 8px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    font-size: 11.5px;
+    color: #555;
+}
+.tile .pros-cons .pros::before { content: '+ '; color: #2a8a3e; font-weight: 700; }
+.tile .pros-cons .cons::before { content: '\2212  '; color: #c0392b; font-weight: 700; }
+
+/* =========================================================
+   The "faux-map" stage — a stand-in for the Mapbox canvas
+   so this mockup loads instantly and stays focused on the
+   callout placement, not the data viz.
+   ========================================================= */
+.stage {
+    position: relative;
+    width: 100%;
+    height: 360px;
+    border-radius: 6px;
+    overflow: hidden;
+    /* Soft choropleth-feeling backdrop. The radial gradient stand-ins
+       hint at "this is a U.S. map with a red ramp" without rendering
+       a real Mapbox layer. */
+    background:
+        radial-gradient(ellipse 220px 140px at 28% 55%, #b30015 0%, #de2d26 30%, transparent 70%),
+        radial-gradient(ellipse 160px 110px at 70% 40%, #fc9272 0%, #fcae91 40%, transparent 75%),
+        radial-gradient(ellipse 120px 80px at 55% 70%, #a50f15 0%, #de2d26 40%, transparent 75%),
+        linear-gradient(135deg, #fee5d9 0%, #fcae91 100%);
+    border: 1px solid #e6e3df;
+}
+.stage.svi {
+    background:
+        radial-gradient(ellipse 220px 140px at 28% 55%, #007462 0%, #009887 30%, transparent 70%),
+        radial-gradient(ellipse 160px 110px at 70% 40%, #79D9CF 0%, #00B7A6 40%, transparent 75%),
+        linear-gradient(135deg, #C6F2ED 0%, #79D9CF 100%);
+}
+.stage.fema {
+    background:
+        radial-gradient(ellipse 220px 140px at 28% 55%, #9A4B02 0%, #C96305 30%, transparent 70%),
+        radial-gradient(ellipse 160px 110px at 70% 40%, #F59A45 0%, #ED7A1F 40%, transparent 75%),
+        linear-gradient(135deg, #FDE0C8 0%, #F9BE88 100%);
+}
+.stage.energy {
+    background:
+        radial-gradient(ellipse 220px 140px at 28% 55%, #6E2800 0%, #C24400 30%, transparent 70%),
+        radial-gradient(ellipse 160px 110px at 70% 40%, #F4C69A 0%, #F07F2E 40%, transparent 75%),
+        linear-gradient(135deg, #F9ECDC 0%, #F4C69A 100%);
+}
+.stage.urban {
+    background:
+        radial-gradient(ellipse 220px 140px at 28% 55%, #4a1486 0%, #6a51a3 30%, transparent 70%),
+        radial-gradient(ellipse 160px 110px at 70% 40%, #9e9ac8 0%, #807dba 40%, transparent 75%),
+        linear-gradient(135deg, #efedf5 0%, #dadaeb 100%);
+}
+.stage.rural {
+    background:
+        radial-gradient(ellipse 220px 140px at 28% 55%, #084594 0%, #2171b5 30%, transparent 70%),
+        radial-gradient(ellipse 160px 110px at 70% 40%, #6baed6 0%, #4292c6 40%, transparent 75%),
+        linear-gradient(135deg, #eff3ff 0%, #c6dbef 100%);
+}
+.stage.older {
+    background:
+        radial-gradient(ellipse 220px 140px at 28% 55%, #005824 0%, #238b45 30%, transparent 70%),
+        radial-gradient(ellipse 160px 110px at 70% 40%, #66c2a4 0%, #41ae76 40%, transparent 75%),
+        linear-gradient(135deg, #edf8fb 0%, #ccece6 100%);
+}
+
+/* Soft white wash over the map to mimic real basemap muting */
+.stage::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.18);
+    pointer-events: none;
+}
+
+/* =========================================================
+   The PRODUCTION legend, recreated faithfully from styles.css
+   so the placement variants are all anchored to the real chrome.
+   ========================================================= */
+.legend {
+    position: absolute;
+    bottom: 14px;
+    left: 12px;
+    z-index: 4;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    font-family: 'Arial', sans-serif;
+    font-size: 13px;
+    font-weight: 100;
+    width: 220px;
+    color: #222;
+}
+.legend .legend-title {
+    margin-bottom: 4px;
+    font-weight: 700;
+}
+.legend .color-bar {
+    height: 12px;
+    background: linear-gradient(to right,
+        #fee5d9 0%,
+        #fcae91 16%,
+        #fc9272 33%,
+        #fb6a4a 50%,
+        #ef3b2c 66%,
+        #cb181d 83%,
+        #99000d 100%);
+    position: relative;
+}
+.legend .color-description {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: #555;
+    margin-top: 2px;
+}
+.legend .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    font-size: 11.5px;
+}
+.legend .legend-rectangle {
+    width: 12px;
+    height: 2px;
+    background: #333;
+    border-top: 1px dashed #333;
+}
+
+/* Lens-colored color bars — mirror lensConfig in scripts.js */
+.color-bar.lens-disaster { background: linear-gradient(to right, #fee5d9, #fcae91, #fc9272, #fb6a4a, #ef3b2c, #cb181d, #99000d); }
+.color-bar.lens-fema     { background: linear-gradient(to right, #FDE0C8, #F9BE88, #F59A45, #ED7A1F, #C96305, #9A4B02); }
+.color-bar.lens-svi      { background: linear-gradient(to right, #C6F2ED, #79D9CF, #00B7A6, #009887, #007462); }
+.color-bar.lens-energy   { background: linear-gradient(to right, #F9ECDC, #F4C69A, #F07F2E, #C24400, #6E2800); }
+.color-bar.lens-urban    { background: linear-gradient(to right, #efedf5, #dadaeb, #bcbddc, #9e9ac8, #807dba, #6a51a3, #4a1486); }
+.color-bar.lens-rural    { background: linear-gradient(to right, #eff3ff, #c6dbef, #9ecae1, #6baed6, #4292c6, #2171b5, #084594); }
+.color-bar.lens-older    { background: linear-gradient(to right, #edf8fb, #ccece6, #99d8c9, #66c2a4, #41ae76, #238b45, #005824); }
+
+/* =========================================================
+   PLACEMENT A — Inline appended to the legend
+   ========================================================= */
+.legend .legend-finding {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid #eaeaea;
+    font-size: 11.5px;
+    line-height: 1.4;
+    color: #222;
+}
+.legend .legend-finding .finding-stat {
+    font-weight: 700;
+    color: #b30015;
+    font-size: 13px;
+    display: block;
+    margin-bottom: 2px;
+}
+.legend .legend-finding .finding-source {
+    margin-top: 4px;
+    font-size: 10px;
+    color: #777;
+    font-style: italic;
+}
+
+/* =========================================================
+   PLACEMENT B — Companion callout card next to the legend
+   ========================================================= */
+.callout-companion {
+    position: absolute;
+    bottom: 14px;
+    left: 246px;
+    width: 260px;
+    background: #fff;
+    border-left: 4px solid #b30015;
+    padding: 12px 14px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    font-family: 'Poppins', -apple-system, sans-serif;
+    z-index: 4;
+}
+.callout-companion .so-what-eyebrow {
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #777;
+    margin-bottom: 6px;
+}
+.callout-companion .finding-stat {
+    font-size: 22px;
+    font-weight: 700;
+    color: #b30015;
+    line-height: 1.05;
+    margin-bottom: 4px;
+    font-family: 'Poppins';
+    letter-spacing: -0.01em;
+}
+.callout-companion .finding-text {
+    font-size: 12.5px;
+    color: #222;
+    line-height: 1.4;
+}
+.callout-companion .finding-source {
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px solid #eee;
+    font-size: 10px;
+    color: #777;
+}
+.callout-companion .finding-source a { color: #555; }
+
+/* =========================================================
+   PLACEMENT C — Top-of-map ribbon, full width
+   ========================================================= */
+.callout-ribbon {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    right: 14px;
+    background: #222;
+    color: #fff;
+    padding: 9px 14px;
+    font-family: 'Poppins';
+    font-size: 12.5px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+    z-index: 4;
+}
+.callout-ribbon .ribbon-icon {
+    color: #ff6b35;
+    font-size: 14px;
+}
+.callout-ribbon .ribbon-stat {
+    font-weight: 700;
+    color: #ff6b35;
+}
+.callout-ribbon .ribbon-dismiss {
+    margin-left: auto;
+    color: #aaa;
+    cursor: pointer;
+    font-size: 11px;
+    padding: 2px 4px;
+}
+
+/* =========================================================
+   PLACEMENT D — Expandable info badge on the legend
+   ========================================================= */
+.legend .legend-finding-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 6px;
+    padding: 3px 8px;
+    background: #f7f1ee;
+    border: 1px solid #e6c8c0;
+    color: #b30015;
+    font-size: 10.5px;
+    font-weight: 600;
+    border-radius: 999px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.legend .legend-finding-badge i {
+    font-size: 9px;
+}
+.callout-expanded {
+    position: absolute;
+    bottom: 14px;
+    left: 246px;
+    width: 280px;
+    background: #fff;
+    padding: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    font-family: 'Poppins';
+    z-index: 4;
+}
+.callout-expanded::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    bottom: 20px;
+    border: 8px solid transparent;
+    border-right-color: #fff;
+}
+.callout-expanded .ex-eyebrow {
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #777;
+    margin-bottom: 6px;
+}
+.callout-expanded .ex-stat {
+    font-size: 18px;
+    font-weight: 700;
+    color: #b30015;
+    margin-bottom: 4px;
+}
+.callout-expanded .ex-text { font-size: 12px; color: #222; line-height: 1.45; }
+.callout-expanded .ex-close {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    cursor: pointer;
+    color: #999;
+    font-size: 11px;
+}
+.callout-expanded .ex-source {
+    margin-top: 8px;
+    font-size: 10px;
+    color: #777;
+}
+
+/* =========================================================
+   PLACEMENT E — Floating insight card, top-right
+   ========================================================= */
+.callout-floating {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 280px;
+    background: #fff;
+    border-top: 4px solid #b30015;
+    padding: 14px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+    font-family: 'Poppins';
+    z-index: 4;
+}
+.callout-floating .fl-eyebrow {
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #b30015;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.callout-floating .fl-stat {
+    font-size: 26px;
+    font-weight: 700;
+    color: #111;
+    line-height: 1.05;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+}
+.callout-floating .fl-text {
+    font-size: 13px;
+    color: #333;
+    line-height: 1.4;
+}
+.callout-floating .fl-cta {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+    font-size: 11px;
+}
+.callout-floating .fl-cta a {
+    color: #555;
+    text-decoration: none;
+    border-bottom: 1px solid #ccc;
+}
+.callout-floating .fl-close {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    cursor: pointer;
+    color: #999;
+    font-size: 11px;
+}
+
+/* =========================================================
+   PLACEMENT F — Legend-header (overhead band)
+   ========================================================= */
+.legend.with-header { padding-top: 0; }
+.legend .legend-header {
+    margin: -10px -10px 10px;
+    padding: 8px 10px;
+    background: #b30015;
+    color: #fff;
+    font-family: 'Poppins';
+}
+.legend .legend-header .lh-eyebrow {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.85;
+    margin-bottom: 2px;
+}
+.legend .legend-header .lh-stat {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.15;
+}
+
+/* =========================================================
+   Section 2 — voice mockup tiles (one per lens)
+   Reuses the companion-card placement so we can compare
+   the WRITING across lenses, holding placement constant.
+   ========================================================= */
+.voice-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+@media (max-width: 900px) { .voice-grid { grid-template-columns: 1fr; } }
+
+.voice-tile {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    padding: 18px;
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 18px;
+    align-items: start;
+}
+.voice-tile .swatch-strip {
+    height: 100%;
+    min-height: 110px;
+    border-radius: 4px;
+}
+.voice-tile .swatch-strip.disaster { background: linear-gradient(180deg, #fee5d9, #fcae91, #fb6a4a, #cb181d, #99000d); }
+.voice-tile .swatch-strip.fema     { background: linear-gradient(180deg, #FDE0C8, #F59A45, #ED7A1F, #C96305, #9A4B02); }
+.voice-tile .swatch-strip.svi      { background: linear-gradient(180deg, #C6F2ED, #00B7A6, #009887, #007462); }
+.voice-tile .swatch-strip.energy   { background: linear-gradient(180deg, #F9ECDC, #F07F2E, #C24400, #6E2800); }
+.voice-tile .swatch-strip.urban    { background: linear-gradient(180deg, #efedf5, #bcbddc, #807dba, #4a1486); }
+.voice-tile .swatch-strip.rural    { background: linear-gradient(180deg, #eff3ff, #9ecae1, #4292c6, #084594); }
+.voice-tile .swatch-strip.older    { background: linear-gradient(180deg, #edf8fb, #66c2a4, #238b45, #005824); }
+
+.voice-tile h3 {
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0 0 6px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #888;
+}
+.voice-card {
+    background: #fff;
+    border-left: 4px solid #b30015;
+    padding: 12px 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    font-family: 'Poppins';
+}
+.voice-card.disaster { border-left-color: #b30015; }
+.voice-card.fema     { border-left-color: #9A4B02; }
+.voice-card.svi      { border-left-color: #007462; }
+.voice-card.energy   { border-left-color: #C24400; }
+.voice-card.urban    { border-left-color: #4a1486; }
+.voice-card.rural    { border-left-color: #084594; }
+.voice-card.older    { border-left-color: #005824; }
+
+.voice-card .vc-eyebrow {
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #777;
+    margin-bottom: 6px;
+}
+.voice-card .vc-stat {
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.05;
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+}
+.voice-card.disaster .vc-stat { color: #b30015; }
+.voice-card.fema     .vc-stat { color: #9A4B02; }
+.voice-card.svi      .vc-stat { color: #007462; }
+.voice-card.energy   .vc-stat { color: #C24400; }
+.voice-card.urban    .vc-stat { color: #4a1486; }
+.voice-card.rural    .vc-stat { color: #084594; }
+.voice-card.older    .vc-stat { color: #005824; }
+.voice-card .vc-text { font-size: 13px; color: #222; line-height: 1.4; }
+.voice-card .vc-source {
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px solid #eee;
+    font-size: 10px;
+    color: #777;
+}
+
+.lens-note {
+    font-size: 12px;
+    color: #444;
+    margin-top: 10px;
+    line-height: 1.5;
+}
+.lens-note b { color: #111; }
+
+.footer-note {
+    max-width: 1400px;
+    margin: 36px auto 0;
+    padding: 16px 20px;
+    background: #fff;
+    border-radius: 8px;
+    font-size: 12.5px;
+    color: #444;
+    line-height: 1.55;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.footer-note b { color: #111; }
+</style>
+</head>
+<body>
+
+<header>
+    <h1>Findings callout — "so what?" mockups</h1>
+    <p class="intro">
+        Right now the legend tells the user <b>what the colors mean</b>. It never tells them <b>what the map is saying</b>.
+        These mockups explore where a per-lens "so what?" finding could live, and how its voice could read across the dataset.
+        All stats are real, computed from <code>data/Atlas_FEMA_V2.geojson</code>.
+    </p>
+</header>
+
+<!-- ========================================================= -->
+<!-- SECTION 1: Placement variants                              -->
+<!-- ========================================================= -->
+<h2 class="section-title"><span class="pill">PASS 1</span>Placement — same finding, six ways</h2>
+<p class="section-sub">
+    Anchor lens: <b>FEMA Disaster Declarations</b>. The same finding —
+    <i>"92.6% of U.S. counties faced at least one federally declared climate disaster between 2011–2024"</i> —
+    rendered in six placement strategies so we can pick where the callout lives before tuning the voice.
+</p>
+
+<div class="grid">
+
+    <!-- A — In-legend appended -->
+    <div class="tile">
+        <h3><span class="tile-letter">A</span>In-legend, appended</h3>
+        <div class="stage">
+            <div class="legend">
+                <div class="legend-title"># of Major Disaster Declarations</div>
+                <div class="color-bar lens-disaster"></div>
+                <div class="color-description">
+                    <span>0</span><span>2</span><span>4</span><span>6</span><span>8</span><span>10</span><span>12+</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-rectangle"></div>
+                    <span><b>Congressional Districts</b></span>
+                </div>
+                <div class="legend-finding">
+                    <span class="finding-stat">93% of counties</span>
+                    faced at least one federally declared climate disaster, 2011–2024.
+                    <div class="finding-source">Source: FEMA / iParametric</div>
+                </div>
+            </div>
+        </div>
+        <div class="caption">
+            <b>Cheapest move.</b> Appends a 2-line stat under the color ramp. No new chrome on the map.
+            <div class="pros-cons">
+                <div class="pros">No new visual element to teach users</div>
+                <div class="cons">Cramped — legend grows tall, swallows the takeaway</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- B — Companion card (RECOMMENDED) -->
+    <div class="tile">
+        <h3><span class="tile-letter">B</span>Companion callout card <em style="font-weight:400;color:#888;font-size:11px;">— recommended</em></h3>
+        <div class="stage">
+            <div class="legend">
+                <div class="legend-title"># of Major Disaster Declarations</div>
+                <div class="color-bar lens-disaster"></div>
+                <div class="color-description">
+                    <span>0</span><span>2</span><span>4</span><span>6</span><span>8</span><span>10</span><span>12+</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-rectangle"></div>
+                    <span><b>Congressional Districts</b></span>
+                </div>
+            </div>
+            <div class="callout-companion">
+                <div class="so-what-eyebrow">SO WHAT?</div>
+                <div class="finding-stat">93%</div>
+                <div class="finding-text">of U.S. counties faced at least one federally declared climate disaster between 2011–2024.</div>
+                <div class="finding-source">FEMA / iParametric · <a href="#">Methodology</a></div>
+            </div>
+        </div>
+        <div class="caption">
+            <b>Most legible.</b> Lives next to the legend but stays distinct. Room for a big stat, plain-language interpretation, and a source link.
+            <div class="pros-cons">
+                <div class="pros">Hierarchy: stat → context → source, all scannable</div>
+                <div class="cons">Eats horizontal real estate; needs mobile rules</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- C — Top ribbon -->
+    <div class="tile">
+        <h3><span class="tile-letter">C</span>Top-of-map ribbon</h3>
+        <div class="stage">
+            <div class="callout-ribbon">
+                <i class="fas fa-bullhorn ribbon-icon"></i>
+                <span><span class="ribbon-stat">93% of U.S. counties</span> faced at least one federally declared climate disaster, 2011–2024.</span>
+                <span class="ribbon-dismiss">DISMISS ✕</span>
+            </div>
+            <div class="legend">
+                <div class="legend-title"># of Major Disaster Declarations</div>
+                <div class="color-bar lens-disaster"></div>
+                <div class="color-description">
+                    <span>0</span><span>2</span><span>4</span><span>6</span><span>8</span><span>10</span><span>12+</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-rectangle"></div>
+                    <span><b>Congressional Districts</b></span>
+                </div>
+            </div>
+        </div>
+        <div class="caption">
+            <b>Highest visibility.</b> Updates as user toggles lenses. Reads like a news headline.
+            <div class="pros-cons">
+                <div class="pros">Impossible to miss; feels editorial &amp; confident</div>
+                <div class="cons">Competes with the page title; one long line of copy only</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- D — Expandable badge -->
+    <div class="tile">
+        <h3><span class="tile-letter">D</span>Expandable info badge on legend</h3>
+        <div class="stage">
+            <div class="legend">
+                <div class="legend-title"># of Major Disaster Declarations</div>
+                <div class="color-bar lens-disaster"></div>
+                <div class="color-description">
+                    <span>0</span><span>2</span><span>4</span><span>6</span><span>8</span><span>10</span><span>12+</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-rectangle"></div>
+                    <span><b>Congressional Districts</b></span>
+                </div>
+                <span class="legend-finding-badge"><i class="fas fa-lightbulb"></i>WHY THIS MATTERS</span>
+            </div>
+            <div class="callout-expanded">
+                <span class="ex-close"><i class="fas fa-times"></i></span>
+                <div class="ex-eyebrow">SO WHAT?</div>
+                <div class="ex-stat">93% of counties</div>
+                <div class="ex-text">faced at least one federally declared climate disaster between 2011–2024 — climate risk is no longer a regional story.</div>
+                <div class="ex-source">FEMA / iParametric · <a href="#">Methodology</a></div>
+            </div>
+        </div>
+        <div class="caption">
+            <b>Quietest.</b> Badge on the legend invites a click; expands a callout above. Keeps map clean by default.
+            <div class="pros-cons">
+                <div class="pros">Doesn't crowd; opt-in for users who want depth</div>
+                <div class="cons">Discoverability — most users won't click; weakens the "so what?" point</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- E — Floating insight card -->
+    <div class="tile">
+        <h3><span class="tile-letter">E</span>Floating insight card (top-right)</h3>
+        <div class="stage">
+            <div class="legend">
+                <div class="legend-title"># of Major Disaster Declarations</div>
+                <div class="color-bar lens-disaster"></div>
+                <div class="color-description">
+                    <span>0</span><span>2</span><span>4</span><span>6</span><span>8</span><span>10</span><span>12+</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-rectangle"></div>
+                    <span><b>Congressional Districts</b></span>
+                </div>
+            </div>
+            <div class="callout-floating">
+                <span class="fl-close"><i class="fas fa-times"></i></span>
+                <div class="fl-eyebrow"><i class="fas fa-bullseye"></i> KEY FINDING</div>
+                <div class="fl-stat">93%</div>
+                <div class="fl-text">of U.S. counties faced at least one federally declared climate disaster between 2011–2024.</div>
+                <div class="fl-cta">
+                    <a href="#">Methodology</a>
+                    <a href="#">Share finding</a>
+                </div>
+            </div>
+        </div>
+        <div class="caption">
+            <b>Marketing-feeling.</b> Top-right card with CTAs (Share, Methodology). Sells the finding.
+            <div class="pros-cons">
+                <div class="pros">Made for sharing — funders &amp; press can lift the stat</div>
+                <div class="cons">Collides w/ the address search box (top-right); needs reflow</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- F — Legend-header band -->
+    <div class="tile">
+        <h3><span class="tile-letter">F</span>Legend header band</h3>
+        <div class="stage">
+            <div class="legend with-header">
+                <div class="legend-header">
+                    <div class="lh-eyebrow">WHAT THIS MAP SHOWS</div>
+                    <div class="lh-stat">93% of U.S. counties faced ≥1 climate disaster, 2011–2024</div>
+                </div>
+                <div class="legend-title"># of Major Disaster Declarations</div>
+                <div class="color-bar lens-disaster"></div>
+                <div class="color-description">
+                    <span>0</span><span>2</span><span>4</span><span>6</span><span>8</span><span>10</span><span>12+</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-rectangle"></div>
+                    <span><b>Congressional Districts</b></span>
+                </div>
+            </div>
+        </div>
+        <div class="caption">
+            <b>One unit.</b> The "so what?" sits as a colored header on top of the legend, treating finding + encoding as one component.
+            <div class="pros-cons">
+                <div class="pros">Bundles takeaway with the legend — never separated</div>
+                <div class="cons">Vertical legend gets tall; copy must stay short (≤12 words)</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ========================================================= -->
+<!-- SECTION 2: Voice — one finding per lens                    -->
+<!-- ========================================================= -->
+<h2 class="section-title"><span class="pill">PASS 2</span>Voice — one finding per lens</h2>
+<p class="section-sub">
+    Holding placement constant (companion card, Variant B), here's how the "so what?" reads for each lens
+    using real numbers from <code>Atlas_FEMA_V2.geojson</code>. Voice draft: stat-led, plain language, sourced.
+    These are starting points — pick the ones that land and we'll sharpen.
+</p>
+
+<div class="voice-grid">
+
+    <!-- Disaster Declarations -->
+    <div class="voice-tile">
+        <div class="swatch-strip disaster"></div>
+        <div>
+            <h3>FEMA Disaster Declarations</h3>
+            <div class="voice-card disaster">
+                <div class="vc-eyebrow">SO WHAT?</div>
+                <div class="vc-stat">93% of counties</div>
+                <div class="vc-text">faced at least one federally declared climate disaster between 2011–2024. Over a quarter (27%) faced six or more.</div>
+                <div class="vc-source">FEMA / iParametric, 2011–2024 · 2,997 of 3,235 U.S. counties</div>
+            </div>
+            <p class="lens-note">
+                <b>Why this works:</b> the 93% number reframes climate risk as universal, not regional — that's the editorial through-line of the whole Atlas. The "27% had 6+" second clause prevents readers from dismissing the headline as just "everywhere got rained on once."
+            </p>
+        </div>
+    </div>
+
+    <!-- FEMA Funding -->
+    <div class="voice-tile">
+        <div class="swatch-strip fema"></div>
+        <div>
+            <h3>FEMA Disaster Funding</h3>
+            <div class="voice-card fema">
+                <div class="vc-eyebrow">SO WHAT?</div>
+                <div class="vc-stat">85¢ of every $1</div>
+                <div class="vc-text">in FEMA recovery funding (2011–2024) went to just the top 10% of counties. 11% of counties received nothing.</div>
+                <div class="vc-source">FEMA OpenFEMA · $48.1B obligated nationally · Public Assistance + Hazard Mitigation</div>
+            </div>
+            <p class="lens-note">
+                <b>Why this works:</b> turns the funding lens from "look at the map" into a concentration story. The 85% / top-10% framing is the kind of stat foundations cite verbatim.
+            </p>
+        </div>
+    </div>
+
+    <!-- SVI -->
+    <div class="voice-tile">
+        <div class="swatch-strip svi"></div>
+        <div>
+            <h3>Social Vulnerability (CDC SVI)</h3>
+            <div class="voice-card svi">
+                <div class="vc-eyebrow">SO WHAT?</div>
+                <div class="vc-stat">1.4× more disasters</div>
+                <div class="vc-text">hit the most-vulnerable U.S. counties (top quintile SVI) compared with the least-vulnerable — 4.9 vs 3.5 declarations on average.</div>
+                <div class="vc-source">CDC/ATSDR SVI 2022 · cross-tabbed with FEMA declarations 2011–2024</div>
+            </div>
+            <p class="lens-note">
+                <b>Caveat:</b> 1.4× is real but smaller than the audience may expect. Consider pairing with a sharper sub-cut (e.g. "of the 605 counties with both 25%+ older adults and 6+ disasters, X are top-quintile SVI") if a bigger gap exists in the data.
+            </p>
+        </div>
+    </div>
+
+    <!-- Energy -->
+    <div class="voice-tile">
+        <div class="swatch-strip energy"></div>
+        <div>
+            <h3>Energy Reliability (SAIDI)</h3>
+            <div class="voice-card energy">
+                <div class="vc-eyebrow">SO WHAT?</div>
+                <div class="vc-stat">99 hours</div>
+                <div class="vc-text">— over 4 days — without power per year in the hardest-hit U.S. county. The typical county loses 5.7 hours; the worst 10% lose 16+ hours.</div>
+                <div class="vc-source">EIA 2022 · SAIDI minutes / customer / year, average across serving utilities</div>
+            </div>
+            <p class="lens-note">
+                <b>Why this works:</b> turning "5,942 minutes" into "99 hours / 4 days" makes the magnitude legible. The progression (median → 90th-pct → worst) lets the reader place their own county in the distribution.
+            </p>
+        </div>
+    </div>
+
+    <!-- Urban -->
+    <div class="voice-tile">
+        <div class="swatch-strip urban"></div>
+        <div>
+            <h3>Urban Counties</h3>
+            <div class="voice-card urban">
+                <div class="vc-eyebrow">SO WHAT?</div>
+                <div class="vc-stat">$39.8B → 292M people</div>
+                <div class="vc-text">— 83% of all FEMA recovery dollars (2011–2024) flowed to the 31% of counties classified as Urban, where 88% of Americans live.</div>
+                <div class="vc-source">OMB urban/rural classification · FEMA OpenFEMA 2011–2024</div>
+            </div>
+            <p class="lens-note">
+                <b>Why this works:</b> sets up the rural comparison on the very next card. Urban headline says "the dollars track the population" — Rural headline reverses that.
+            </p>
+        </div>
+    </div>
+
+    <!-- Rural -->
+    <div class="voice-tile">
+        <div class="swatch-strip rural"></div>
+        <div>
+            <h3>Rural Counties</h3>
+            <div class="voice-card rural">
+                <div class="vc-eyebrow">SO WHAT?</div>
+                <div class="vc-stat">$209 vs $137 per person</div>
+                <div class="vc-text">Rural counties receive more FEMA recovery dollars <i>per capita</i> than urban ones — but the total pot is just $8.2B for 2,148 counties.</div>
+                <div class="vc-source">OMB urban/rural classification · FEMA per-capita derived from county populations</div>
+            </div>
+            <p class="lens-note">
+                <b>Counter-narrative:</b> this is the kind of stat that earns trust with skeptical journalists — it pushes back on the simplistic "rural gets shortchanged" frame while still surfacing the absolute-dollar gap.
+            </p>
+        </div>
+    </div>
+
+    <!-- Older Adults -->
+    <div class="voice-tile">
+        <div class="swatch-strip older"></div>
+        <div>
+            <h3>Older Adults 60+</h3>
+            <div class="voice-card older">
+                <div class="vc-eyebrow">SO WHAT?</div>
+                <div class="vc-stat">605 counties</div>
+                <div class="vc-text">have a 25%+ older-adult population <i>and</i> have faced six or more federally declared climate disasters since 2011 — home to millions of aging residents on the front line.</div>
+                <div class="vc-source">U.S. Census ACS · FEMA declarations 2011–2024 · Older Americans Act threshold (60+)</div>
+            </div>
+            <p class="lens-note">
+                <b>Why this works:</b> the bivariate "AND" is exactly what this lens visualizes. The finding mirrors the map's logic instead of fighting it.
+            </p>
+        </div>
+    </div>
+
+</div>
+
+<div class="footer-note">
+    <b>Recommendation:</b> ship <b>Variant B (companion card)</b> as the default placement. Its hierarchy
+    — eyebrow → stat → interpretation → source — maps to how funders, planners, and journalists read.
+    Variant F (legend header) is the strong runner-up if vertical space stays tight on mobile.
+    Variant E (floating card) is worth revisiting later if you add a "Share this finding" feature.
+    <br><br>
+    <b>Next pass to align on:</b> (1) where the finding text lives in <code>scripts.js</code> (extend
+    <code>lensConfig[lens].findingHTML</code> alongside <code>legendHTML</code>?), (2) whether each lens
+    has one default finding or a finding-set the user can cycle through, and (3) the source/citation link
+    target — methodology anchor on rebuildbydesign.org, or in-tool modal.
+</div>
+
+</body>
+</html>
