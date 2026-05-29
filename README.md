@@ -35,7 +35,7 @@ If your foundation, agency, or organization wants to use this data to inform fun
 | FEMA Disaster Declarations (climate events) | iParametric | 2011–2024 |
 | FEMA Obligations (Federal Share) | iParametric / FEMA OpenFEMA | 2011–2024 |
 | CDC Social Vulnerability Index | CDC/ATSDR | 2022 |
-| Energy Reliability (SAIDI minutes) | U.S. Energy Information Administration | 2022 |
+| Energy Reliability (SAIDI hours) | U.S. Energy Information Administration | 2023 |
 | Older adults (age 60+) | U.S. Census Bureau ACS | latest release |
 | County boundaries | ESRI | 2020 |
 | Congressional district boundaries | USDOT Bureau of Transportation Statistics | 2025 |

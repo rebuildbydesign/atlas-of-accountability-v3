@@ -257,7 +257,7 @@ map.on('load', function () {
             label: '# of Major Disaster Declarations',
             paintExpression: DISASTER_RAMP,
             legendHTML: `
-                <div class="legend-title"><b># of Major Disaster Declarations</b></div>
+                <div class="legend-title"><b>FEMA Disaster Declarations</b><br><span class="legend-mode-name">Number of disaster declarations</span></div>
                 <div class="color-bar lens-disaster">
                     <div class="color-description">
                         <span>0</span>
@@ -269,6 +269,7 @@ map.on('load', function () {
                         <span>12+</span>
                     </div>
                 </div>
+                <div class="legend-units">Federally declared major disasters for extreme weather events, 2011–2024. Excludes heat.</div>
             `
         },
 
@@ -290,7 +291,7 @@ map.on('load', function () {
                 100000000, '#9A4B02'      //  $100M+
             ],
             legendHTML: `
-                <div class="legend-title"><b>FEMA Disaster Funding</b></div>
+                <div class="legend-title"><b>FEMA Disaster Funding</b><br><span class="legend-mode-name">Total federal funding</span></div>
                 <div class="color-bar lens-fema">
                     <div class="color-description">
                         <span>$0</span>
@@ -301,7 +302,7 @@ map.on('load', function () {
                         <span>100M+</span>
                     </div>
                 </div>
-                <div class="legend-units">FEMA's federal share of disaster costs — Public Assistance + Hazard Mitigation Assistance, 2011–2024.</div>
+                <div class="legend-units">Federal grants for rebuilding public infrastructure and reducing future risk, 2011–2024. Excludes direct aid to individuals.</div>
             `
         },
 
@@ -324,7 +325,7 @@ map.on('load', function () {
                 '#C9C9C9'  // No SVI value available
             ],
             legendHTML: `
-                <div class="legend-title"><b>CDC Social Vulnerability Index (2022)</b></div>
+                <div class="legend-title"><b>Social Vulnerability</b><br><span class="legend-mode-name">Vulnerability score</span></div>
                 <div class="color-bar lens-svi">
                     <div class="color-description">
                         <span>0.0</span>
@@ -335,6 +336,7 @@ map.on('load', function () {
                         <span>1.0</span>
                     </div>
                 </div>
+                <div class="legend-units">How vulnerable a community is to disaster impacts, scored 0 to 1. Higher means more vulnerable. CDC SVI, 2022.</div>
                 <div class="legend-no-data">
                     <span class="no-data-swatch"></span>
                     <span>No data</span>
@@ -342,13 +344,16 @@ map.on('load', function () {
             `
         },
 
-        // Energy Reliability — SAIDI minutes (System Average Interruption
-        // Duration Index, EIA 2022). Higher = longer customer outages.
+        // Energy Reliability — SAIDI (System Average Interruption Duration
+        // Index, EIA 2023). Higher = longer customer outages. Raw data is
+        // stored in MINUTES on the feature (SAIDI_MIN_AVG / SAIDI_MIN_MAX),
+        // so paint thresholds stay in minutes; legend labels are converted
+        // to HOURS for readability (1 hr = 60 min).
         // This lens has TWO sub-modes:
         //   • avg → SAIDI_MIN_AVG (mean across utilities) — typical experience
         //   • max → SAIDI_MIN_MAX (worst utility per county) — plan-for-worst
-        // Bins (60/120/240/456) and colors are shared so the visual jump
-        // between modes encodes the disparity directly.
+        // Bins (60/120/240/456 min = 1/2/4/7.6 hrs) and colors are shared
+        // so the visual jump between modes encodes the disparity directly.
         energy: {
             label: 'Energy Reliability (2022)',
             defaultSubMode: 'avg',
@@ -374,14 +379,14 @@ map.on('load', function () {
                         <div class="color-bar lens-energy">
                             <div class="color-description">
                                 <span>0</span>
-                                <span>60</span>
-                                <span>120</span>
-                                <span>240</span>
-                                <span>456</span>
-                                <span>456+</span>
+                                <span>1</span>
+                                <span>2</span>
+                                <span>4</span>
+                                <span>7.6</span>
+                                <span>7.6+ hrs</span>
                             </div>
                         </div>
-                        <div class="legend-units">SAIDI minutes / yr — typical experience across utilities</div>
+                        <div class="legend-units">Average annual hours a customer is without power, across utilities serving the county. SAIDI, U.S. EIA, 2023.</div>
                         <div class="legend-no-data">
                             <span class="no-data-swatch energy"></span>
                             <span>No utility data</span>
@@ -414,14 +419,14 @@ map.on('load', function () {
                         <div class="color-bar lens-energy">
                             <div class="color-description">
                                 <span>0</span>
-                                <span>240</span>
-                                <span>600</span>
-                                <span>1.5K</span>
-                                <span>4K</span>
-                                <span>10.8K</span>
+                                <span>4</span>
+                                <span>10</span>
+                                <span>25</span>
+                                <span>67</span>
+                                <span>180 hrs</span>
                             </div>
                         </div>
-                        <div class="legend-units">SAIDI minutes / yr — worst utility serving the county</div>
+                        <div class="legend-units">Annual hours a customer is without power, from the worst-performing utility serving the county. SAIDI, U.S. EIA, 2023.</div>
                         <div class="legend-no-data">
                             <span class="no-data-swatch energy"></span>
                             <span>No utility data</span>
@@ -498,7 +503,7 @@ map.on('load', function () {
                         '#ECECEC'   // counties with <25% age 60+ (or null)
                     ],
                     legendHTML: `
-                        <div class="legend-title"><b>Older Adults 60+</b><br><span class="legend-mode-name">Older adults &amp; disaster declarations</span></div>
+                        <div class="legend-title"><b>Older Adults 60+</b><br><span class="legend-mode-name">Number of disaster declarations</span></div>
                         <div class="color-bar lens-older-disasters">
                             <div class="color-description">
                                 <span>0</span>
@@ -510,7 +515,7 @@ map.on('load', function () {
                                 <span>12+</span>
                             </div>
                         </div>
-                        <div class="legend-units">Counties where 25%+ are age 60+. 60+ is the federal Older Americans Act threshold (1965).</div>
+                        <div class="legend-units">Federal disaster declarations in counties where at least 25% of residents are age 60 or older, 2011–2024. Age threshold from the federal Older Americans Act.</div>
                         <div class="legend-no-data">
                             <span class="no-data-swatch" style="background:#ECECEC"></span>
                             <span>Counties with &lt;25% age 60+</span>
@@ -544,7 +549,7 @@ map.on('load', function () {
                 '#ECECEC'   // Rural counties (or unclassified)
             ],
             legendHTML: `
-                <div class="legend-title"><b>Urban Counties</b></div>
+                <div class="legend-title"><b>Urban Counties</b><br><span class="legend-mode-name">Number of disaster declarations</span></div>
                 <div class="color-bar lens-urban">
                     <div class="color-description">
                         <span>0</span>
@@ -556,7 +561,7 @@ map.on('load', function () {
                         <span>12+</span>
                     </div>
                 </div>
-                <div class="legend-units">Urban counties: population 50,000 or more.</div>
+                <div class="legend-units">Federal disaster declarations in urban counties (population 50,000 or more), 2011–2024.</div>
                 <div class="legend-no-data">
                     <span class="no-data-swatch" style="background:#ECECEC"></span>
                     <span>Rural counties</span>
@@ -588,7 +593,7 @@ map.on('load', function () {
                 '#ECECEC'   // Urban counties (or unclassified)
             ],
             legendHTML: `
-                <div class="legend-title"><b>Rural Counties</b></div>
+                <div class="legend-title"><b>Rural Counties</b><br><span class="legend-mode-name">Number of disaster declarations</span></div>
                 <div class="color-bar lens-rural">
                     <div class="color-description">
                         <span>0</span>
@@ -600,7 +605,7 @@ map.on('load', function () {
                         <span>12+</span>
                     </div>
                 </div>
-                <div class="legend-units">Rural counties: population under 50,000.</div>
+                <div class="legend-units">Federal disaster declarations in rural counties (population under 50,000), 2011–2024.</div>
                 <div class="legend-no-data">
                     <span class="no-data-swatch" style="background:#ECECEC"></span>
                     <span>Urban counties</span>
@@ -945,7 +950,9 @@ map.on('load', function () {
     }
     function fmtSAIDI(v) {
         if (typeof v !== 'number') return 'No data';
-        return Math.round(v).toLocaleString('en-US') + ' min';
+        var hrs = v / 60;
+        if (hrs < 10) return hrs.toFixed(1) + ' hrs';
+        return Math.round(hrs).toLocaleString('en-US') + ' hrs';
     }
     function fmtClass(v) {
         return (v === 'Urban' || v === 'Rural') ? v : '—';
@@ -976,7 +983,7 @@ map.on('load', function () {
         return s;
     }
     // Returns the active lens's headline value as a short string for
-    // the hover tooltip (e.g. "SVI: 0.34", "SAIDI avg: 568 min").
+    // the hover tooltip (e.g. "SVI: 0.34", "Energy outage (typical): 9.5 hrs").
     function activeLensSummary(props) {
         if (activeLens === 'disaster') {
             var d = props.COUNTY_DISASTER_COUNT;
