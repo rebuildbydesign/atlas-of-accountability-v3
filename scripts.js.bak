@@ -174,30 +174,6 @@ map.on('load', function () {
                     if (targetEl) targetEl.classList.add('active');
                 });
             });
-
-            // --- Collapsible indicator sections (e.g. tract themes / race) ---
-            // Delegated on popupContainer because the indicators table is
-            // re-rendered in place on lens switch (refreshIndicatorsIfPopupOpen),
-            // which would drop listeners attached to the rows themselves.
-            popupContainer.addEventListener('click', function (ev) {
-                // "Zoom in for census-tract detail" nudge → fly to tract zoom,
-                // centered on the popup's location, for users who clicked a
-                // county under the SVI lens at low zoom.
-                var zoomHint = ev.target.closest('.svi-zoom-hint');
-                if (zoomHint && popupContainer.contains(zoomHint)) {
-                    var ll = popup.getLngLat();
-                    if (ll) map.flyTo({ center: ll, zoom: Math.max(map.getZoom(), 6.5) });
-                    return;
-                }
-                var header = ev.target.closest('.indicator-collapsible');
-                if (!header || !popupContainer.contains(header)) return;
-                var group = header.getAttribute('data-group');
-                var nowOpen = header.getAttribute('aria-expanded') !== 'true';
-                header.setAttribute('aria-expanded', String(nowOpen));
-                popupContainer.querySelectorAll('.group-' + group).forEach(function (row) {
-                    row.classList.toggle('is-open', nowOpen);
-                });
-            });
         });
     }
 
@@ -349,7 +325,6 @@ map.on('load', function () {
                 '#C9C9C9'  // No SVI value available
             ],
             legendHTML: `
-                <div class="svi-scope-line" id="svi-scope-line"></div>
                 <div class="legend-title"><b>Social Vulnerability</b><br><span class="legend-mode-name">Vulnerability score</span></div>
                 <div class="color-bar lens-svi">
                     <div class="color-description">
@@ -362,7 +337,6 @@ map.on('load', function () {
                     </div>
                 </div>
                 <div class="legend-units">How vulnerable a community is to disaster impacts, scored 0 to 1. Higher means more vulnerable. CDC SVI, 2022.</div>
-                <div class="svi-scope-hint" id="svi-scope-hint"></div>
                 <div class="legend-no-data">
                     <span class="no-data-swatch"></span>
                     <span>No data</span>
@@ -652,91 +626,6 @@ map.on('load', function () {
         }
     }, 'state-label');
 
-    // -------------------------------------------------------------
-    // SVI CENSUS-TRACT LAYER — high-resolution overlay for the SVI lens.
-    // Vector tileset hosted on Mapbox (mapbox://j00by.83jd1t0zvuxe),
-    // built from CDC/ATSDR 2022 SVI joined to 2022 Census tract
-    // cartographic boundaries (cb_2022_us_tract_500k). 85,185 tracts
-    // nationwide, ~21 attributes per tract (overall + 4-theme SVI
-    // percentiles, total pop, % minority, % per racial/ethnic group).
-    //
-    // Hidden by default. When the user selects the SVI lens,
-    // applyActiveStyling() hides the county fill and shows these
-    // tract layers so vulnerability reads at neighborhood resolution.
-    // Tract clicks reuse the existing popup builder via the click
-    // handler below, with the parent county's FEMA + Congress data
-    // pulled in for comparison.
-    // -------------------------------------------------------------
-    const SVI_TRACT_RAMP = [
-        'case',
-        ['==', ['typeof', ['get', 'RPL_THEMES']], 'number'],
-        [
-            'step',
-            ['get', 'RPL_THEMES'],
-            '#C6F2ED',           //  0.0 – 0.2
-            0.2, '#79D9CF',      //  0.2 – 0.4
-            0.4, '#00B7A6',      //  0.4 – 0.6
-            0.6, '#009887',      //  0.6 – 0.8
-            0.8, '#007462'       //  0.8 – 1.0
-        ],
-        '#C9C9C9'  // No SVI value available (e.g. PR, low-pop tracts)
-    ];
-
-    map.addSource('svi-tracts', {
-        type: 'vector',
-        url: 'mapbox://j00by.83jd1t0zvuxe',
-        promoteId: 'GEOID'
-    });
-
-    // Zoom-interpolated crossfade between county SVI (low zoom) and tract
-    // SVI (high zoom). The tract tileset's published minzoom is 4 — tracts
-    // physically don't exist below that. We fade tracts IN from z4→5 and
-    // fade the county fill OUT across the same range (see applyActiveStyling).
-    // Net effect: SVI is visible at every zoom, with county-level overview
-    // when zoomed out and tract-level detail when zoomed in.
-    const TRACT_OPACITY_BY_ZOOM = [
-        'interpolate', ['linear'], ['zoom'],
-        4, 0,
-        5, 1
-    ];
-    const COUNTY_OPACITY_BY_ZOOM_SVI = [
-        'interpolate', ['linear'], ['zoom'],
-        4, 1,
-        5, 0
-    ];
-    // Zoom at which the legend flips its scope line from "County average"
-    // to "Census tracts". Sits inside the z4→z5 crossfade above, biased
-    // toward the point where tracts are the dominant (>50%) layer.
-    const SVI_TRACT_ZOOM_THRESHOLD = 4.6;
-
-    map.addLayer({
-        'id': 'svi-tracts-layer',
-        'type': 'fill',
-        'source': 'svi-tracts',
-        'source-layer': '0c0bc69de35e43c6b7cf',
-        'layout': { 'visibility': 'none' },
-        'paint': {
-            'fill-color': SVI_TRACT_RAMP,
-            'fill-opacity': TRACT_OPACITY_BY_ZOOM
-        }
-    }, 'state-label');
-
-    // White tract outlines, fading in at zoom 7+ so the choropleth
-    // reads as a single sheet at national zoom but tract definition
-    // appears as the user drills into a metro or neighborhood.
-    map.addLayer({
-        'id': 'svi-tracts-outline',
-        'type': 'line',
-        'source': 'svi-tracts',
-        'source-layer': '0c0bc69de35e43c6b7cf',
-        'layout': { 'visibility': 'none' },
-        'paint': {
-            'line-color': '#ffffff',
-            'line-opacity': ['interpolate', ['linear'], ['zoom'], 6, 0, 8, 0.4, 14, 0.7],
-            'line-width': ['interpolate', ['linear'], ['zoom'], 6, 0, 8, 0.2, 14, 0.6]
-        }
-    }, 'state-label');
-
     // Proportional-dots overlay for the Older Adults > "Where older adults
     // live" sub-mode. We fetch the geojson again (the browser caches the
     // first one Mapbox loaded) to compute centroids client-side, then add
@@ -746,23 +635,9 @@ map.on('load', function () {
     // default; toggled by `applyActiveStyling` when the dots sub-mode is
     // active. Added without a beforeId so it sits on top of all other
     // atlas layers including county borders.
-    // Lookup: county GEOID (5-digit FIPS) → full Atlas_FEMA county
-    // properties. Populated below from the same fetch the dots layer
-    // uses (browser caches the response, so this is free). Used by
-    // the SVI tract click path to hydrate the parent county's row
-    // (FEMA totals, county SVI for comparison, OMB class, population,
-    // and so on) without an extra round-trip.
-    var countyByGeoid = new Map();
-
     fetch('data/Atlas_FEMA_V2.geojson').then(function (r) { return r.json(); }).then(function (data) {
         const pointFeatures = [];
         for (const f of data.features) {
-            // Index every county once so the tract-click path can
-            // look up its parent by the first 5 chars of the tract
-            // GEOID (e.g. tract 06077005127 → county 06077).
-            if (f.properties && f.properties.GEOID) {
-                countyByGeoid.set(f.properties.GEOID, f.properties);
-            }
             const c = featureCentroid(f);
             if (!c) continue;
             pointFeatures.push({
@@ -886,7 +761,6 @@ map.on('load', function () {
         if (!spec) return;
 
         const isDots = spec.renderMode === 'dots';
-        const isTracts = activeLens === 'svi';  // SVI lens swaps to tract-level rendering
 
         if (isDots) {
             // The dots sub-mode paints the choropleth too — either a
@@ -896,7 +770,6 @@ map.on('load', function () {
             // urban counties under the dots.
             const base = spec.choroplethPaint || spec.choroplethColor || '#F4F1EA';
             map.setPaintProperty('atlas-fema-layer', 'fill-color', applyOMBFilter(base, activeOMBFilter));
-            map.setPaintProperty('atlas-fema-layer', 'fill-opacity', 1);
             if (map.getLayer('atlas-fema-dots-layer')) {
                 map.setLayoutProperty('atlas-fema-dots-layer', 'visibility', 'visible');
                 applyDotsFilter(activeOMBFilter);
@@ -904,62 +777,16 @@ map.on('load', function () {
         } else {
             const expr = applyOMBFilter(spec.paintExpression, activeOMBFilter);
             map.setPaintProperty('atlas-fema-layer', 'fill-color', expr);
-            // Under SVI lens: county fills the screen at z≤4 (where the
-            // tract tileset has no tiles), then fades out across z4→5
-            // as the tract layer fades in. Under every other lens the
-            // county fill stays fully opaque.
-            map.setPaintProperty('atlas-fema-layer', 'fill-opacity', isTracts ? COUNTY_OPACITY_BY_ZOOM_SVI : 1);
             if (map.getLayer('atlas-fema-dots-layer')) {
                 map.setLayoutProperty('atlas-fema-dots-layer', 'visibility', 'none');
             }
         }
 
-        // Toggle the tract layers in lockstep with the SVI lens.
-        // We keep atlas-fema-layer present (fill-opacity 0 above)
-        // rather than hiding it so the tract-click path can still
-        // queryRenderedFeatures the parent county for OMB class,
-        // FEMA dollars, etc.
-        if (map.getLayer('svi-tracts-layer')) {
-            map.setLayoutProperty('svi-tracts-layer', 'visibility', isTracts ? 'visible' : 'none');
-        }
-        if (map.getLayer('svi-tracts-outline')) {
-            map.setLayoutProperty('svi-tracts-outline', 'visibility', isTracts ? 'visible' : 'none');
-        }
-
         const legendBody = document.getElementById('legend-body');
         if (legendBody) legendBody.innerHTML = spec.legendHTML;
         updateFilterBadgeInLegend();
-        renderSviScope();
         refreshIndicatorsIfPopupOpen();
     }
-
-    // Under the SVI lens the visible choropleth silently switches from a
-    // county average (zoom < threshold) to census tracts (zoom ≥ threshold).
-    // This fills the legend's scope line + zoom nudge so the user always
-    // knows which resolution they're reading. No-op under other lenses
-    // (their legendHTML has no #svi-scope-line element).
-    function renderSviScope() {
-        const lineEl = document.getElementById('svi-scope-line');
-        if (!lineEl) return;  // not the SVI legend
-        const hintEl = document.getElementById('svi-scope-hint');
-        const isTractView = map.getZoom() >= SVI_TRACT_ZOOM_THRESHOLD;
-        if (isTractView) {
-            lineEl.innerHTML = '<span class="res-dot"></span>Viewing: Census tracts '
-                + '<span class="res-line-muted">(neighborhood)</span>';
-            if (hintEl) { hintEl.innerHTML = ''; hintEl.style.display = 'none'; }
-        } else {
-            lineEl.innerHTML = '<span class="res-dot"></span>Viewing: County average';
-            if (hintEl) {
-                hintEl.innerHTML = '<span class="svi-scope-hint-icon">&#128269;</span>'
-                    + 'Zoom in for census-tract (neighborhood) detail';
-                hintEl.style.display = '';
-            }
-        }
-    }
-
-    // Keep the SVI scope line in sync as the user zooms across the
-    // county↔tract threshold. renderSviScope() no-ops under other lenses.
-    map.on('zoom', renderSviScope);
 
     // Mirror the urban/rural filter into the dot layer so a "Rural only"
     // selection actually drops urban dots (otherwise the muted choropleth
@@ -997,7 +824,7 @@ map.on('load', function () {
         if (typeof popup === 'undefined' || !popup.isOpen()) return;
         if (!lastClickedFemaProps) return;
         const block = document.getElementById('indicators-block');
-        if (block) block.innerHTML = buildIndicatorsTable(lastClickedFemaProps, lastClickedTractProps);
+        if (block) block.innerHTML = buildIndicatorsTable(lastClickedFemaProps);
 
         // Sync the headline tint with whichever lens is driving it.
         const headline = document.getElementById('disaster-count-block');
@@ -1011,10 +838,7 @@ map.on('load', function () {
 
     // Track the most recently clicked county so we can rebuild the
     // indicators table on lens change without re-querying Mapbox.
-    // lastClickedTractProps is set only when the click landed on the
-    // tract layer (SVI lens active); otherwise null.
     var lastClickedFemaProps = null;
-    var lastClickedTractProps = null;
 
     // Append a small badge to the legend if a filter is active so the
     // user always sees what they're looking at. Inserted as a sibling
@@ -1277,7 +1101,7 @@ map.on('load', function () {
     //   - CDC Social Vulnerability Index
     //   - U.S. Energy Reliability (SAIDI)
     // Rows without a `key` are non-highlightable context (state stats).
-    function buildIndicatorsTable(p, tractProps) {
+    function buildIndicatorsTable(p) {
         // Combined federal assistance (FEMA + HUD CDBG-DR) at the state
         // level — surfaces the single number a funder is most likely to
         // quote. Falls back to 0 for either side if missing so a partial
@@ -1287,65 +1111,6 @@ map.on('load', function () {
         var stateCombinedFederal = (!isFinite(stateFema) && !isFinite(stateCdbg))
             ? '—'
             : fmtUSD((isFinite(stateFema) ? stateFema : 0) + (isFinite(stateCdbg) ? stateCdbg : 0));
-
-        // SVI subsection: county-only by default. When tractProps is
-        // passed (tract click under SVI lens) we replace the single
-        // county row with a tract-level breakdown — overall score,
-        // four theme percentiles, % minority + racial breakdown —
-        // and add a county-average comparison row at the bottom.
-        var sviRows;
-        if (tractProps) {
-            // Tract popups carry a lot of rows. Keep the headline (overall
-            // vulnerability) visible, but tuck the 4-theme breakdown and the
-            // 7-row race/ethnicity block behind click-to-expand headers so
-            // the popup reads at a glance. Rows tagged `group:'<id>'` are
-            // hidden until their matching `collapsible` header is clicked
-            // (toggled in finalizePopup via event delegation).
-            var pocSummary = tractProps.EP_MINRTY >= 50
-                ? 'Majority-minority — ' + fmtPctNum(tractProps.EP_MINRTY) + ' POC'
-                : fmtPctNum(tractProps.EP_MINRTY) + ' POC';
-            // Lead with a county→tract comparison pair so the user reads
-            // broad context first, then this specific tract against it —
-            // instead of the county number floating in a separate "For
-            // comparison" block at the bottom. The two rows share the SVI
-            // teal palette: county is the lighter context tint, the clicked
-            // tract is the stronger focus tint. Theme + race detail then
-            // collapses beneath.
-            sviRows = [
-                { subheader: 'CDC Social Vulnerability Index (2022)' },
-                { compare: 'county', label: (p.NAMELSAD || 'County'),               value: fmtSVIWithCategory(p['CDC SVI (2022)']) },
-                { compare: 'tract',  label: (tractProps.NAMELSAD || 'Census tract'), value: fmtSVIWithCategory(tractProps.RPL_THEMES) },
-                { collapsible: 'themes', label: 'Theme breakdown', count: 4 },
-                { group: 'themes', label: 'Socioeconomic theme',            value: fmtSVI(tractProps.RPL_THEME1) },
-                { group: 'themes', label: 'Household composition theme',    value: fmtSVI(tractProps.RPL_THEME2) },
-                { group: 'themes', label: 'Minority status theme',          value: fmtSVI(tractProps.RPL_THEME3) },
-                { group: 'themes', label: 'Housing & transportation theme', value: fmtSVI(tractProps.RPL_THEME4) },
-                { collapsible: 'race', label: 'Race & ethnicity', value: pocSummary },
-                { group: 'race', caption: tractProps.EP_MINRTY >= 50
-                    ? 'Majority-minority tract — ' + fmtPctNum(tractProps.EP_MINRTY) + ' people of color'
-                    : fmtPctNum(tractProps.EP_MINRTY) + ' people of color' },
-                { group: 'race', label: 'Black or African American',       value: fmtPctNum(tractProps.EP_AFAM) },
-                { group: 'race', label: 'Hispanic or Latino',              value: fmtPctNum(tractProps.EP_HISP) },
-                { group: 'race', label: 'Asian',                           value: fmtPctNum(tractProps.EP_ASIAN) },
-                { group: 'race', label: 'American Indian / Alaska Native', value: fmtPctNum(tractProps.EP_AIAN) },
-                { group: 'race', label: 'Native Hawaiian / Pacific Islander', value: fmtPctNum(tractProps.EP_NHPI) },
-                { group: 'race', label: 'Two or more races',               value: fmtPctNum(tractProps.EP_TWOMORE) },
-                { group: 'race', label: 'Other race',                      value: fmtPctNum(tractProps.EP_OTHERRACE) }
-            ];
-        } else {
-            sviRows = [
-                { subheader: 'CDC Social Vulnerability Index (2022)' },
-                { key: 'svi',  label: 'Vulnerability score', value: fmtSVIWithCategory(p['CDC SVI (2022)']) }
-            ];
-            // County popup under the SVI lens: this score is a county-wide
-            // average, and tract-level detail is one zoom away. Surface the
-            // same nudge the legend shows, in case the user missed it — and
-            // make it actionable (click flies the map to tract zoom). Only
-            // under the SVI lens, since tracts don't render in other lenses.
-            if (activeLens === 'svi') {
-                sviRows.push({ zoomHint: true });
-            }
-        }
 
         var rows = [
             { subheader: 'Federal Disaster Funding (2011–2024)' },
@@ -1358,8 +1123,11 @@ map.on('load', function () {
             { key: 'fema', label: 'State FEMA Total (PA+HM)',           value: fmtUSD(p.STATE_FEMA_TOTAL) },
             { key: 'fema', label: 'State CDBG Disaster Recovery',       value: fmtUSD(p.STATE_CDBG_TOTAL) },
             { key: 'fema', label: 'State Total Federal Assistance (FEMA + HUD)', value: stateCombinedFederal },
-            { key: 'fema', label: 'State Per Capita',                   value: fmtUSD(p.STATE_PER_CAPITA) }
-        ].concat(sviRows).concat([
+            { key: 'fema', label: 'State Per Capita',                   value: fmtUSD(p.STATE_PER_CAPITA) },
+
+            { subheader: 'CDC Social Vulnerability Index (2022)' },
+            { key: 'svi',  label: 'Vulnerability score', value: fmtSVIWithCategory(p['CDC SVI (2022)']) },
+
             { subheader: 'U.S. Energy Reliability (2022)' },
             { key: 'energy', label: 'Average outage',     value: fmtSAIDI(p.SAIDI_MIN_AVG) },
             { key: 'energy', label: 'Worst-case outage',  value: fmtSAIDI(p.SAIDI_MIN_MAX) },
@@ -1367,7 +1135,7 @@ map.on('load', function () {
             { subheader: 'Older Adults 60+' },
             { key: 'older', label: 'Older adults (60+)',
               value: fmtOlderPop(p) }
-        ]);
+        ];
         var html = '<table class="indicators-table">';
         // Collect any footnote entries; rendered below the table so they
         // act as a methodology caveat block rather than table rows.
@@ -1377,47 +1145,10 @@ map.on('load', function () {
                 html += '<tr class="indicator-subheader"><td colspan="2">' + r.subheader + '</td></tr>';
                 return;
             }
-            if (r.zoomHint) {
-                // Actionable "zoom to tract detail" nudge — mirrors the
-                // legend's orange hint. Clicking it flies the map in (wired
-                // in finalizePopup). Spans both columns.
-                html += '<tr class="svi-zoom-hint-row"><td colspan="2">'
-                      + '<button type="button" class="svi-zoom-hint">'
-                      +   '<span class="svi-zoom-hint-icon">&#128269;</span>'
-                      +   '<span>Zoom in for census-tract (neighborhood) detail</span>'
-                      +   '<span class="svi-zoom-hint-arrow">&rarr;</span>'
-                      + '</button></td></tr>';
-                return;
-            }
-            if (r.compare) {
-                // County-vs-tract comparison row. Always carries the SVI
-                // teal identity (independent of the active-lens highlight):
-                // compare-county = light context tint, compare-tract =
-                // stronger focus tint with the accent stripe.
-                html += '<tr class="indicator-compare compare-' + r.compare + '">'
-                      + '<td class="indicator-label">' + r.label + '</td>'
-                      + '<td class="indicator-value">' + r.value + '</td>'
-                      + '</tr>';
-                return;
-            }
-            if (r.collapsible) {
-                // Clickable header that shows/hides every row tagged
-                // group:'<id>'. Starts collapsed; finalizePopup wires the
-                // toggle. Optional `count` badge or teaser `value` gives a
-                // hint of what's inside without expanding.
-                var teaser = r.count ? '<span class="collapsible-count">(' + r.count + ')</span>'
-                    : (r.value ? '<span class="collapsible-teaser">' + r.value + '</span>' : '');
-                html += '<tr class="indicator-collapsible" data-group="' + r.collapsible + '" aria-expanded="false">'
-                      + '<td class="indicator-label"><span class="caret">&#9656;</span>' + r.label + '</td>'
-                      + '<td class="indicator-value">' + teaser + '</td>'
-                      + '</tr>';
-                return;
-            }
             if (r.caption) {
                 // Small italic methodology / explainer text. Sits under
                 // a subheader to define a term or scope before the rows.
-                var capGroupCls = r.group ? ' indicator-grouped group-' + r.group : '';
-                html += '<tr class="indicator-caption' + capGroupCls + '"><td colspan="2">' + r.caption + '</td></tr>';
+                html += '<tr class="indicator-caption"><td colspan="2">' + r.caption + '</td></tr>';
                 return;
             }
             if (r.footnote) {
@@ -1438,7 +1169,6 @@ map.on('load', function () {
                 }
             }
             var cls = isActive ? 'indicator-active lens-' + activeLens : '';
-            if (r.group) cls += (cls ? ' ' : '') + 'indicator-grouped group-' + r.group;
             html += '<tr class="' + cls + '">'
                   + '<td class="indicator-label">' + r.label + '</td>'
                   + '<td class="indicator-value">' + r.value + '</td>'
@@ -1455,16 +1185,10 @@ map.on('load', function () {
         return html;
     }
 
-    function buildPopupContent(femaFeature, congressFeature, tractFeature) {
+    function buildPopupContent(femaFeature, congressFeature) {
         var p = femaFeature;
         var c = congressFeature;
-        var t = tractFeature || null;
         var stateName = p.STATE_NAME;
-        // When a tract was clicked under the SVI lens, lead the popup
-        // header with the tract name and show "in {County}" underneath
-        // so the user knows which county's FEMA/Energy/Older-Adults
-        // context they're reading.
-        var headerTitle = t ? (t.NAMELSAD + ', ' + (t.NAMELSADCO || p.NAMELSAD)) : (p.NAMELSAD + ', ' + stateName);
         var countyName = p.NAMELSAD;
         var disasterCount = p.COUNTY_DISASTER_COUNT;
         var omb = fmtClass(p.OMB_CLASS);
@@ -1510,8 +1234,7 @@ map.on('load', function () {
             // ===== COUNTY DATA COLUMN =====
             +   '<div class="popup-column popup-col-disaster active">'
             +     '<div class="popup-county-header">'
-            +       '<h3>' + headerTitle + (t ? '' : '') + '</h3>'
-            +       (t ? '<div class="popup-tract-state">' + stateName + '</div>' : '')
+            +       '<h3>' + countyName + ', ' + stateName + '</h3>'
             +       subLine
             +     '</div>'
             +     '<div id="disaster-count-block" class="disaster-count' + (function () { var k = headlineLensKey(); return k ? ' lens-active lens-' + k : ''; })() + '">'
@@ -1519,7 +1242,7 @@ map.on('load', function () {
             +       '<div class="count-description">Federally Declared Extreme Weather Disasters (2011–2024)</div>'
             +     '</div>'
             +     '<div id="indicators-block" class="indicators-block">'
-            +       buildIndicatorsTable(p, t)
+            +       buildIndicatorsTable(p)
             +     '</div>'
             +   '</div>'
 
@@ -1635,44 +1358,16 @@ map.on('load', function () {
     popup.on('close', function () {
         document.body.classList.remove('popup-open');
         lastClickedFemaProps = null;
-        lastClickedTractProps = null;
     });
 
     // When a user clicks on the map, show a popup with information.
     // The HTML is built by buildPopupContent() so the click and geocoder
     // paths share one source of truth.
-    //
-    // Under the SVI lens the visible choropleth is the tract layer, so
-    // we query it first and look up the parent county from countyByGeoid
-    // (built from Atlas_FEMA_V2 on load). Under every other lens we keep
-    // the original county-click path.
     map.on('click', function (e) {
+        var femaFeatures = map.queryRenderedFeatures(e.point, { layers: ['atlas-fema-layer'] });
         var congressFeatures = map.queryRenderedFeatures(e.point, { layers: ['congress-layer'] });
 
-        var femaFeature = null;
-        var tractFeature = null;
-
-        if (activeLens === 'svi') {
-            var tractFeatures = map.queryRenderedFeatures(e.point, { layers: ['svi-tracts-layer'] });
-            if (tractFeatures.length) {
-                tractFeature = tractFeatures[0].properties;
-                // Parent county = first 5 chars of the 11-char tract GEOID.
-                var countyGeoid = (tractFeature.GEOID || '').slice(0, 5);
-                femaFeature = countyByGeoid.get(countyGeoid) || null;
-            }
-        }
-
-        // Fallback to the county layer if we're not on SVI, the tract
-        // click missed, or the parent county lookup failed (e.g. tract
-        // outside the FEMA coverage set).
-        if (!femaFeature) {
-            var femaFeatures = map.queryRenderedFeatures(e.point, { layers: ['atlas-fema-layer'] });
-            if (femaFeatures.length) {
-                femaFeature = femaFeatures[0].properties;
-            }
-        }
-
-        if (!femaFeature || !congressFeatures.length) {
+        if (!femaFeatures.length || !congressFeatures.length) {
             return;
         }
 
@@ -1681,10 +1376,10 @@ map.on('load', function () {
         hoverPopup.remove();
         autoHideHelpPanel();
 
+        var femaFeature = femaFeatures[0].properties;
         var congressFeature = congressFeatures[0].properties;
-        lastClickedFemaProps = femaFeature;     // for live indicator refresh
-        lastClickedTractProps = tractFeature;   // null on non-SVI clicks
-        var popupContent = buildPopupContent(femaFeature, congressFeature, tractFeature);
+        lastClickedFemaProps = femaFeature;  // for live indicator refresh
+        var popupContent = buildPopupContent(femaFeature, congressFeature);
         popup.setLngLat(e.lngLat).setHTML(popupContent).addTo(map);
         finalizePopup(e.lngLat);
     });
@@ -1700,46 +1395,6 @@ map.on('load', function () {
 
     map.on('mouseleave', 'atlas-fema-layer', function () {
         map.getCanvas().style.cursor = '';
-    });
-
-    // Mirror the cursor + hover affordances on the tract layer so SVI
-    // lens interactions feel identical to county-layer interactions.
-    map.on('mouseenter', 'svi-tracts-layer', function () {
-        map.getCanvas().style.cursor = 'pointer';
-    });
-
-    map.on('mouseleave', 'svi-tracts-layer', function () {
-        map.getCanvas().style.cursor = '';
-    });
-
-    // Hover tooltip on tracts — shows tract name, parent county, and
-    // overall SVI score. Mirrors the county hoverPopup but is only
-    // active under the SVI lens (the tract layer is hidden otherwise).
-    map.on('mousemove', 'svi-tracts-layer', function (e) {
-        if (popup.isOpen()) {
-            hoverPopup.remove();
-            return;
-        }
-        if (!e.features || !e.features.length) return;
-        var t = e.features[0].properties;
-        var tractName = t.NAMELSAD || 'Census tract';
-        var countyName = t.NAMELSADCO || '';
-        var stateName  = t.STATE_NAME || '';
-        var sub = countyName + (stateName ? ', ' + stateName : '');
-        var svi = (typeof t.RPL_THEMES === 'number') ? t.RPL_THEMES.toFixed(2) : '—';
-        var minorityNote = (typeof t.EP_MINRTY === 'number' && t.EP_MINRTY >= 50)
-            ? '<div class="hover-class">Majority-minority · ' + t.EP_MINRTY.toFixed(1) + '% POC</div>'
-            : '';
-        var html = ''
-            + '<div class="hover-county">' + tractName + '</div>'
-            + (sub ? '<div class="hover-summary">' + sub + '</div>' : '')
-            + '<div class="hover-summary">SVI: ' + svi + '</div>'
-            + minorityNote;
-        hoverPopup.setLngLat(e.lngLat).setHTML(html).addTo(map);
-    });
-
-    map.on('mouseleave', 'svi-tracts-layer', function () {
-        hoverPopup.remove();
     });
 
 
@@ -1814,43 +1469,23 @@ map.on('load', function () {
                 popup.remove();
             }
 
-            // Query features at the geographical coordinates.
-            // Same tract-first / county-fallback ordering as the click
-            // handler so an address search under the SVI lens lands the
-            // user in the tract popup rather than the parent county.
+            // Query features at the geographical coordinates
+            var femaFeatures = map.queryRenderedFeatures(map.project(lngLat), { layers: ['atlas-fema-layer'] });
             var congressFeatures = map.queryRenderedFeatures(map.project(lngLat), { layers: ['congress-layer'] });
-
-            var femaFeature = null;
-            var tractFeature = null;
-
-            if (activeLens === 'svi') {
-                var tractFeatures = map.queryRenderedFeatures(map.project(lngLat), { layers: ['svi-tracts-layer'] });
-                if (tractFeatures.length) {
-                    tractFeature = tractFeatures[0].properties;
-                    var countyGeoid = (tractFeature.GEOID || '').slice(0, 5);
-                    femaFeature = countyByGeoid.get(countyGeoid) || null;
-                }
-            }
-            if (!femaFeature) {
-                var femaFeatures = map.queryRenderedFeatures(map.project(lngLat), { layers: ['atlas-fema-layer'] });
-                if (femaFeatures.length) {
-                    femaFeature = femaFeatures[0].properties;
-                }
-            }
 
             // Check for general location match and handle appropriately.
             // Native alert() reads as amateurish to foundation-facing users;
             // we surface the message as a non-blocking toast under the
             // geocoder instead.
-            if (!femaFeature) {
+            if (femaFeatures.length === 0) {
                 showGeocoderToast('No detailed match found. Try a more specific address.');
                 return;
             }
 
+            var femaFeature = femaFeatures[0].properties;
             var congressFeature = congressFeatures[0].properties;
-            lastClickedFemaProps = femaFeature;     // for live indicator refresh
-            lastClickedTractProps = tractFeature;   // null on non-SVI lookups
-            var popupContent = buildPopupContent(femaFeature, congressFeature, tractFeature);
+            lastClickedFemaProps = femaFeature;  // for live indicator refresh
+            var popupContent = buildPopupContent(femaFeature, congressFeature);
 
             // Set new content and open the popup at the searched location
             popup.setLngLat(lngLat)

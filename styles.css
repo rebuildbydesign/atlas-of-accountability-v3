@@ -32,7 +32,7 @@ a:active {
     width: 100%;
 }
 
-/* ATLAS TITLE */
+/* ATLAS TITLE — live HTML/CSS wordmark (Option A: outlined refresh) */
 .css-atlas-title {
     position: absolute;
     top: 10px;
@@ -40,13 +40,50 @@ a:active {
     transform: translateX(-50%);
     z-index: 1000;
     pointer-events: none;
-    width: 80%;
-    max-width: 600px;
+    width: 92%;
+    max-width: 640px;
+    text-align: center;
 }
 
-.css-atlas-title img {
-    width: 95%;
-    height: auto;
+.css-atlas-title .atlas-word {
+    margin: 0;
+    /* RBD outline font — same family used by the county popup's state
+       name (.atlas-report-state). The "Outlined" glyphs are hollow by
+       design, so we fill them solid dark and let the font supply the
+       outline. NOTE: RBDBoldOutlined is NOT embedded in this project;
+       it only renders on machines that have it installed locally.
+       Everyone else falls back to Arial Black (solid, no outline).
+       To make the outline render for all visitors, embed the font via
+       @font-face (see note in the popup styles). */
+    font-family: 'RBDBoldOutlined', 'Arial Black', 'Arial Bold', Gadget, sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    /* keep the wordmark on a single line; size scales down on narrow screens */
+    white-space: nowrap;
+    font-size: clamp(18px, 4vw, 40px);
+    line-height: 0.92;
+    letter-spacing: 0.01em;
+    color: #1a1a1a;
+    /* RBDBoldOutlined is a single-weight font, so font-weight has no
+       visible effect — thicken the glyph edges with a stroke instead
+       to make the wordmark read heavier. Bump the px value for bolder. */
+    -webkit-text-stroke: 1.3px #1a1a1a;
+    text-stroke: 1.3px #1a1a1a;
+}
+
+.css-atlas-title .atlas-sub {
+    display: inline-block;
+    margin-top: 8px;
+    background: #de2d26;
+    color: #fff;
+    font-family: 'Poppins', Arial, sans-serif;
+    font-weight: 600;
+    font-size: clamp(8.5px, 1.45vw, 12.5px);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1.25;
+    padding: 5px 12px;
+    border-radius: 3px;
 }
 
 /* DATA LENS LEGEND — body content swaps based on active lens */
@@ -69,6 +106,48 @@ a:active {
 
 .legend-title {
     margin-bottom: 4px;
+}
+
+/* SVI lens resolution indicator — a zoom-aware line above the legend
+   title telling the user whether they're viewing the county average or
+   census tracts, plus an orange nudge to zoom in for tract detail.
+   Populated by renderSviScope() in scripts.js. */
+.svi-scope-line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    font-weight: bold;
+    color: #00695f;
+    margin-bottom: 6px;
+}
+.svi-scope-line:empty {
+    display: none;
+}
+.svi-scope-line .res-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #00B7A6;
+    flex: none;
+}
+.svi-scope-line .res-line-muted {
+    font-weight: normal;
+    color: #777;
+}
+.svi-scope-hint {
+    font-size: 10.5px;
+    color: #c2410c;
+    margin-top: 7px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: #fff3eb;
+    border-left: 3px solid #FF6B35;
+    padding: 4px 7px;
+}
+.svi-scope-hint:empty {
+    display: none;
 }
 
 /* Sub-mode subtitle under a lens title (e.g. "Average outage" /
@@ -203,6 +282,119 @@ a:active {
     line-height: 1.35;
     color: #666;
     border-bottom: 1px solid #eee;
+}
+
+/* County → tract comparison pair at the top of the tract SVI section.
+   Both rows live in the SVI teal palette; intensity sets the hierarchy.
+   County = lighter context tint, tract = stronger focus tint + accent
+   stripe (mirrors the active-row stripe used elsewhere). */
+.indicators-table tr.indicator-compare td {
+    border-bottom: 1px solid #eee;
+}
+.indicators-table tr.compare-county td {
+    background: #E3F6F2;
+}
+.indicators-table tr.compare-county .indicator-label,
+.indicators-table tr.compare-county .indicator-value {
+    color: #2b6a62;
+}
+.indicators-table tr.compare-tract {
+    box-shadow: inset 3px 0 0 #00B7A6;
+}
+.indicators-table tr.compare-tract td {
+    background: #C6F2ED;
+}
+.indicators-table tr.compare-tract .indicator-label,
+.indicators-table tr.compare-tract .indicator-value {
+    color: #00463c;
+    font-weight: bold;
+}
+
+/* "Zoom in for census-tract detail" nudge in the county popup's SVI
+   section — mirrors the legend's orange hint and is clickable (flies the
+   map to tract zoom). Spans both table columns. */
+.indicators-table tr.svi-zoom-hint-row td {
+    padding: 8px 6px 4px;
+    border-bottom: 1px solid #eee;
+}
+.svi-zoom-hint {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+    font-size: 11px;
+    color: #c2410c;
+    background: #fff3eb;
+    border: none;
+    border-left: 3px solid #FF6B35;
+    padding: 6px 8px;
+    cursor: pointer;
+}
+.svi-zoom-hint:hover {
+    background: #ffe7d6;
+}
+.svi-zoom-hint-arrow {
+    margin-left: auto;
+    font-weight: bold;
+}
+
+/* Collapsible section header inside the indicators table (e.g. the tract
+   popup's "Theme breakdown" and "Race & ethnicity"). Click to expand the
+   rows tagged group-<id>. Reads as a tappable row in the SVI teal family:
+   caret + label, with an optional count/teaser on the right. */
+.indicators-table tr.indicator-collapsible {
+    cursor: pointer;
+}
+.indicators-table tr.indicator-collapsible td {
+    padding: 7px 6px;
+    border-bottom: 1px solid #d7efe9;
+    background: #EAF8F5;
+}
+.indicators-table tr.indicator-collapsible:hover td {
+    background: #D4F1EB;
+}
+.indicators-table tr.indicator-collapsible .indicator-label {
+    font-weight: bold;
+    color: #00574c;
+}
+.indicators-table tr.indicator-collapsible .caret {
+    display: inline-block;
+    margin-right: 6px;
+    font-size: 9px;
+    color: #00B7A6;
+    transition: transform 0.15s ease;
+    transform: translateY(-1px);
+}
+.indicators-table tr.indicator-collapsible[aria-expanded="true"] .caret {
+    transform: translateY(-1px) rotate(90deg);
+}
+.collapsible-count,
+.collapsible-teaser {
+    font-weight: normal;
+    color: #4a8c82;
+    font-size: 11px;
+}
+
+/* Rows belonging to a collapsible group: hidden until .is-open is added
+   by the toggle handler. When open they read as nested detail — a faint
+   teal tint + left indent so they clearly belong to the header above. */
+.indicators-table tr.indicator-grouped {
+    display: none;
+}
+.indicators-table tr.indicator-grouped.is-open {
+    display: table-row;
+}
+.indicators-table tr.indicator-grouped td {
+    background: #F4FBFA;
+}
+.indicators-table tr.indicator-grouped .indicator-label {
+    padding-left: 18px;
+}
+.indicators-table tr.indicator-grouped.indicator-caption td {
+    padding-left: 18px;
+    color: #4a8c82;
 }
 
 /* Footnotes rendered BELOW the indicators table — methodology caveats
@@ -725,6 +917,14 @@ a:active {
     font-size: 16px;
     border-bottom: 2px solid #000;
     color: #000;
+}
+/* Small subtitle under the tract name (state) in the SVI tract popup,
+   matching the muted weight of the population text in the sub-line. */
+.popup-tract-state {
+    font-size: 0.85em;
+    color: #555;
+    margin: -2px 0 6px;
+    font-weight: 500;
 }
 .popup-county-sub {
     display: flex;
