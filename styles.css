@@ -137,13 +137,13 @@ a:active {
 }
 .svi-scope-hint {
     font-size: 10.5px;
-    color: #c2410c;
+    color: #8a6a00;
     margin-top: 7px;
     display: flex;
     align-items: center;
     gap: 5px;
-    background: #fff3eb;
-    border-left: 3px solid #FF6B35;
+    background: #fdf3d0;
+    border-left: 3px solid #F4C842;
     padding: 4px 7px;
 }
 .svi-scope-hint:empty {
@@ -213,6 +213,26 @@ a:active {
     margin-top: 2px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+}
+/* Communities of Color lens — race breakdown rows inside the hover
+   tooltip, so the full detail is readable without opening the popup or
+   dropping to the tract layer. */
+.aoa-hover-popup .hover-race {
+    margin-top: 5px;
+    padding-top: 4px;
+    border-top: 1px solid #eee;
+}
+.aoa-hover-popup .hover-race-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    font-size: 11px;
+    line-height: 1.55;
+    color: #444;
+}
+.aoa-hover-popup .hover-race-row span:last-child {
+    font-weight: bold;
+    color: #7a0177;
 }
 
 
@@ -325,15 +345,15 @@ a:active {
     text-align: left;
     font-family: inherit;
     font-size: 11px;
-    color: #c2410c;
-    background: #fff3eb;
+    color: #8a6a00;
+    background: #fdf3d0;
     border: none;
-    border-left: 3px solid #FF6B35;
+    border-left: 3px solid #F4C842;
     padding: 6px 8px;
     cursor: pointer;
 }
 .svi-zoom-hint:hover {
-    background: #ffe7d6;
+    background: #fbeab0;
 }
 .svi-zoom-hint-arrow {
     margin-left: auto;
@@ -397,6 +417,46 @@ a:active {
     color: #4a8c82;
 }
 
+/* Communities of Color county section. The COC block appears at the bottom
+   of every county popup, so by default its collapsible header + nested rows
+   are NEUTRAL grey (overriding the generic teal collapsible style above).
+   They only take on the pink lens family when the Communities of Color lens
+   is the active lens — keyed off the `lens-minority` class on the table. */
+.indicators-table tr.indicator-collapsible.collapsible-coc td {
+    background: #f4f4f4;
+    border-bottom-color: #e6e6e6;
+}
+.indicators-table tr.indicator-collapsible.collapsible-coc:hover td {
+    background: #ececec;
+}
+.indicators-table tr.indicator-collapsible.collapsible-coc .indicator-label {
+    color: #444;
+}
+.indicators-table tr.indicator-collapsible.collapsible-coc .caret {
+    color: #888;
+}
+.indicators-table tr.indicator-grouped.group-countyrace td {
+    background: #fafafa;
+}
+
+/* Active state — Communities of Color lens selected → pink family. */
+.indicators-table.lens-minority tr.indicator-collapsible.collapsible-coc td {
+    background: #ffe3f2;
+    border-bottom-color: #ffb8db;
+}
+.indicators-table.lens-minority tr.indicator-collapsible.collapsible-coc:hover td {
+    background: #ffd6ec;
+}
+.indicators-table.lens-minority tr.indicator-collapsible.collapsible-coc .indicator-label {
+    color: #7a0177;
+}
+.indicators-table.lens-minority tr.indicator-collapsible.collapsible-coc .caret {
+    color: #ae017e;
+}
+.indicators-table.lens-minority tr.indicator-grouped.group-countyrace td {
+    background: #fff5fa;
+}
+
 /* Footnotes rendered BELOW the indicators table — methodology caveats
    that explain marked terms (e.g. *NRI threshold). Small, italic, gray. */
 .indicators-footnotes {
@@ -432,6 +492,10 @@ a:active {
 .indicators-table tr.indicator-active.lens-older {
     background: #edf8fb;
     box-shadow: inset 3px 0 0 #005824;
+}
+.indicators-table tr.indicator-active.lens-minority {
+    background: #ffd6ec;
+    box-shadow: inset 3px 0 0 #7a0177;
 }
 
 .color-bar {
@@ -476,6 +540,13 @@ a:active {
    Vulnerability (which leans teal/green-blue). */
 .color-bar.lens-rural {
     background: linear-gradient(to right, #eff3ff, #c6dbef, #9ecae1, #6baed6, #4292c6, #2171b5, #084594);
+}
+/* Communities of Color — smooth 7-stop magenta/pink spectrum, matching
+   the FEMA Disaster Declarations lens visual style. Painted only on
+   majority-minority counties (50%+ people of color); everywhere else is
+   muted gray. Distinct from urban (purple), rural (blue), older (green). */
+.color-bar.lens-minority {
+    background: linear-gradient(to right, #fde0dd, #fcc5c0, #fa9fb5, #f768a1, #dd3497, #ae017e, #7a0177);
 }
 
 /* Proportional-dots legend for the Older Adults > "Where older adults
@@ -1230,6 +1301,11 @@ a:active {
 .disaster-count.lens-active.lens-rural {
     background: #eff3ff;
     box-shadow: inset 3px 0 0 #084594;
+}
+/* Communities of Color — pink tint on the headline. */
+.disaster-count.lens-active.lens-minority {
+    background: #ffd6ec;
+    box-shadow: inset 3px 0 0 #7a0177;
 }
 
 .namelsad {

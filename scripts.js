@@ -77,6 +77,51 @@ map.on('load', function () {
     // rendered height and panning the map so the whole popup fits, and wire up the
     // mobile tab switcher. Also toggles a body class to let CSS hide the legend/info
     // panel while the bottom-sheet popup is open on mobile.
+    // Desktop: pan the map so the whole popup sits within the viewport
+    // (with a margin). If the popup is taller/wider than the viewport it
+    // aligns to the top/left so the county name reads first; the popup's
+    // own max-height + overflow-y:auto then provides an internal scrollbar.
+    // Re-runnable — called on open AND after a collapsible section expands,
+    // so the user never has to pan the map by hand to chase a grown popup.
+    function fitPopupDesktopIntoView() {
+        if (isMobile()) return;
+        var popupEl = document.querySelector('.mapboxgl-popup');
+        if (!popupEl) return;
+        var mapRect = map.getContainer().getBoundingClientRect();
+        var popupRect = popupEl.getBoundingClientRect();
+        var MARGIN = 16;
+
+        var targetTop;
+        if (popupRect.height + 2 * MARGIN >= mapRect.height) {
+            targetTop = mapRect.top + MARGIN;
+        } else if (popupRect.top < mapRect.top + MARGIN) {
+            targetTop = mapRect.top + MARGIN;
+        } else if (popupRect.bottom > mapRect.bottom - MARGIN) {
+            targetTop = mapRect.bottom - MARGIN - popupRect.height;
+        } else {
+            targetTop = popupRect.top;
+        }
+
+        var targetLeft;
+        if (popupRect.width + 2 * MARGIN >= mapRect.width) {
+            targetLeft = mapRect.left + MARGIN;
+        } else if (popupRect.left < mapRect.left + MARGIN) {
+            targetLeft = mapRect.left + MARGIN;
+        } else if (popupRect.right > mapRect.right - MARGIN) {
+            targetLeft = mapRect.right - MARGIN - popupRect.width;
+        } else {
+            targetLeft = popupRect.left;
+        }
+
+        // Panning the MAP by [a, b] shifts the popup by [-a, -b] on screen,
+        // so to shift the popup by [pdx, pdy] we pan the map by [-pdx, -pdy].
+        var pdx = targetLeft - popupRect.left;
+        var pdy = targetTop  - popupRect.top;
+        if (pdx !== 0 || pdy !== 0) {
+            map.panBy([-pdx, -pdy], { duration: 350 });
+        }
+    }
+
     function finalizePopup(lngLat) {
         document.body.classList.add('popup-open');
 
@@ -117,48 +162,7 @@ map.on('load', function () {
 
             // --- Desktop: pan the map so the popup is fully in view ---
             if (!isMobile() && popupEl) {
-                var mapRect = map.getContainer().getBoundingClientRect();
-                var popupRect = popupEl.getBoundingClientRect();
-                var MARGIN = 16;
-
-                // Figure out where we want the popup's top-left to end up on screen.
-                // Rules:
-                //   - if popup is taller/wider than viewport (minus margins), align to
-                //     the top/left so the county name + data are visible first.
-                //   - else if overflowing one side, pull that side in by the overflow.
-                //   - else leave it where it is.
-                var targetTop;
-                if (popupRect.height + 2 * MARGIN >= mapRect.height) {
-                    targetTop = mapRect.top + MARGIN;
-                } else if (popupRect.top < mapRect.top + MARGIN) {
-                    targetTop = mapRect.top + MARGIN;
-                } else if (popupRect.bottom > mapRect.bottom - MARGIN) {
-                    targetTop = mapRect.bottom - MARGIN - popupRect.height;
-                } else {
-                    targetTop = popupRect.top;
-                }
-
-                var targetLeft;
-                if (popupRect.width + 2 * MARGIN >= mapRect.width) {
-                    targetLeft = mapRect.left + MARGIN;
-                } else if (popupRect.left < mapRect.left + MARGIN) {
-                    targetLeft = mapRect.left + MARGIN;
-                } else if (popupRect.right > mapRect.right - MARGIN) {
-                    targetLeft = mapRect.right - MARGIN - popupRect.width;
-                } else {
-                    targetLeft = popupRect.left;
-                }
-
-                // How far we want the popup to shift on screen.
-                var pdx = targetLeft - popupRect.left;
-                var pdy = targetTop  - popupRect.top;
-
-                // Panning the MAP by [a, b] shifts world content (and the popup with it)
-                // by [-a, -b] on screen, so to shift the popup by [pdx, pdy] we pan
-                // the map by [-pdx, -pdy].
-                if (pdx !== 0 || pdy !== 0) {
-                    map.panBy([-pdx, -pdy], { duration: 350 });
-                }
+                fitPopupDesktopIntoView();
             }
 
             // --- Tab switcher (only visible on mobile but harmless to attach always) ---
@@ -197,6 +201,10 @@ map.on('load', function () {
                 popupContainer.querySelectorAll('.group-' + group).forEach(function (row) {
                     row.classList.toggle('is-open', nowOpen);
                 });
+                // Expanding/collapsing changes the popup height — re-fit so a
+                // grown popup is brought back into view (and scrolls inside)
+                // instead of forcing the user to pan the map.
+                requestAnimationFrame(fitPopupDesktopIntoView);
             });
         });
     }
@@ -637,6 +645,54 @@ map.on('load', function () {
                     <span>Urban counties</span>
                 </div>
             `
+        },
+
+        // Communities of Color — same "Who's Affected" pattern as Older
+        // Adults: filter to majority-minority counties (50%+ people of
+        // color), then step on COUNTY_DISASTER_COUNT through the shared
+        // 7-bin scheme (0/1/3/5/7/10/12). Palette: magenta/pink — distinct
+        // from urban (purple), rural (blue), older (green), and not a
+        // party color. % minority comes from CDC SVI 2022 county data
+        // joined into Atlas_FEMA (COUNTY_PCT_MINORITY); the county popup +
+        // hover surface the full race breakdown so users don't need the
+        // tract layer.
+        minority: {
+            label: 'Communities of Color',
+            paintExpression: [
+                'case',
+                ['>=', ['to-number', ['coalesce', ['get', 'COUNTY_PCT_MINORITY'], -1]], 50],
+                [
+                    'step',
+                    ['to-number', ['coalesce', ['get', 'COUNTY_DISASTER_COUNT'], 0]],
+                    '#fde0dd',         //  0
+                    1,  '#fcc5c0',     //  1–2
+                    3,  '#fa9fb5',     //  3–4
+                    5,  '#f768a1',     //  5–6
+                    7,  '#dd3497',     //  7–9
+                    10, '#ae017e',     //  10–11
+                    12, '#7a0177'      //  12+
+                ],
+                '#ECECEC'   // counties under 50% people of color (or no data)
+            ],
+            legendHTML: `
+                <div class="legend-title"><b>Communities of Color</b><br><span class="legend-mode-name">Number of disaster declarations</span></div>
+                <div class="color-bar lens-minority">
+                    <div class="color-description">
+                        <span>0</span>
+                        <span>2</span>
+                        <span>4</span>
+                        <span>6</span>
+                        <span>8</span>
+                        <span>10</span>
+                        <span>12+</span>
+                    </div>
+                </div>
+                <div class="legend-units">Federal disaster declarations in majority-minority counties — where at least 50% of residents are people of color. CDC SVI, 2022.</div>
+                <div class="legend-no-data">
+                    <span class="no-data-swatch" style="background:#ECECEC"></span>
+                    <span>Counties under 50% people of color</span>
+                </div>
+            `
         }
     };
 
@@ -944,14 +1000,13 @@ map.on('load', function () {
         const hintEl = document.getElementById('svi-scope-hint');
         const isTractView = map.getZoom() >= SVI_TRACT_ZOOM_THRESHOLD;
         if (isTractView) {
-            lineEl.innerHTML = '<span class="res-dot"></span>Viewing: Census tracts '
-                + '<span class="res-line-muted">(neighborhood)</span>';
+            lineEl.innerHTML = '<span class="res-dot"></span>Viewing: Census tracts';
             if (hintEl) { hintEl.innerHTML = ''; hintEl.style.display = 'none'; }
         } else {
             lineEl.innerHTML = '<span class="res-dot"></span>Viewing: County average';
             if (hintEl) {
                 hintEl.innerHTML = '<span class="svi-scope-hint-icon">&#128269;</span>'
-                    + 'Zoom in for census-tract (neighborhood) detail';
+                    + 'Zoom in for census-tract detail';
                 hintEl.style.display = '';
             }
         }
@@ -984,6 +1039,7 @@ map.on('load', function () {
         if (activeLens === 'older' && activeSubModes.older === 'disastersFaced') return 'older';
         if (activeLens === 'urban') return 'urban';
         if (activeLens === 'rural') return 'rural';
+        if (activeLens === 'minority') return 'minority';
         return null;
     }
 
@@ -1158,6 +1214,31 @@ map.on('load', function () {
         if (typeof pct === 'number') s += ' (' + pct.toFixed(1) + '%)';
         return s;
     }
+    // County race/ethnicity breakdown for the Communities of Color lens.
+    // Reads the COUNTY_PCT_* fields joined from CDC SVI 2022 county data
+    // (see tools/join_county_race.py) and returns the present groups,
+    // sorted high→low, so both the hover tooltip and the popup can render
+    // the full breakdown without dropping to the tract layer. Labels match
+    // the tract popup's race rows for consistency.
+    var COUNTY_RACE_FIELDS = [
+        ['COUNTY_PCT_AFAM',      'Black or African American'],
+        ['COUNTY_PCT_HISP',      'Hispanic or Latino'],
+        ['COUNTY_PCT_ASIAN',     'Asian'],
+        ['COUNTY_PCT_AIAN',      'American Indian / Alaska Native'],
+        ['COUNTY_PCT_NHPI',      'Native Hawaiian / Pacific Islander'],
+        ['COUNTY_PCT_TWOMORE',   'Two or more races'],
+        ['COUNTY_PCT_OTHERRACE', 'Other race']
+    ];
+    function countyRaceList(props) {
+        var out = [];
+        COUNTY_RACE_FIELDS.forEach(function (f) {
+            var v = Number(props[f[0]]);
+            if (isFinite(v) && v > 0) out.push({ label: f[1], pct: v });
+        });
+        out.sort(function (a, b) { return b.pct - a.pct; });
+        return out;
+    }
+
     // Returns the active lens's headline value as a short string for
     // the hover tooltip (e.g. "SVI: 0.34", "Energy outage (typical): 9.5 hrs").
     function activeLensSummary(props) {
@@ -1204,6 +1285,13 @@ map.on('load', function () {
             if (cls !== target) return cls + ' county · not in this lens';
             return d2 + ' disasters · ' + cls + ' county';
         }
+        if (activeLens === 'minority') {
+            var minPct = Number(props.COUNTY_PCT_MINORITY);
+            var d3 = Number(props.COUNTY_DISASTER_COUNT) || 0;
+            if (!isFinite(minPct)) return 'No race data';
+            if (minPct < 50) return minPct.toFixed(1) + '% people of color · not in filter';
+            return d3 + ' disasters · ' + minPct.toFixed(1) + '% people of color';
+        }
         return '';
     }
 
@@ -1234,6 +1322,26 @@ map.on('load', function () {
         var county = p.NAMELSAD || 'Unknown county';
         var state  = p.STATE_NAME || '';
         var omb    = fmtClass(p.OMB_CLASS);
+
+        // Communities of Color lens: lead with the % POC headline and show
+        // the full race breakdown right in the tooltip so users get the
+        // detail without dropping to the SVI/tract layer.
+        if (activeLens === 'minority') {
+            var races = countyRaceList(p);
+            var raceHTML = races.length
+                ? '<div class="hover-race">' + races.map(function (r) {
+                      return '<div class="hover-race-row"><span>' + r.label + '</span>'
+                           + '<span>' + r.pct.toFixed(1) + '%</span></div>';
+                  }).join('') + '</div>'
+                : '';
+            var minHTML = ''
+                + '<div class="hover-county">' + county + (state ? ', ' + state : '') + '</div>'
+                + '<div class="hover-summary">' + activeLensSummary(p) + '</div>'
+                + raceHTML;
+            hoverPopup.setLngLat(e.lngLat).setHTML(minHTML).addTo(map);
+            return;
+        }
+
         var summary = activeLensSummary(p);
         var html = ''
             + '<div class="hover-county">' + county + (state ? ', ' + state : '') + '</div>'
@@ -1347,6 +1455,30 @@ map.on('load', function () {
             }
         }
 
+        // Communities of Color — appended last so it sits at the very bottom
+        // of EVERY county popup, regardless of the active lens. The % POC
+        // headline stays visible; the 7-row breakdown collapses under a
+        // click-to-expand header. The headline row carries key='minority' so
+        // it only lights up when the Communities of Color lens is active.
+        // Skipped for the tract popup (which has its own race section) and for
+        // counties with no CDC race data (territories).
+        var raceRows = [];
+        if (!tractProps) {
+            var countyMinPct = Number(p.COUNTY_PCT_MINORITY);
+            if (isFinite(countyMinPct)) {
+                raceRows.push({ subheader: 'Communities of Color (2022)' });
+                raceRows.push({
+                    key: 'minority',
+                    label: countyMinPct >= 50 ? 'People of color (majority-minority)' : 'People of color',
+                    value: fmtPctNum(countyMinPct)
+                });
+                raceRows.push({ collapsible: 'countyrace', accent: 'coc', label: 'Race & ethnicity breakdown' });
+                countyRaceList(p).forEach(function (r) {
+                    raceRows.push({ group: 'countyrace', label: r.label, value: fmtPctNum(r.pct) });
+                });
+            }
+        }
+
         var rows = [
             { subheader: 'Federal Disaster Funding (2011–2024)' },
             // All six rows carry key='fema' so the entire Federal Disaster
@@ -1364,11 +1496,14 @@ map.on('load', function () {
             { key: 'energy', label: 'Average outage',     value: fmtSAIDI(p.SAIDI_MIN_AVG) },
             { key: 'energy', label: 'Worst-case outage',  value: fmtSAIDI(p.SAIDI_MIN_MAX) },
 
-            { subheader: 'Older Adults 60+' },
+            { subheader: 'Older Adults 60+ (2020)' },
             { key: 'older', label: 'Older adults (60+)',
               value: fmtOlderPop(p) }
-        ]);
-        var html = '<table class="indicators-table">';
+        ]).concat(raceRows);
+        // Tag the table with the active lens so section accents (e.g. the
+        // Communities of Color block) can light up only when their lens is
+        // selected, and sit neutral otherwise.
+        var html = '<table class="indicators-table lens-' + activeLens + '">';
         // Collect any footnote entries; rendered below the table so they
         // act as a methodology caveat block rather than table rows.
         var footnotes = [];
@@ -1384,7 +1519,7 @@ map.on('load', function () {
                 html += '<tr class="svi-zoom-hint-row"><td colspan="2">'
                       + '<button type="button" class="svi-zoom-hint">'
                       +   '<span class="svi-zoom-hint-icon">&#128269;</span>'
-                      +   '<span>Zoom in for census-tract (neighborhood) detail</span>'
+                      +   '<span>Zoom in for census-tract detail</span>'
                       +   '<span class="svi-zoom-hint-arrow">&rarr;</span>'
                       + '</button></td></tr>';
                 return;
@@ -1407,7 +1542,8 @@ map.on('load', function () {
                 // hint of what's inside without expanding.
                 var teaser = r.count ? '<span class="collapsible-count">(' + r.count + ')</span>'
                     : (r.value ? '<span class="collapsible-teaser">' + r.value + '</span>' : '');
-                html += '<tr class="indicator-collapsible" data-group="' + r.collapsible + '" aria-expanded="false">'
+                var accentCls = r.accent ? ' collapsible-' + r.accent : '';
+                html += '<tr class="indicator-collapsible' + accentCls + '" data-group="' + r.collapsible + '" aria-expanded="false">'
                       + '<td class="indicator-label"><span class="caret">&#9656;</span>' + r.label + '</td>'
                       + '<td class="indicator-value">' + teaser + '</td>'
                       + '</tr>';
