@@ -1055,13 +1055,17 @@ map.on('load', function () {
         const block = document.getElementById('indicators-block');
         if (block) block.innerHTML = buildIndicatorsTable(lastClickedFemaProps, lastClickedTractProps);
 
-        // Sync the headline tint with whichever lens is driving it.
+        // Sync the headline tint with whichever lens is driving it. Toggle
+        // EVERY lens class (not just disaster/older) so a stale tint from the
+        // lens the popup was opened under — e.g. the magenta Communities of
+        // Color tint — is cleared when the user switches layers.
         const headline = document.getElementById('disaster-count-block');
         if (headline) {
             const key = headlineLensKey();
             headline.classList.toggle('lens-active', !!key);
-            headline.classList.toggle('lens-disaster', key === 'disaster');
-            headline.classList.toggle('lens-older', key === 'older');
+            ['disaster', 'older', 'urban', 'rural', 'minority'].forEach(function (k) {
+                headline.classList.toggle('lens-' + k, key === k);
+            });
         }
     }
 
@@ -1239,60 +1243,100 @@ map.on('load', function () {
         return out;
     }
 
-    // Returns the active lens's headline value as a short string for
-    // the hover tooltip (e.g. "SVI: 0.34", "Energy outage (typical): 9.5 hrs").
-    function activeLensSummary(props) {
+    // Plain-English disaster-declaration count, properly singular/plural
+    // ("1 disaster declaration" / "7 disaster declarations"). Wording
+    // matches the legend caption so the tooltip and legend speak the same
+    // language.
+    function fmtDisasterDeclarations(v) {
+        var n = Number(v) || 0;
+        return n.toLocaleString('en-US') + ' disaster declaration' + (n === 1 ? '' : 's');
+    }
+    // Total county population, comma-grouped. Stored as a string on the
+    // feature; returns null when missing so callers can omit the line.
+    function fmtPopulation(v) {
+        var n = Number(v);
+        if (!isFinite(n) || n <= 0) return null;
+        return n.toLocaleString('en-US');
+    }
+
+    // Build the hover tooltip's data for the ACTIVE lens. Returns
+    //   { lens, headline, sub }
+    // where `lens` is the palette class for the headline color, `headline`
+    // is the county's real value for the active layer in plain language,
+    // and `sub` is an optional muted context line (or null).
+    //
+    // Design rules (agreed in QA):
+    //   • The tooltip shows the county's actual data for the active layer —
+    //     no "not in filter / not in this lens" editorializing. Whether a
+    //     county is in the highlighted set is conveyed by its color + the
+    //     legend, not by a scolding note.
+    //   • Urban/Rural classification appears ONLY on the Urban/Rural lenses
+    //     (where it's the subject) — never as a tag on every tooltip.
+    //   • Population appears ONLY on Urban/Rural, where the 50,000-resident
+    //     threshold is what defines the layer.
+    function buildLensSummary(props) {
+        var dis = Number(props.COUNTY_DISASTER_COUNT) || 0;
+
         if (activeLens === 'disaster') {
-            var d = props.COUNTY_DISASTER_COUNT;
-            return (d == null ? '—' : d) + ' disasters';
+            return { lens: 'disaster', headline: fmtDisasterDeclarations(dis), sub: null };
         }
         if (activeLens === 'fema') {
-            return 'FEMA: ' + fmtUSDCompact(props.COUNTY_TOTAL_FEMA);
+            return { lens: 'fema', headline: fmtUSDCompact(props.COUNTY_TOTAL_FEMA) + ' in FEMA funding', sub: null };
         }
         if (activeLens === 'svi') {
-            return 'SVI: ' + fmtSVI(props['CDC SVI (2022)']);
+            return { lens: 'svi', headline: 'Vulnerability: ' + fmtSVIWithCategory(props['CDC SVI (2022)']), sub: null };
         }
         if (activeLens === 'energy') {
             var sub = activeSubModes.energy || 'avg';
             var key = sub === 'max' ? 'SAIDI_MIN_MAX' : 'SAIDI_MIN_AVG';
-            // Hover is the first interaction — keep SAIDI in the legend
-            // caption, not in the user-facing tooltip.
-            var label = sub === 'max' ? 'Energy outage (worst)' : 'Energy outage (typical)';
-            return label + ': ' + fmtSAIDI(props[key]) + '/yr';
+            var label = sub === 'max' ? 'Worst-case outage' : 'Typical outage';
+            var saidi = props[key];
+            var headline = (typeof saidi === 'number')
+                ? label + ': ' + fmtSAIDI(saidi) + '/year'
+                : label + ': no utility data';
+            return { lens: 'energy', headline: headline, sub: null };
         }
         if (activeLens === 'older') {
-            var sub = activeSubModes.older || 'concentration';
-            var older = Number(props['county-level-older-adults_60+ POP']);
             var pctO = Number(props['county-level-older-adults_PCT POP 60+']);
-            var dis = Number(props.COUNTY_DISASTER_COUNT) || 0;
-            var olderTxt = isFinite(older) ? Math.round(older).toLocaleString('en-US') : '—';
-            var pctTxt = isFinite(pctO) ? pctO.toFixed(1) + '%' : '—';
-            if (sub === 'concentration') {
-                return olderTxt + ' adults 60+' + (isFinite(pctO) ? ' (' + pctTxt + ' of county)' : '')
-                     + ' · ' + dis + ' disasters';
+            var subMode = activeSubModes.older || 'disastersFaced';
+            if (subMode === 'concentration') {
+                var older = Number(props['county-level-older-adults_60+ POP']);
+                var olderTxt = isFinite(older) ? Math.round(older).toLocaleString('en-US') : '—';
+                return {
+                    lens: 'older',
+                    headline: olderTxt + ' adults 60+' + (isFinite(pctO) ? ' (' + pctO.toFixed(1) + '%)' : ''),
+                    sub: fmtDisasterDeclarations(dis)
+                };
             }
-            // disastersFaced — flag whether this county is in the
-            // filtered set (25%+ age 60+) and show both criteria.
-            if (!isFinite(pctO) || pctO < 25) {
-                return pctTxt + ' age 60+ · not in filter';
-            }
-            return dis + ' disasters · ' + pctTxt + ' age 60+ · ' + olderTxt + ' older adults';
+            // Default sub-mode: disaster declarations, with the 60+ share as
+            // context. Shown for every county — gray just means below 25%.
+            return {
+                lens: 'older',
+                headline: fmtDisasterDeclarations(dis),
+                sub: isFinite(pctO) ? pctO.toFixed(1) + '% are 60 or older' : null
+            };
         }
         if (activeLens === 'urban' || activeLens === 'rural') {
-            var cls = props.OMB_CLASS || '—';
-            var target = activeLens === 'urban' ? 'Urban' : 'Rural';
-            var d2 = Number(props.COUNTY_DISASTER_COUNT) || 0;
-            if (cls !== target) return cls + ' county · not in this lens';
-            return d2 + ' disasters · ' + cls + ' county';
+            var cls = (props.OMB_CLASS === 'Urban' || props.OMB_CLASS === 'Rural') ? props.OMB_CLASS : null;
+            var pop = fmtPopulation(props.COUNTY_POPULATION);
+            var parts = [];
+            if (cls) parts.push(cls + ' county');
+            if (pop) parts.push('pop. ' + pop);
+            return {
+                lens: activeLens,
+                headline: fmtDisasterDeclarations(dis),
+                sub: parts.length ? parts.join(' · ') : null
+            };
         }
         if (activeLens === 'minority') {
             var minPct = Number(props.COUNTY_PCT_MINORITY);
-            var d3 = Number(props.COUNTY_DISASTER_COUNT) || 0;
-            if (!isFinite(minPct)) return 'No race data';
-            if (minPct < 50) return minPct.toFixed(1) + '% people of color · not in filter';
-            return d3 + ' disasters · ' + minPct.toFixed(1) + '% people of color';
+            return {
+                lens: 'minority',
+                headline: fmtDisasterDeclarations(dis),
+                sub: isFinite(minPct) ? minPct.toFixed(1) + '% people of color' : null
+            };
         }
-        return '';
+        return { lens: activeLens, headline: '', sub: null };
     }
 
 
@@ -1321,32 +1365,25 @@ map.on('load', function () {
         var p = e.features[0].properties;
         var county = p.NAMELSAD || 'Unknown county';
         var state  = p.STATE_NAME || '';
-        var omb    = fmtClass(p.OMB_CLASS);
+        var info   = buildLensSummary(p);
 
-        // Communities of Color lens: lead with the % POC headline and show
-        // the full race breakdown right in the tooltip so users get the
-        // detail without dropping to the SVI/tract layer.
-        if (activeLens === 'minority') {
-            var races = countyRaceList(p);
-            var raceHTML = races.length
-                ? '<div class="hover-race">' + races.map(function (r) {
-                      return '<div class="hover-race-row"><span>' + r.label + '</span>'
-                           + '<span>' + r.pct.toFixed(1) + '%</span></div>';
-                  }).join('') + '</div>'
-                : '';
-            var minHTML = ''
-                + '<div class="hover-county">' + county + (state ? ', ' + state : '') + '</div>'
-                + '<div class="hover-summary">' + activeLensSummary(p) + '</div>'
-                + raceHTML;
-            hoverPopup.setLngLat(e.lngLat).setHTML(minHTML).addTo(map);
-            return;
-        }
-
-        var summary = activeLensSummary(p);
         var html = ''
             + '<div class="hover-county">' + county + (state ? ', ' + state : '') + '</div>'
-            + '<div class="hover-summary">' + summary + '</div>'
-            + (omb !== '—' ? '<div class="hover-class">' + omb + '</div>' : '');
+            + '<div class="hover-summary lens-' + info.lens + '">' + info.headline + '</div>'
+            + (info.sub ? '<div class="hover-sub">' + info.sub + '</div>' : '');
+
+        // Communities of Color lens: append the full race breakdown beneath
+        // the headline so users get the detail without dropping to the
+        // tract layer. (The race-row values are styled magenta in CSS.)
+        if (activeLens === 'minority') {
+            var races = countyRaceList(p);
+            if (races.length) {
+                html += '<div class="hover-race">' + races.map(function (r) {
+                    return '<div class="hover-race-row"><span>' + r.label + '</span>'
+                         + '<span>' + r.pct.toFixed(1) + '%</span></div>';
+                }).join('') + '</div>';
+            }
+        }
         hoverPopup.setLngLat(e.lngLat).setHTML(html).addTo(map);
     });
 
@@ -1420,7 +1457,7 @@ map.on('load', function () {
             // tract is the stronger focus tint. Theme + race detail then
             // collapses beneath.
             sviRows = [
-                { subheader: 'CDC Social Vulnerability Index (2022)' },
+                { subheader: 'Social Vulnerability (2022)' },
                 { compare: 'county', label: (p.NAMELSAD || 'County'),               value: fmtSVIWithCategory(p['CDC SVI (2022)']) },
                 { compare: 'tract',  label: (tractProps.NAMELSAD || 'Census tract'), value: fmtSVIWithCategory(tractProps.RPL_THEMES) },
                 { collapsible: 'themes', label: 'Theme breakdown', count: 4 },
@@ -1442,8 +1479,8 @@ map.on('load', function () {
             ];
         } else {
             sviRows = [
-                { subheader: 'CDC Social Vulnerability Index (2022)' },
-                { key: 'svi',  label: 'Vulnerability score', value: fmtSVIWithCategory(p['CDC SVI (2022)']) }
+                { subheader: 'Social Vulnerability (2022)' },
+                { key: 'svi',  label: 'Score (CDC index, 0–1)', value: fmtSVIWithCategory(p['CDC SVI (2022)']) }
             ];
             // County popup under the SVI lens: this score is a county-wide
             // average, and tract-level detail is one zoom away. Surface the
@@ -1479,26 +1516,32 @@ map.on('load', function () {
             }
         }
 
+        // Compact statewide total for the collapsible's teaser value.
+        var stateTotalNum = (isFinite(stateFema) ? stateFema : 0) + (isFinite(stateCdbg) ? stateCdbg : 0);
+        var stateTotalCompact = (!isFinite(stateFema) && !isFinite(stateCdbg)) ? '' : fmtUSDCompact(stateTotalNum);
+
         var rows = [
-            { subheader: 'Federal Disaster Funding (2011–2024)' },
-            // All six rows carry key='fema' so the entire Federal Disaster
-            // Funding block lights up when the FEMA lens is active. Reads
-            // as a single navigable unit for funders, rather than letting
-            // the county rows "float" above un-highlighted state context.
-            { key: 'fema', label: 'County FEMA Total (PA+HM)',          value: fmtUSD(p.COUNTY_TOTAL_FEMA) },
-            { key: 'fema', label: 'Per Capita',                         value: formatCountyPerCapita(p) },
-            { key: 'fema', label: 'State FEMA Total (PA+HM)',           value: fmtUSD(p.STATE_FEMA_TOTAL) },
-            { key: 'fema', label: 'State CDBG Disaster Recovery',       value: fmtUSD(p.STATE_CDBG_TOTAL) },
-            { key: 'fema', label: 'State Total Federal Assistance (FEMA + HUD)', value: stateCombinedFederal },
-            { key: 'fema', label: 'State Per Capita',                   value: fmtUSD(p.STATE_PER_CAPITA) }
+            { subheader: 'Federal disaster aid (2011–2024)' },
+            // County hero: the headline number people came for, shown
+            // abbreviated. Lights up (orange) under the FEMA Disaster Funding
+            // lens via the table's lens-fema class.
+            { heroFema: { amount: fmtUSDCompact(p.COUNTY_TOTAL_FEMA), per: formatCountyPerCapita(p) } },
+            // Statewide context collapses behind a toggle so the default view
+            // stays short; exact figures live inside. Rows keep key='fema' so
+            // they highlight when expanded under the FEMA lens.
+            { collapsible: 'statefunding', accent: 'fema', label: 'Statewide (' + (p.STATE_NAME || 'state') + ')', value: stateTotalCompact },
+            { group: 'statefunding', key: 'fema', label: 'FEMA — rebuilding & prevention', value: fmtUSD(p.STATE_FEMA_TOTAL) },
+            { group: 'statefunding', key: 'fema', label: 'HUD — long-term recovery',       value: fmtUSD(p.STATE_CDBG_TOTAL) },
+            { group: 'statefunding', key: 'fema', label: 'Total federal aid',              value: stateCombinedFederal },
+            { group: 'statefunding', key: 'fema', label: 'Per person',                     value: fmtUSD(p.STATE_PER_CAPITA) }
         ].concat(sviRows).concat([
-            { subheader: 'U.S. Energy Reliability (2022)' },
-            { key: 'energy', label: 'Average outage',     value: fmtSAIDI(p.SAIDI_MIN_AVG) },
-            { key: 'energy', label: 'Worst-case outage',  value: fmtSAIDI(p.SAIDI_MIN_MAX) },
+            { subheader: 'Energy Reliability (2022)' },
+            { caption: 'Power outage hours per year, by utility.' },
+            { key: 'energy', label: 'Average across utilities', value: fmtSAIDI(p.SAIDI_MIN_AVG) },
+            { key: 'energy', label: 'Worst utility',            value: fmtSAIDI(p.SAIDI_MIN_MAX) },
 
             { subheader: 'Older Adults 60+ (2020)' },
-            { key: 'older', label: 'Older adults (60+)',
-              value: fmtOlderPop(p) }
+            { key: 'older', label: 'Residents 60 or older', value: fmtOlderPop(p) }
         ]).concat(raceRows);
         // Tag the table with the active lens so section accents (e.g. the
         // Communities of Color block) can light up only when their lens is
@@ -1510,6 +1553,17 @@ map.on('load', function () {
         rows.forEach(function (r) {
             if (r.subheader) {
                 html += '<tr class="indicator-subheader"><td colspan="2">' + r.subheader + '</td></tr>';
+                return;
+            }
+            if (r.heroFema) {
+                // County FEMA total as a hero block — abbreviated headline
+                // number + per-person line. Spans both columns. Tints orange
+                // under the FEMA lens via the table's lens-fema class.
+                html += '<tr class="fema-hero-row"><td colspan="2">'
+                      + '<div class="fema-hero">'
+                      +   '<div class="hero-amount">' + r.heroFema.amount + '</div>'
+                      +   '<div class="hero-sub">FEMA aid to this county · ' + r.heroFema.per + ' per person</div>'
+                      + '</div></td></tr>';
                 return;
             }
             if (r.zoomHint) {
@@ -1652,7 +1706,7 @@ map.on('load', function () {
             +     '</div>'
             +     '<div id="disaster-count-block" class="disaster-count' + (function () { var k = headlineLensKey(); return k ? ' lens-active lens-' + k : ''; })() + '">'
             +       '<div class="count">' + disasterCount + '</div>'
-            +       '<div class="count-description">Federally Declared Extreme Weather Disasters (2011–2024)</div>'
+            +       '<div class="count-description">Major weather disasters declared by FEMA (2011–2024)</div>'
             +     '</div>'
             +     '<div id="indicators-block" class="indicators-block">'
             +       buildIndicatorsTable(p, t)
@@ -1862,14 +1916,16 @@ map.on('load', function () {
         var countyName = t.NAMELSADCO || '';
         var stateName  = t.STATE_NAME || '';
         var sub = countyName + (stateName ? ', ' + stateName : '');
-        var svi = (typeof t.RPL_THEMES === 'number') ? t.RPL_THEMES.toFixed(2) : '—';
+        var sviHeadline = (typeof t.RPL_THEMES === 'number')
+            ? 'Vulnerability: ' + fmtSVIWithCategory(t.RPL_THEMES)
+            : 'Vulnerability: No data';
         var minorityNote = (typeof t.EP_MINRTY === 'number' && t.EP_MINRTY >= 50)
-            ? '<div class="hover-class">Majority-minority · ' + t.EP_MINRTY.toFixed(1) + '% POC</div>'
+            ? '<div class="hover-sub">Majority people of color · ' + t.EP_MINRTY.toFixed(1) + '%</div>'
             : '';
         var html = ''
             + '<div class="hover-county">' + tractName + '</div>'
-            + (sub ? '<div class="hover-summary">' + sub + '</div>' : '')
-            + '<div class="hover-summary">SVI: ' + svi + '</div>'
+            + (sub ? '<div class="hover-sub">' + sub + '</div>' : '')
+            + '<div class="hover-summary lens-svi">' + sviHeadline + '</div>'
             + minorityNote;
         hoverPopup.setLngLat(e.lngLat).setHTML(html).addTo(map);
     });

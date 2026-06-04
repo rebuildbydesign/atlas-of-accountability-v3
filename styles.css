@@ -202,17 +202,34 @@ a:active {
     font-size: 13px;
     color: #000;
 }
+/* The headline value carries the ACTIVE LENS's color so the tooltip
+   reads in the same palette as the map + legend it sits on (e.g. teal
+   under Social Vulnerability, magenta under Communities of Color). The
+   per-lens classes below override the neutral default. Keep these hexes
+   in sync with the disaster-count headline tints (.disaster-count.lens-*)
+   and the legend color-bar anchors. */
 .aoa-hover-popup .hover-summary {
-    color: #de2d26;
+    color: #333;
     font-weight: bold;
     margin-top: 2px;
 }
-.aoa-hover-popup .hover-class {
+.aoa-hover-popup .hover-summary.lens-disaster { color: #de2d26; }
+.aoa-hover-popup .hover-summary.lens-fema     { color: #c96305; }
+.aoa-hover-popup .hover-summary.lens-svi      { color: #007462; }
+.aoa-hover-popup .hover-summary.lens-energy   { color: #c24400; }
+.aoa-hover-popup .hover-summary.lens-older    { color: #005824; }
+.aoa-hover-popup .hover-summary.lens-urban    { color: #4a1486; }
+.aoa-hover-popup .hover-summary.lens-rural    { color: #084594; }
+.aoa-hover-popup .hover-summary.lens-minority { color: #7a0177; }
+
+/* Muted secondary context line (e.g. "Urban county · pop. 58,761",
+   the older-adult share, or the parent county under a tract). Replaces
+   the old all-caps .hover-class tag, which used to stamp URBAN/RURAL on
+   every tooltip regardless of the active lens. */
+.aoa-hover-popup .hover-sub {
     color: #555;
     font-size: 11px;
     margin-top: 2px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
 }
 /* Communities of Color lens — race breakdown rows inside the hover
    tooltip, so the full detail is readable without opening the popup or
@@ -250,7 +267,7 @@ a:active {
     line-height: 1.35;
 }
 .indicators-table td {
-    padding: 5px 6px;
+    padding: 3px 6px;
     border-bottom: 1px solid #eee;
 }
 
@@ -278,7 +295,7 @@ a:active {
    not faint captions. Reserved black so red can stay reserved for
    the disaster-count headline + active lens highlights. */
 .indicators-table tr.indicator-subheader td {
-    padding: 14px 4px 5px;
+    padding: 10px 4px 4px;
     font-size: 11px;
     font-weight: bold;
     text-transform: uppercase;
@@ -441,11 +458,11 @@ a:active {
 
 /* Active state — Communities of Color lens selected → pink family. */
 .indicators-table.lens-minority tr.indicator-collapsible.collapsible-coc td {
-    background: #ffe3f2;
+    background: #fff3f9;
     border-bottom-color: #ffb8db;
 }
 .indicators-table.lens-minority tr.indicator-collapsible.collapsible-coc:hover td {
-    background: #ffd6ec;
+    background: #ffe9f3;
 }
 .indicators-table.lens-minority tr.indicator-collapsible.collapsible-coc .indicator-label {
     color: #7a0177;
@@ -454,7 +471,81 @@ a:active {
     color: #ae017e;
 }
 .indicators-table.lens-minority tr.indicator-grouped.group-countyrace td {
-    background: #fff5fa;
+    background: #fff3f9;
+}
+
+/* ── Federal disaster aid: county hero block ──
+   The headline county FEMA number, shown big + abbreviated. Neutral by
+   default; tints orange when the FEMA Disaster Funding lens is active
+   (table carries .lens-fema), matching that lens's family. */
+.indicators-table tr.fema-hero-row td {
+    padding: 3px 0 5px;
+    border-bottom: 0;
+}
+.fema-hero {
+    background: #f5f5f3;
+    border-left: 4px solid #999;
+    padding: 6px 10px;
+}
+.fema-hero .hero-amount {
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.05;
+    color: #222;
+}
+.fema-hero .hero-sub {
+    font-size: 10px;
+    color: #555;
+    margin-top: 2px;
+}
+.indicators-table.lens-fema .fema-hero {
+    background: #FDE0C8;
+    border-left-color: #ED7A1F;
+}
+.indicators-table.lens-fema .fema-hero .hero-amount {
+    color: #9A4B02;
+}
+
+/* Statewide funding collapsible: neutral by default, orange under the FEMA
+   lens (same neutral→lens-color pattern as the Communities of Color block). */
+.indicators-table tr.indicator-collapsible.collapsible-fema td {
+    background: #f4f4f4;
+    border-bottom-color: #e6e6e6;
+}
+.indicators-table tr.indicator-collapsible.collapsible-fema:hover td {
+    background: #ececec;
+}
+.indicators-table tr.indicator-collapsible.collapsible-fema .indicator-label {
+    color: #444;
+}
+.indicators-table tr.indicator-collapsible.collapsible-fema .caret {
+    color: #888;
+}
+.indicators-table tr.indicator-grouped.group-statefunding td {
+    background: #fafafa;
+}
+/* Statewide total teaser ($) in bold black — neutral so it reads as a
+   plain figure rather than an alert, bolded so the dollar amount stands
+   out. Scoped to funding so the COC % POC teaser is unaffected. */
+.indicators-table tr.indicator-collapsible.collapsible-fema .collapsible-teaser {
+    color: #000;
+    font-weight: bold;
+}
+.indicators-table.lens-fema tr.indicator-collapsible.collapsible-fema td {
+    background: #FDE0C8;
+    border-bottom-color: #f6cba6;
+}
+.indicators-table.lens-fema tr.indicator-collapsible.collapsible-fema:hover td {
+    background: #f9d3b3;
+}
+.indicators-table.lens-fema tr.indicator-collapsible.collapsible-fema .indicator-label {
+    color: #9A4B02;
+}
+.indicators-table.lens-fema tr.indicator-collapsible.collapsible-fema .caret {
+    color: #C96305;
+}
+.indicators-table.lens-fema tr.indicator-grouped.group-statefunding td {
+    background: #fff6ee;
 }
 
 /* Footnotes rendered BELOW the indicators table — methodology caveats
@@ -494,7 +585,7 @@ a:active {
     box-shadow: inset 3px 0 0 #005824;
 }
 .indicators-table tr.indicator-active.lens-minority {
-    background: #ffd6ec;
+    background: #fff3f9;
     box-shadow: inset 3px 0 0 #7a0177;
 }
 
@@ -1304,7 +1395,7 @@ a:active {
 }
 /* Communities of Color — pink tint on the headline. */
 .disaster-count.lens-active.lens-minority {
-    background: #ffd6ec;
+    background: #fff3f9;
     box-shadow: inset 3px 0 0 #7a0177;
 }
 
