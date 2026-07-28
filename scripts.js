@@ -693,6 +693,52 @@ map.on('load', function () {
                     <span>Counties under 50% people of color</span>
                 </div>
             `
+        },
+
+        // Tribal Communities: the one lens that paints a DIFFERENT geography.
+        // Instead of recoloring atlas-fema-layer it lights up
+        // `tribal-areas-layer` (Census AIANNH polygons) and mutes the county
+        // choropleth to gray underneath. See applyActiveStyling.
+        //
+        // Bins are 1/2/3/4/5/6+, NOT the county 0/2/4/6/8/10/12+ scheme.
+        // Tribal counts top out at 8 and 63 of the 116 areas sit at 1, so the
+        // county ramp would render almost everything as the palest swatch.
+        //
+        // Palette is gold→dark brown: the remaining distinct hue after red
+        // (disaster), orange (FEMA/energy), teal (SVI), green (older),
+        // purple (urban), blue (rural) and magenta (communities of color).
+        tribal: {
+            label: 'Tribal Communities',
+            paintsTribalLayer: true,
+            paintExpression: [
+                'step',
+                ['to-number', ['coalesce', ['get', 'DECLARATIONS'], 0]],
+                '#ECECEC',        //  0 (should not occur; file is filtered to 1+)
+                1, '#fff7bc',     //  1
+                2, '#fee391',     //  2
+                3, '#fec44f',     //  3
+                4, '#fe9929',     //  4
+                5, '#d95f0e',     //  5
+                6, '#8c2d04'      //  6+
+            ],
+            legendHTML: `
+                <div class="legend-title"><b>Tribal Communities</b><br><span class="legend-mode-name">Major Disaster Declarations</span></div>
+                <div class="color-bar lens-tribal">
+                    <div class="color-description">
+                        <span>1</span>
+                        <span>2</span>
+                        <span>3</span>
+                        <span>4</span>
+                        <span>5</span>
+                        <span>6+</span>
+                    </div>
+                </div>
+                <div class="legend-units">Major disaster declarations naming an American Indian, Alaska Native, or Native Hawaiian area, 2011&ndash;2024. Weather events only. Boundaries: U.S. Census AIANNH, 2023.</div>
+                <div class="legend-no-data">
+                    <span class="no-data-swatch" style="background:#ECECEC"></span>
+                    <span>Counties (shown for context, not part of this lens)</span>
+                </div>
+            `
         }
     };
 
@@ -790,6 +836,54 @@ map.on('load', function () {
             'line-color': '#ffffff',
             'line-opacity': ['interpolate', ['linear'], ['zoom'], 6, 0, 8, 0.4, 14, 0.7],
             'line-width': ['interpolate', ['linear'], ['zoom'], 6, 0, 8, 0.2, 14, 0.6]
+        }
+    }, 'state-label');
+
+    // -------------------------------------------------------------
+    // TRIBAL AREAS LAYER: the Tribal Communities lens.
+    //
+    // 116 Census AIANNH polygons (reservations, off-reservation trust land,
+    // OTSAs, Alaska Native village areas, Hawaiian Home Lands) that were named
+    // in at least one weather major disaster declaration, 2011–2024.
+    //
+    // Why this is its own source instead of a property on Atlas_FEMA: FEMA
+    // codes every tribal designation with county FIPS "000", so tribal
+    // declarations are not attributable to any county and cannot live on the
+    // county file. See data/tribal_areas.geojson and the project workbook.
+    //
+    // Hidden by default; shown in lockstep with the tribal lens in
+    // applyActiveStyling, exactly like the SVI tract layers above.
+    // -------------------------------------------------------------
+    map.addSource('tribal-areas', {
+        type: 'geojson',
+        data: 'data/tribal_areas.geojson',
+        promoteId: 'AIANNHCE'
+    });
+
+    map.addLayer({
+        'id': 'tribal-areas-layer',
+        'type': 'fill',
+        'source': 'tribal-areas',
+        'layout': { 'visibility': 'none' },
+        'paint': {
+            'fill-color': lensConfig.tribal.paintExpression,
+            'fill-opacity': 1
+        }
+    }, 'state-label');
+
+    // Dark outline so small areas (many are only a few square miles) stay
+    // findable against the muted county wash. Unlike the SVI tract outline
+    // this does not fade out at low zoom — at national zoom the outline is
+    // often the only thing making a tribal area visible at all.
+    map.addLayer({
+        'id': 'tribal-areas-outline',
+        'type': 'line',
+        'source': 'tribal-areas',
+        'layout': { 'visibility': 'none' },
+        'paint': {
+            'line-color': '#5c3a17',
+            'line-opacity': 0.9,
+            'line-width': ['interpolate', ['linear'], ['zoom'], 3, 0.6, 6, 1, 10, 1.6]
         }
     }, 'state-label');
 
@@ -943,6 +1037,10 @@ map.on('load', function () {
 
         const isDots = spec.renderMode === 'dots';
         const isTracts = activeLens === 'svi';  // SVI lens swaps to tract-level rendering
+        // Tribal lens paints a separate geography (AIANNH areas) and mutes the
+        // county choropleth to a neutral wash underneath. spec.paintExpression
+        // therefore targets tribal-areas-layer, NOT atlas-fema-layer.
+        const isTribal = spec.paintsTribalLayer === true;
 
         if (isDots) {
             // The dots sub-mode paints the choropleth too — either a
@@ -956,6 +1054,17 @@ map.on('load', function () {
             if (map.getLayer('atlas-fema-dots-layer')) {
                 map.setLayoutProperty('atlas-fema-dots-layer', 'visibility', 'visible');
                 applyDotsFilter(activeOMBFilter);
+            }
+        } else if (isTribal) {
+            // Counties become a flat neutral backdrop. The Urban/Rural filter is
+            // deliberately NOT applied: it has no meaning for tribal areas, and
+            // leaving it on would gray out counties for a reason unrelated to
+            // this lens. The lens expression goes to the tribal layer instead.
+            map.setPaintProperty('atlas-fema-layer', 'fill-color', FILTER_MASK_COLOR);
+            map.setPaintProperty('atlas-fema-layer', 'fill-opacity', 1);
+            map.setPaintProperty('tribal-areas-layer', 'fill-color', spec.paintExpression);
+            if (map.getLayer('atlas-fema-dots-layer')) {
+                map.setLayoutProperty('atlas-fema-dots-layer', 'visibility', 'none');
             }
         } else {
             const expr = applyOMBFilter(spec.paintExpression, activeOMBFilter);
@@ -980,6 +1089,14 @@ map.on('load', function () {
         }
         if (map.getLayer('svi-tracts-outline')) {
             map.setLayoutProperty('svi-tracts-outline', 'visibility', isTracts ? 'visible' : 'none');
+        }
+
+        // Same lockstep treatment for the tribal layers.
+        if (map.getLayer('tribal-areas-layer')) {
+            map.setLayoutProperty('tribal-areas-layer', 'visibility', isTribal ? 'visible' : 'none');
+        }
+        if (map.getLayer('tribal-areas-outline')) {
+            map.setLayoutProperty('tribal-areas-outline', 'visibility', isTribal ? 'visible' : 'none');
         }
 
         const legendBody = document.getElementById('legend-body');
@@ -1086,6 +1203,9 @@ map.on('load', function () {
         const old = legendBody.querySelector('.legend-filter-badge');
         if (old) old.remove();
         if (activeOMBFilter === 'all') return;
+        // The tribal lens ignores the Urban/Rural filter (see applyActiveStyling),
+        // so showing the badge here would claim a filter that isn't being applied.
+        if (activeLens === 'tribal') return;
         const badge = document.createElement('div');
         badge.className = 'legend-filter-badge filter-' + activeOMBFilter;
         badge.textContent = activeOMBFilter === 'rural'
@@ -1361,8 +1481,17 @@ map.on('load', function () {
             hoverPopup.remove();
             return;
         }
+        // Under the tribal lens counties are a neutral backdrop, not the
+        // subject. buildLensSummary has no county headline for this lens, so
+        // hovering one would render an empty tinted line. Only tribal areas
+        // respond to hover here. (Clicking a county still opens its popup.)
+        if (activeLens === 'tribal') {
+            hoverPopup.remove();
+            return;
+        }
         if (!e.features || !e.features.length) return;
         var p = e.features[0].properties;
+        hoverPopup.setMaxWidth('260px');
         var county = p.NAMELSAD || 'Unknown county';
         var state  = p.STATE_NAME || '';
         var info   = buildLensSummary(p);
@@ -1837,6 +1966,19 @@ map.on('load', function () {
     // (built from Atlas_FEMA_V2 on load). Under every other lens we keep
     // the original county-click path.
     map.on('click', function (e) {
+        // Tribal lens: clicking a tribal area does nothing on purpose.
+        // Everything we can honestly say about a tribal area is in the hover
+        // tooltip, and there is no cleaned data at tribal level beyond
+        // declaration counts. Without this guard the click would fall through
+        // to atlas-fema-layer and open the COUNTY popup, showing a different
+        // disaster number for what looks like the same place (Pine Ridge
+        // hovers as 8, Oglala Lakota County pops up as 9).
+        // Clicking a county outside any tribal area still works normally.
+        if (activeLens === 'tribal') {
+            var tribalHit = map.queryRenderedFeatures(e.point, { layers: ['tribal-areas-layer'] });
+            if (tribalHit.length) return;
+        }
+
         var congressFeatures = map.queryRenderedFeatures(e.point, { layers: ['congress-layer'] });
 
         var femaFeature = null;
@@ -1912,6 +2054,7 @@ map.on('load', function () {
         }
         if (!e.features || !e.features.length) return;
         var t = e.features[0].properties;
+        hoverPopup.setMaxWidth('260px');
         var tractName = t.NAMELSAD || 'Census tract';
         var countyName = t.NAMELSADCO || '';
         var stateName  = t.STATE_NAME || '';
@@ -1931,6 +2074,86 @@ map.on('load', function () {
     });
 
     map.on('mouseleave', 'svi-tracts-layer', function () {
+        hoverPopup.remove();
+    });
+
+    // No pointer cursor here, unlike counties and tracts: tribal areas are
+    // deliberately not clickable, and a pointer would promise a popup that
+    // never opens.
+
+    // Hover tooltip on tribal areas. Deliberately does NOT touch the county
+    // click popup: the project has no cleaned data at tribal-community level
+    // beyond declaration counts, so everything we can honestly say fits here.
+    //
+    // The wording matters. "named in" is not "experienced". A tribal area can
+    // be hit and never named, and 2011–2012 is a structural near-zero because
+    // tribes could not request their own declarations until 2013.
+    map.on('mousemove', 'tribal-areas-layer', function (e) {
+        if (popup.isOpen()) {
+            hoverPopup.remove();
+            return;
+        }
+        if (!e.features || !e.features.length) return;
+        var t = e.features[0].properties;
+        // This lens has no click popup, so the tooltip carries more than the
+        // others and needs the extra width for the caveat line.
+        hoverPopup.setMaxWidth('300px');
+        var areaName = t.NAMELSAD || 'Tribal area';
+        var n = Number(t.DECLARATIONS) || 0;
+
+        // "Nebraska; South Dakota" reads better as "Nebraska and South Dakota".
+        var states = String(t.STATE_NAMES || '').split(';')
+            .map(function (s) { return s.trim(); }).filter(Boolean);
+        var stateTxt = states.length > 1
+            ? states.slice(0, -1).join(', ') + ' and ' + states[states.length - 1]
+            : (states[0] || '');
+
+        // Lead county (largest overlap, first in the stored list) plus a count,
+        // rather than three arbitrary county names wrapping over three lines.
+        var leadCounty = String(t.COUNTY_NAMES || '').split(';')[0].trim();
+        var nCounties = Number(t.N_COUNTIES) || 0;
+        var countyTxt = leadCounty
+            + (nCounties > 1 ? ' and ' + (nCounties - 1) + ' more' : '');
+
+        var y1 = Math.round(Number(t.FIRST_YEAR)), y2 = Math.round(Number(t.LATEST_YEAR));
+        var span = (isFinite(y1) && isFinite(y2)) ? (y1 === y2 ? String(y1) : y1 + '–' + y2) : '';
+
+        var headline = n + ' major disaster ' + (n === 1 ? 'declaration' : 'declarations')
+                     + (span ? ' · ' + span : '');
+
+        // The tribe-requested vs state-declaration split appears nowhere else in
+        // the tool, and it is the honest reason some large nations show low
+        // counts: tribes could not request their own declarations before 2013.
+        var own = Number(t.OWN_REQUEST) || 0, viaState = Number(t.UNDER_STATE) || 0;
+        var split = (own || viaState)
+            ? '<div class="hover-sub">' + own + ' requested by the tribe · '
+              + viaState + ' under a state declaration</div>'
+            : '';
+
+        var pop = (Number(t.POPULATION) > 0)
+            ? '<div class="hover-sub">Population ' + Number(t.POPULATION).toLocaleString('en-US') + '</div>'
+            : '';
+
+        // County context, with the caption that stops the subtraction. Users
+        // will compare these two numbers whether or not we show them together,
+        // so we show them together and say plainly that they are not comparable.
+        var cMax = Number(t.COUNTY_DISASTER_MAX);
+        var countyNote = isFinite(cMax) && cMax > 0
+            ? '<div class="hover-note">Overlapping counties recorded up to ' + cMax
+              + '. FEMA records county and tribal declarations separately, so the two are not directly comparable.</div>'
+            : '';
+
+        var html = ''
+            + '<div class="hover-county">' + areaName + '</div>'
+            + '<div class="hover-sub">' + countyTxt + (stateTxt ? ' · ' + stateTxt : '') + '</div>'
+            + '<div class="hover-summary lens-tribal">' + headline + '</div>'
+            + split
+            + pop
+            + countyNote;
+        hoverPopup.setLngLat(e.lngLat).setHTML(html).addTo(map);
+    });
+
+    map.on('mouseleave', 'tribal-areas-layer', function () {
         hoverPopup.remove();
     });
 

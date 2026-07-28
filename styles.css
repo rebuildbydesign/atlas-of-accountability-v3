@@ -221,6 +221,7 @@ a:active {
 .aoa-hover-popup .hover-summary.lens-urban    { color: #4a1486; }
 .aoa-hover-popup .hover-summary.lens-rural    { color: #084594; }
 .aoa-hover-popup .hover-summary.lens-minority { color: #7a0177; }
+.aoa-hover-popup .hover-summary.lens-tribal   { color: #8c2d04; }
 
 /* Muted secondary context line (e.g. "Urban county · pop. 58,761",
    the older-adult share, or the parent county under a tract). Replaces
@@ -230,6 +231,21 @@ a:active {
     color: #555;
     font-size: 11px;
     margin-top: 2px;
+}
+
+/* Caveat footnote, currently used only by the Tribal Communities lens.
+   That lens has no click popup by design, so the tooltip carries the whole
+   interface, including the line explaining why the tribal count and the
+   county count are not the same number. Set apart by a hairline rule so it
+   reads as a note rather than as more data. */
+.aoa-hover-popup .hover-note {
+    color: #6b6b6b;
+    font-size: 10px;
+    line-height: 1.35;
+    font-style: italic;
+    margin-top: 6px;
+    padding-top: 5px;
+    border-top: 1px solid #e2e2e2;
 }
 /* Communities of Color lens — race breakdown rows inside the hover
    tooltip, so the full detail is readable without opening the popup or
@@ -638,6 +654,14 @@ a:active {
    muted gray. Distinct from urban (purple), rural (blue), older (green). */
 .color-bar.lens-minority {
     background: linear-gradient(to right, #fde0dd, #fcc5c0, #fa9fb5, #f768a1, #dd3497, #ae017e, #7a0177);
+}
+/* Tribal Communities — 6-stop gold-to-brown spectrum. Six stops, not seven:
+   this lens bins at 1/2/3/4/5/6+ because tribal declaration counts top out at
+   8, where county counts reach 22. Painted on AIANNH areas only; counties sit
+   underneath as a neutral wash. Distinct from FEMA obligations (bright orange)
+   by being darker and less saturated through the midtones. */
+.color-bar.lens-tribal {
+    background: linear-gradient(to right, #fff7bc, #fee391, #fec44f, #fe9929, #d95f0e, #8c2d04);
 }
 
 /* Proportional-dots legend for the Older Adults > "Where older adults
