@@ -238,6 +238,39 @@ a:active {
    interface, including the line explaining why the tribal count and the
    county count are not the same number. Set apart by a hairline rule so it
    reads as a note rather than as more data. */
+/* Tribal Communities split rows: how many of the covering declarations
+   actually named the tribe. Filled swatch = named, outlined = county only,
+   matching the choropleth's own ramp so the tooltip and the map agree. */
+.aoa-hover-popup .tribal-split {
+    margin-top: 7px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.aoa-hover-popup .tsr {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+    font-size: 11.5px;
+}
+.aoa-hover-popup .tsw {
+    width: 9px;
+    height: 9px;
+    flex: none;
+    border-radius: 1px;
+    position: relative;
+    top: 1px;
+}
+.aoa-hover-popup .tsw.f { background: #8c2d04; }
+.aoa-hover-popup .tsw.o { background: #fec44f; border: 1px solid #d95f0e; }
+.aoa-hover-popup .tsv {
+    font-weight: 700;
+    min-width: 18px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+.aoa-hover-popup .tsk { color: #555; }
+
 .aoa-hover-popup .hover-note {
     color: #6b6b6b;
     font-size: 10px;

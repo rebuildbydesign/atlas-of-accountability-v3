@@ -700,9 +700,19 @@ map.on('load', function () {
         // `tribal-areas-layer` (Census AIANNH polygons) and mutes the county
         // choropleth to gray underneath. See applyActiveStyling.
         //
-        // Bins are 1/2/3/4/5/6+, NOT the county 0/2/4/6/8/10/12+ scheme.
-        // Tribal counts top out at 8 and 63 of the 116 areas sit at 1, so the
-        // county ramp would render almost everything as the palest swatch.
+        // COLOR ENCODES `COVERED`, NOT `NAMED`. This is deliberate and it is the
+        // most important decision in the lens.
+        //
+        // `NAMED` counts declarations that named the tribal area (range 1-8).
+        // `COVERED` adds declarations issued to the counties that actually
+        // contain the area (range 1-18), because a county declaration covers
+        // the land inside it whether or not the tribe is named. Painting NAMED
+        // understates exposure roughly 3.5x at the median (1 named vs 7
+        // covered) and reads as "tribal lands rarely have disasters", which is
+        // false. The tooltip carries both numbers so the gap stays visible.
+        //
+        // Breakpoints deliberately match DISASTER_RAMP (1/3/5/7/10/12) so this
+        // layer is directly comparable to the county Disaster lens by eye.
         //
         // Palette is gold→dark brown: the remaining distinct hue after red
         // (disaster), orange (FEMA/energy), teal (SVI), green (older),
@@ -712,28 +722,28 @@ map.on('load', function () {
             paintsTribalLayer: true,
             paintExpression: [
                 'step',
-                ['to-number', ['coalesce', ['get', 'DECLARATIONS'], 0]],
-                '#ECECEC',        //  0 (should not occur; file is filtered to 1+)
-                1, '#fff7bc',     //  1
-                2, '#fee391',     //  2
-                3, '#fec44f',     //  3
-                4, '#fe9929',     //  4
-                5, '#d95f0e',     //  5
-                6, '#8c2d04'      //  6+
+                ['to-number', ['coalesce', ['get', 'COVERED'], 0]],
+                '#ECECEC',         //  0 (should not occur; file is filtered to 1+)
+                1,  '#fff7bc',     //  1–2
+                3,  '#fee391',     //  3–4
+                5,  '#fec44f',     //  5–6
+                7,  '#fe9929',     //  7–9
+                10, '#d95f0e',     //  10–11
+                12, '#8c2d04'      //  12+
             ],
             legendHTML: `
                 <div class="legend-title"><b>Tribal Communities</b><br><span class="legend-mode-name">Major Disaster Declarations</span></div>
                 <div class="color-bar lens-tribal">
                     <div class="color-description">
                         <span>1</span>
-                        <span>2</span>
                         <span>3</span>
-                        <span>4</span>
                         <span>5</span>
-                        <span>6+</span>
+                        <span>7</span>
+                        <span>10</span>
+                        <span>12+</span>
                     </div>
                 </div>
-                <div class="legend-units">Major disaster declarations naming an American Indian, Alaska Native, or Native Hawaiian area, 2011&ndash;2024. Weather events only. Boundaries: U.S. Census AIANNH, 2023.</div>
+                <div class="legend-units">Major disaster declarations covering an American Indian, Alaska Native, or Native Hawaiian area, 2011&ndash;2024. Includes declarations issued to the counties containing the area, not only those naming the tribe. Hover for the split. Weather events only.</div>
                 <div class="legend-no-data">
                     <span class="no-data-swatch" style="background:#ECECEC"></span>
                     <span>Counties (shown for context, not part of this lens)</span>
@@ -2082,12 +2092,18 @@ map.on('load', function () {
     // never opens.
 
     // Hover tooltip on tribal areas. Deliberately does NOT touch the county
-    // click popup: the project has no cleaned data at tribal-community level
-    // beyond declaration counts, so everything we can honestly say fits here.
+    // click popup, and this lens has no click popup of its own, so everything
+    // the lens can honestly say lives here.
     //
-    // The wording matters. "named in" is not "experienced". A tribal area can
-    // be hit and never named, and 2011–2012 is a structural near-zero because
-    // tribes could not request their own declarations until 2013.
+    // Structure is exposure-first: the headline is COVERED (declarations that
+    // covered this land), then the split showing how many actually named the
+    // tribe. That ordering answers the question a reader arrives with, and puts
+    // the accountability gap one line below without editorialising.
+    //
+    // Wording matters. "covered" is not "experienced", and "named" is a fact
+    // about federal paperwork, not about weather. 2011–2012 is a structural
+    // near-zero for the named count because tribes could not request their own
+    // declarations until 2013.
     map.on('mousemove', 'tribal-areas-layer', function (e) {
         if (popup.isOpen()) {
             hoverPopup.remove();
@@ -2099,57 +2115,80 @@ map.on('load', function () {
         // others and needs the extra width for the caveat line.
         hoverPopup.setMaxWidth('300px');
         var areaName = t.NAMELSAD || 'Tribal area';
-        var n = Number(t.DECLARATIONS) || 0;
+        var covered = Number(t.COVERED) || 0;
+        var named = Number(t.NAMED) || 0;
+        var countyOnly = Number(t.COUNTY_ONLY) || 0;
 
         // "Nebraska; South Dakota" reads better as "Nebraska and South Dakota".
-        var states = String(t.STATE_NAMES || '').split(';')
+        function andList(raw, sep) {
+            var a = String(raw || '').split(sep).map(function (s) { return s.trim(); }).filter(Boolean);
+            if (!a.length) return '';
+            return a.length > 1 ? a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1] : a[0];
+        }
+        var stateTxt = andList(t.STATE_NAMES, ';');
+
+        // COUNTY_NAMES now holds only counties containing at least 1% of the
+        // area, so sliver touches are already excluded upstream. Name up to
+        // three, then fall back to a count.
+        var counties = String(t.COUNTY_NAMES || '').split(',')
             .map(function (s) { return s.trim(); }).filter(Boolean);
-        var stateTxt = states.length > 1
-            ? states.slice(0, -1).join(', ') + ' and ' + states[states.length - 1]
-            : (states[0] || '');
+        var nCounties = Number(t.N_COUNTIES) || counties.length;
+        // County names are stored stripped of their "County"/"Parish" suffix so
+        // three of them fit on one line. Add the right word back, but not to
+        // names that already carry their own (Connecticut replaced counties with
+        // planning regions in 2022, Alaska uses boroughs and census areas).
+        var SELF_LABELLED = /(Region|Borough|Census Area|Municipality|City and Borough|Parish|County)$/;
+        var countyTxt;
+        if (counties.length === 0) {
+            countyTxt = '';
+        } else if (counties.length > 3) {
+            countyTxt = nCounties + ' counties';
+        } else {
+            countyTxt = andList(counties.join(','), ',');
+            if (!counties.some(function (c) { return SELF_LABELLED.test(c); })) {
+                countyTxt += (counties.length === 1 ? ' County' : ' counties');
+            }
+        }
 
-        // Lead county (largest overlap, first in the stored list) plus a count,
-        // rather than three arbitrary county names wrapping over three lines.
-        var leadCounty = String(t.COUNTY_NAMES || '').split(';')[0].trim();
-        var nCounties = Number(t.N_COUNTIES) || 0;
-        var countyTxt = leadCounty
-            + (nCounties > 1 ? ' and ' + (nCounties - 1) + ' more' : '');
+        var y1 = Number(t.FIRST_YEAR), y2 = Number(t.LAST_YEAR);
+        var span = (isFinite(y1) && isFinite(y2) && y1 && y2)
+            ? (y1 === y2 ? String(y1) : y1 + '–' + y2) : '';
 
-        var y1 = Math.round(Number(t.FIRST_YEAR)), y2 = Math.round(Number(t.LATEST_YEAR));
-        var span = (isFinite(y1) && isFinite(y2)) ? (y1 === y2 ? String(y1) : y1 + '–' + y2) : '';
+        var headline = covered + ' major disaster '
+                     + (covered === 1 ? 'declaration' : 'declarations');
 
-        var headline = n + ' major disaster ' + (n === 1 ? 'declaration' : 'declarations')
-                     + (span ? ' · ' + span : '');
-
-        // The tribe-requested vs state-declaration split appears nowhere else in
-        // the tool, and it is the honest reason some large nations show low
-        // counts: tribes could not request their own declarations before 2013.
-        var own = Number(t.OWN_REQUEST) || 0, viaState = Number(t.UNDER_STATE) || 0;
-        var split = (own || viaState)
-            ? '<div class="hover-sub">' + own + ' requested by the tribe · '
-              + viaState + ' under a state declaration</div>'
-            : '';
+        // The split is the whole point of the lens: how many of those
+        // declarations actually named the tribe.
+        var split = ''
+            + '<div class="tribal-split">'
+            +   '<div class="tsr"><span class="tsw f"></span><span class="tsv">' + named
+            +     '</span><span class="tsk">named the tribe</span></div>'
+            +   (countyOnly > 0
+                  ? '<div class="tsr"><span class="tsw o"></span><span class="tsv">' + countyOnly
+                    + '</span><span class="tsk">named only the county</span></div>'
+                  : '')
+            + '</div>';
 
         var pop = (Number(t.POPULATION) > 0)
             ? '<div class="hover-sub">Population ' + Number(t.POPULATION).toLocaleString('en-US') + '</div>'
             : '';
 
-        // County context, with the caption that stops the subtraction. Users
-        // will compare these two numbers whether or not we show them together,
-        // so we show them together and say plainly that they are not comparable.
-        var cMax = Number(t.COUNTY_DISASTER_MAX);
-        var countyNote = isFinite(cMax) && cMax > 0
-            ? '<div class="hover-note">Overlapping counties recorded up to ' + cMax
-              + '. FEMA records county and tribal declarations separately, so the two are not directly comparable.</div>'
+        // Oklahoma Tribal Statistical Areas and other statistical boundaries are
+        // not governed reservation land, so attributing every county declaration
+        // across them is a longer reach. Say so on the areas it applies to.
+        var statNote = (t.BOUNDARY_BASIS === 'Statistical area')
+            ? '<div class="hover-note">This is a statistical boundary, not governed reservation land, so its county coverage spans a wider area.</div>'
             : '';
 
         var html = ''
             + '<div class="hover-county">' + areaName + '</div>'
             + '<div class="hover-sub">' + countyTxt + (stateTxt ? ' · ' + stateTxt : '') + '</div>'
             + '<div class="hover-summary lens-tribal">' + headline + '</div>'
+            + '<div class="hover-sub">' + (span ? span + ' · ' : '') + 'covering this land</div>'
             + split
             + pop
-            + countyNote;
+            + '<div class="hover-note">FEMA records tribal and county declarations separately. A county declaration covers the land inside it whether or not the tribe is named.</div>'
+            + statNote;
         hoverPopup.setLngLat(e.lngLat).setHTML(html).addTo(map);
     });
 
