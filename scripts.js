@@ -734,7 +734,7 @@ map.on('load', function () {
                         <span>12+</span>
                     </div>
                 </div>
-                <div class="legend-units">Federal disaster declarations in counties containing federally recognized tribal land (reservations and trust lands), 2011&ndash;2024. Outlines show the tribal land. County declarations cover the whole county; declarations requested by tribes are recorded without a county and are not included.</div>
+                <div class="legend-units">Federal disaster declarations in counties with federally recognized tribal land, 2011&ndash;2024. Outlines show tribal land.</div>
                 <div class="legend-no-data">
                     <span class="no-data-swatch" style="background:#ECECEC"></span>
                     <span>Counties without federally recognized tribal land</span>
