@@ -697,10 +697,9 @@ map.on('load', function () {
 
         tribal: {
             label: 'Tribal Communities',
-            // Counties are a gray backdrop. Colour sits on tribal land that
-            // received its own major disaster declarations (tribe-requested,
-            // FEMA OpenFEMA, 2011–2024), counted per tribal area. Outlines
-            // show all federally recognized tribal land for context.
+            // Counties are a gray backdrop. Colour sits on each FEMA designated
+            // tribal area, by major disaster declarations naming it (tribe- or
+            // state-requested, FEMA OpenFEMA, 2011–2024). Outlines show all tribal land.
             paintExpression: '#ECECEC',
             declPaint: [
                 'step',
@@ -708,7 +707,7 @@ map.on('load', function () {
                 '#e6f598',         //  1 (chartreuse-to-olive: the one hue no other lens uses)
                 2,  '#bede3a',     //  2
                 3,  '#86a80f',     //  3
-                4,  '#4d6b05'      //  4
+                4,  '#4d6b05'      //  4+
             ],
             legendHTML: `
                 <div class="legend-title"><b>Tribal Communities</b><br><span class="legend-mode-name">Tribal disaster declarations</span></div>
@@ -717,10 +716,10 @@ map.on('load', function () {
                         <span>1</span>
                         <span>2</span>
                         <span>3</span>
-                        <span>4</span>
+                        <span>4+</span>
                     </div>
                 </div>
-                <div class="legend-units">Major disaster declarations requested by tribes, 2011&ndash;2024. Outlines show all tribal land.</div>
+                <div class="legend-units">Major disaster declarations per FEMA designated tribal area, requested by the tribe or the state, 2011&ndash;2024. Outlines show all tribal land.</div>
                 <div class="legend-no-data">
                     <span class="no-data-swatch" style="background:#ECECEC"></span>
                     <span>Counties (not part of this lens)</span>
@@ -838,8 +837,8 @@ map.on('load', function () {
     // applyActiveStyling, exactly like the SVI tract layers above.
     // -------------------------------------------------------------
     // Tribal areas with their own major disaster declarations
-    // (data/tribal_declarations.geojson): DECL is the count of distinct
-    // tribe-requested declarations, LIST the year and title of each.
+    // (data/tribal_declarations.geojson): DECL counts distinct declarations
+    // naming the area (TRIBE_N + STATE_N), LIST the fiscal year and incident of each.
     map.addSource('tribal-decl', {
         type: 'geojson',
         data: 'data/tribal_declarations.geojson'
@@ -1525,8 +1524,8 @@ map.on('load', function () {
     });
     map.on('mouseleave', 'tribal-areas-hit', function () { hoverPopup.remove(); });
 
-    // Tribal declaration hover: the tribal area, its own declaration count,
-    // then each declaration by fiscal year.
+    // Tribal declaration hover: the tribal area, its declaration count and who
+    // requested them, then each declaration by fiscal year.
     map.on('mousemove', 'tribal-decl-layer', function (e) {
         if (popup.isOpen()) { hoverPopup.remove(); return; }
         if (!e.features || !e.features.length) return;
@@ -1535,8 +1534,10 @@ map.on('load', function () {
         var items = String(t.LIST || '').split(' | ').filter(Boolean);
         var html = ''
             + '<div class="hover-county">' + (t.NAMELSAD || 'Tribal land') + '</div>'
-            + '<div class="hover-summary lens-tribal">' + n + ' tribal disaster ' + (n === 1 ? 'declaration' : 'declarations') + '</div>'
-            + '<div class="hover-sub">Requested by the tribe, 2011–2024</div>'
+            + '<div class="hover-summary lens-tribal">' + n + ' major disaster ' + (n === 1 ? 'declaration' : 'declarations') + ', 2011–2024</div>'
+            + '<div class="hover-sub">' + [[Number(t.TRIBE_N) || 0, 'requested by the tribe'], [Number(t.STATE_N) || 0, 'requested by the state']]
+                .filter(function (x) { return x[0] > 0; }).map(function (x) { return x[0] + ' ' + x[1]; }).join(' · ') + '</div>'
+            + (t.FEMA ? '<div class="hover-sub">FEMA designated area: ' + t.FEMA + '</div>' : '')
             + tribalPopLine(t)
             + (items.length ? '<div class="hover-note">' + items.join('<br>') + '</div>' : '');
         hoverPopup.setMaxWidth('300px');
