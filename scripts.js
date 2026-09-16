@@ -1524,22 +1524,32 @@ map.on('load', function () {
     });
     map.on('mouseleave', 'tribal-areas-hit', function () { hoverPopup.remove(); });
 
-    // Tribal declaration hover: the tribal area, its declaration count and who
-    // requested them, then each declaration by fiscal year.
+    // Tribal declaration hover: count, who requested, disaster types, population.
+    // FEMA's "Fire" incident type is wildfire, so say so.
     map.on('mousemove', 'tribal-decl-layer', function (e) {
         if (popup.isOpen()) { hoverPopup.remove(); return; }
         if (!e.features || !e.features.length) return;
         var t = e.features[0].properties;
         var n = Number(t.DECL) || 0;
-        var items = String(t.LIST || '').split(' | ').filter(Boolean);
+        var counts = {};
+        String(t.LIST || '').split(' | ').filter(Boolean).forEach(function (item) {
+            var type = item.split(': ').slice(1).join(': ');
+            if (type === 'Fire') type = 'Wildfire';
+            counts[type] = (counts[type] || 0) + 1;
+        });
+        var types = Object.keys(counts)
+            .sort(function (a, b) { return counts[b] - counts[a] || a.localeCompare(b); })
+            .map(function (k) { return k + ' (' + counts[k] + ')'; }).join(' · ');
+        var split = [[Number(t.TRIBE_N) || 0, 'requested by the tribe'], [Number(t.STATE_N) || 0, 'by the state']]
+            .filter(function (x) { return x[0] > 0; });
+        if (split.length === 1) split[0][1] = split[0][1].replace(/^by/, 'requested by');
+        var pop = Number(t.POP);
         var html = ''
             + '<div class="hover-county">' + (t.NAMELSAD || 'Tribal land') + '</div>'
             + '<div class="hover-summary lens-tribal">' + n + ' major disaster ' + (n === 1 ? 'declaration' : 'declarations') + ', 2011–2024</div>'
-            + '<div class="hover-sub">' + [[Number(t.TRIBE_N) || 0, 'requested by the tribe'], [Number(t.STATE_N) || 0, 'requested by the state']]
-                .filter(function (x) { return x[0] > 0; }).map(function (x) { return x[0] + ' ' + x[1]; }).join(' · ') + '</div>'
-            + (t.FEMA ? '<div class="hover-sub">FEMA designated area: ' + t.FEMA + '</div>' : '')
-            + tribalPopLine(t)
-            + (items.length ? '<div class="hover-note">' + items.join('<br>') + '</div>' : '');
+            + '<div class="hover-sub">' + split.map(function (x) { return x[0] + ' ' + x[1]; }).join(' · ') + '</div>'
+            + (types ? '<div class="hover-sub">' + types + '</div>' : '')
+            + '<div class="hover-sub">' + (Number(t.POP_OK) === 1 && isFinite(pop) ? 'Population ' + pop.toLocaleString('en-US') : 'Population too small to estimate') + '</div>';
         hoverPopup.setMaxWidth('300px');
         hoverPopup.setLngLat(e.lngLat).setHTML(html).addTo(map);
     });
