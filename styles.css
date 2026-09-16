@@ -300,6 +300,7 @@ a:active {
     font-weight: bold;
     color: #7a0177;
 }
+.aoa-hover-popup .hover-race-row.tribal span:last-child { color: #4d6b05; }
 
 
 /* INDICATORS TABLE — sits inside the click popup's County Data tab.

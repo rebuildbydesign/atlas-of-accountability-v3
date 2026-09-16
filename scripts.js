@@ -1524,33 +1524,34 @@ map.on('load', function () {
     });
     map.on('mouseleave', 'tribal-areas-hit', function () { hoverPopup.remove(); });
 
-    // Tribal declaration hover: count, who requested, disaster types, population.
-    // FEMA's "Fire" incident type is wildfire, so say so.
+    // Tribal declaration hover, laid out like the county lenses: name and state,
+    // count, one grey context line, then disaster types as rows (like the race
+    // rows under Communities of Color). FEMA's "Fire" incident type is wildfire.
     map.on('mousemove', 'tribal-decl-layer', function (e) {
         if (popup.isOpen()) { hoverPopup.remove(); return; }
         if (!e.features || !e.features.length) return;
         var t = e.features[0].properties;
-        var n = Number(t.DECL) || 0;
         var counts = {};
         String(t.LIST || '').split(' | ').filter(Boolean).forEach(function (item) {
             var type = item.split(': ').slice(1).join(': ');
             if (type === 'Fire') type = 'Wildfire';
             counts[type] = (counts[type] || 0) + 1;
         });
-        var types = Object.keys(counts)
-            .sort(function (a, b) { return counts[b] - counts[a] || a.localeCompare(b); })
-            .map(function (k) { return k + ' (' + counts[k] + ')'; }).join(' · ');
-        var split = [[Number(t.TRIBE_N) || 0, 'requested by the tribe'], [Number(t.STATE_N) || 0, 'by the state']]
+        var types = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a] || a.localeCompare(b); });
+        var parts = [[Number(t.TRIBE_N) || 0, 'requested by the tribe'], [Number(t.STATE_N) || 0, 'by the state']]
             .filter(function (x) { return x[0] > 0; });
-        if (split.length === 1) split[0][1] = split[0][1].replace(/^by/, 'requested by');
-        var pop = Number(t.POP);
+        if (parts.length === 1) parts[0][1] = parts[0][1].replace(/^by/, 'requested by');
+        parts = parts.map(function (x) { return x[0] + ' ' + x[1]; });
+        var pop = fmtPopulation(t.POP);
+        if (Number(t.POP_OK) === 1 && pop) parts.push('pop. ' + pop);
         var html = ''
-            + '<div class="hover-county">' + (t.NAMELSAD || 'Tribal land') + '</div>'
-            + '<div class="hover-summary lens-tribal">' + n + ' major disaster ' + (n === 1 ? 'declaration' : 'declarations') + ', 2011–2024</div>'
-            + '<div class="hover-sub">' + split.map(function (x) { return x[0] + ' ' + x[1]; }).join(' · ') + '</div>'
-            + (types ? '<div class="hover-sub">' + types + '</div>' : '')
-            + '<div class="hover-sub">' + (Number(t.POP_OK) === 1 && isFinite(pop) ? 'Population ' + pop.toLocaleString('en-US') : 'Population too small to estimate') + '</div>';
-        hoverPopup.setMaxWidth('300px');
+            + '<div class="hover-county">' + (t.NAMELSAD || 'Tribal land') + (t.STATE ? ', ' + t.STATE : '') + '</div>'
+            + '<div class="hover-summary lens-tribal">' + fmtDisasterDeclarations(t.DECL) + '</div>'
+            + '<div class="hover-sub">' + parts.join(' · ') + '</div>'
+            + (types.length ? '<div class="hover-race">' + types.map(function (k) {
+                return '<div class="hover-race-row tribal"><span>' + k + '</span><span>' + counts[k] + '</span></div>';
+            }).join('') + '</div>' : '');
+        hoverPopup.setMaxWidth('260px');
         hoverPopup.setLngLat(e.lngLat).setHTML(html).addTo(map);
     });
     map.on('mouseleave', 'tribal-decl-layer', function () { hoverPopup.remove(); });
