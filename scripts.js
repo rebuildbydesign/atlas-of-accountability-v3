@@ -704,19 +704,19 @@ map.on('load', function () {
             declPaint: [
                 'step',
                 ['to-number', ['coalesce', ['get', 'DECL'], 0]],
-                '#e6f598',         //  1 (chartreuse-to-olive: the one hue no other lens uses)
-                2,  '#bede3a',     //  2
-                3,  '#86a80f',     //  3
-                4,  '#4d6b05'      //  4+
+                '#e6f598',         //  1-2 (chartreuse-to-olive: the one hue no other lens uses)
+                3,  '#bede3a',     //  3-4
+                5,  '#86a80f',     //  5-6
+                7,  '#4d6b05'      //  7+
             ],
             legendHTML: `
                 <div class="legend-title"><b>Tribal Communities</b><br><span class="legend-mode-name">Tribal disaster declarations</span></div>
                 <div class="color-bar lens-tribal" style="background: linear-gradient(to right, #e6f598, #bede3a, #86a80f, #4d6b05);">
                     <div class="color-description">
-                        <span>1</span>
                         <span>2</span>
-                        <span>3</span>
-                        <span>4+</span>
+                        <span>4</span>
+                        <span>6</span>
+                        <span>8+</span>
                     </div>
                 </div>
                 <div class="legend-units">Major disaster declarations per FEMA designated tribal area, requested by the tribe or the state, 2011&ndash;2024. Outlines show all tribal land.</div>
