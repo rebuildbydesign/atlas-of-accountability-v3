@@ -1553,9 +1553,348 @@ a:active {
 }
 
 
-/* MOBILE + TABLET (≤768PX) — BOTTOM-SHEET POPUP, TAB TOGGLE, COMPACT LEGEND */
+/* Rep column wrappers only lay things out on phones; desktop ignores them. */
+.rep-grid,
+.rep-col {
+    display: contents;
+}
+.popup-col-rep .rep-col-state h3:first-of-type {
+    margin-top: 14px;
+}
+.lbl-mobile,
+.rep-mobile-title,
+.rep-role,
+.legend-info-toggle,
+#control-backdrop {
+    display: none;
+}
+
+
+/* PHONES AND SMALL TABLETS (≤768PX) — audit REB-534 */
 @media (max-width: 768px) {
-    /* Convert the Mapbox popup into a bottom sheet anchored to the viewport */
+
+    /* ---------- Top of screen (REB-540) ---------- */
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 124px;
+        background: linear-gradient(#fff 72%, rgba(255, 255, 255, 0));
+        z-index: 998;
+        pointer-events: none;
+    }
+
+    .css-atlas-title {
+        top: 10px;
+        left: 12px;
+        right: 68px;
+        width: auto;
+        max-width: none;
+        transform: none;
+        text-align: left;
+    }
+
+    .css-atlas-title .atlas-word {
+        white-space: normal;
+        font-size: 23px;
+    }
+
+    .css-atlas-title .atlas-sub {
+        display: none;
+    }
+
+    #info-icon {
+        top: 8px;
+        left: auto;
+        right: 12px;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #000;
+        display: grid;
+        place-items: center;
+    }
+
+    #info-icon .fa-question-circle {
+        font-size: 44px;
+        color: #000;
+        background: #fff;
+        border-radius: 50%;
+    }
+
+    .mapboxgl-ctrl-top-right {
+        top: 64px !important;
+        left: 12px;
+        right: 12px;
+        z-index: 1001;
+    }
+
+    .mapboxgl-ctrl-top-right .mapboxgl-ctrl-group {
+        display: none;
+    }
+
+    .mapboxgl-ctrl-top-right .mapboxgl-ctrl-geocoder {
+        position: relative;
+        top: 0;
+        right: 0;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none;
+        margin: 0;
+        float: none;
+    }
+
+    .mapboxgl-ctrl-geocoder--input {
+        height: 44px !important;
+        font-size: 16px !important;
+        padding: 6px 40px !important;
+    }
+
+    .mapboxgl-ctrl-geocoder--icon-search {
+        top: 12px !important;
+        left: 10px !important;
+        width: 20px !important;
+        height: 20px !important;
+    }
+
+    .mapboxgl-ctrl-geocoder .suggestions {
+        font-size: 15px;
+    }
+
+    .mapboxgl-ctrl-geocoder .suggestions > li > a {
+        padding: 10px 12px;
+    }
+
+    /* ---------- Bottom bar: legend + layers button (REB-539, REB-538) ---------- */
+    #legend {
+        left: 10px;
+        right: 64px;
+        bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+        width: auto;
+        max-width: none;
+        padding: 8px 40px 8px 10px;
+        background: #fff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        font-size: 12px;
+    }
+
+    .legend-info-toggle {
+        display: grid;
+        place-items: center;
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 44px;
+        height: 44px;
+        background: none;
+        border: 0;
+        padding: 0;
+        font: 700 13px Georgia, serif;
+        color: #000;
+        cursor: pointer;
+    }
+
+    .legend-info-toggle::before {
+        content: '';
+        position: absolute;
+        width: 22px;
+        height: 22px;
+        border: 1.5px solid #000;
+        border-radius: 50%;
+        box-sizing: border-box;
+    }
+
+    #legend .legend-title {
+        font-size: 12px;
+        margin-bottom: 6px;
+    }
+
+    #legend .legend-title br,
+    #legend .legend-mode-name,
+    #legend .legend-units,
+    #legend .legend-no-data,
+    #legend .legend-item,
+    #legend .svi-scope-hint {
+        display: none;
+    }
+
+    #legend.legend-expanded .legend-title br,
+    #legend.legend-expanded .legend-mode-name,
+    #legend.legend-expanded .legend-units,
+    #legend.legend-expanded .legend-no-data,
+    #legend.legend-expanded .svi-scope-hint {
+        display: block;
+    }
+
+    #legend.legend-expanded .legend-no-data,
+    #legend.legend-expanded .legend-item {
+        display: flex;
+    }
+
+    #legend .legend-units {
+        font-size: 12px;
+    }
+
+    #legend .legend-mode-name,
+    #legend .legend-no-data {
+        font-size: 12px;
+    }
+
+    #legend .color-bar {
+        height: 12px;
+        margin-bottom: 18px;
+    }
+
+    #legend .color-description {
+        top: 14px;
+        padding: 0;
+        color: #000;
+        font-size: 12px;
+        font-weight: normal;
+    }
+
+    #control-panel {
+        right: 10px;
+        bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+        width: 44px;
+        max-width: none;
+        border-radius: 0;
+        font-size: 15px;
+    }
+
+    #control-panel.is-collapsed .control-collapse-toggle {
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        justify-content: center;
+    }
+
+    #control-panel.is-collapsed .control-collapse-glyph {
+        font-size: 20px;
+    }
+
+    #control-panel.is-collapsed .control-collapse-label,
+    #control-panel.is-collapsed .control-collapse-icon {
+        display: none;
+    }
+
+    /* Open: a bottom drawer over a dimmed map. */
+    #control-panel:not(.is-collapsed) {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: auto;
+        max-height: 82vh;
+        overflow-y: auto;
+        background: #fff;
+        border-radius: 14px 14px 0 0;
+        box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.2);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+        z-index: 1060;
+    }
+
+    body.layers-open #control-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.35);
+        z-index: 1055;
+    }
+
+    #control-panel:not(.is-collapsed) .control-collapse-toggle {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        height: 60px;
+        padding: 14px 6px 0 16px;
+        background: #fff;
+        color: #000;
+        font-size: 18px;
+        letter-spacing: 0;
+        text-transform: none;
+    }
+
+    #control-panel:not(.is-collapsed) .control-collapse-toggle::before {
+        content: '';
+        position: absolute;
+        top: 8px;
+        left: 50%;
+        width: 40px;
+        height: 5px;
+        margin-left: -20px;
+        border-radius: 3px;
+        background: #c8c8c8;
+    }
+
+    #control-panel:not(.is-collapsed) .control-collapse-glyph {
+        display: none;
+    }
+
+    #control-panel:not(.is-collapsed) .control-collapse-icon {
+        width: 44px;
+        height: 44px;
+        display: grid;
+        place-items: center;
+        font-size: 0;
+    }
+
+    #control-panel:not(.is-collapsed) .control-collapse-icon::after {
+        content: '\00d7';
+        font-size: 30px;
+        font-weight: normal;
+    }
+
+    .control-panel-body {
+        padding: 0 0 12px;
+    }
+
+    .control-subgroup-title {
+        margin: 0;
+        padding: 12px 16px 6px;
+        border-top: 0;
+        font-size: 12px;
+        letter-spacing: 1px;
+        color: #666;
+    }
+
+    .control-subgroup-title:first-child {
+        padding-top: 4px;
+    }
+
+    .control-options {
+        gap: 0;
+    }
+
+    .control-option,
+    .control-suboption {
+        min-height: 48px;
+        padding: 0 16px;
+        gap: 12px;
+        border-bottom: 1px solid #eee;
+        border-radius: 0;
+        font-size: 15px;
+    }
+
+    .control-option input[type="radio"],
+    .control-suboption input[type="radio"] {
+        width: 20px;
+        height: 20px;
+        flex: none;
+    }
+
+    .control-option:has(input:checked) {
+        background: #f4f4f4;
+        font-weight: bold;
+    }
+
+    .control-suboptions {
+        margin: 0 0 0 32px;
+    }
+
+    /* ---------- Popup panel: county, reps, tribal (REB-535, REB-536, REB-537) ---------- */
     .mapboxgl-popup {
         position: fixed !important;
         top: auto !important;
@@ -1565,419 +1904,392 @@ a:active {
         width: 100vw !important;
         max-width: 100vw !important;
         transform: none !important;
-        z-index: 1050 !important;  /* above legend + info panel */
+        z-index: 1050 !important;
     }
 
     .mapboxgl-popup-tip {
         display: none !important;
     }
 
+    /* position: static lets the close button sit on the fixed popup, so it
+       stays put while the content scrolls. */
     .mapboxgl-popup-content {
-        max-height: 60vh;
-        overflow-y: auto;
-        border-radius: 12px 12px 0 0;
-        padding: 15px 15px 24px;
+        position: static;
+        max-height: 62vh;
+        overflow-y: scroll;
+        padding: 0 16px calc(24px + env(safe-area-inset-bottom, 0px));
+        border-radius: 0;
         box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+        font-size: 14px;
+        scrollbar-width: thin;
+        scrollbar-color: #7a7a7a #e4e4e4;
+    }
+
+    .mapboxgl-popup-content::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .mapboxgl-popup-content::-webkit-scrollbar-track {
+        background: #e4e4e4;
+        border-radius: 3px;
+    }
+
+    .mapboxgl-popup-content::-webkit-scrollbar-thumb {
+        background: #7a7a7a;
+        border-radius: 3px;
     }
 
     .mapboxgl-popup-close-button {
-        font-size: 28px;
-        padding: 4px 10px;
-        line-height: 1;
+        top: 14px;
+        right: 8px;
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        font-size: 30px;
+        line-height: 44px;
         color: #000;
         z-index: 10;
     }
 
-    /* Keep the Representatives tab from extending under the close button. */
-    .popup-tabs {
-        padding-right: 40px;
+    .popup-container {
+        display: block;
+        max-width: 100%;
+        font-size: 14px;
     }
 
-    /* Push the Mapbox top-right controls (geocoder + zoom) down so they
-       don't crowd the atlas title banner on mobile. */
-    .mapboxgl-ctrl-top-right {
-        top: 18px !important;
-    }
-
-    /* Make the geocoder input more prominent on mobile */
-    .mapboxgl-ctrl-geocoder {
-        min-width: 220px !important;
-        width: 220px !important;
-        font-size: 14px !important;
-    }
-
-    .mapboxgl-ctrl-geocoder--input {
-        height: 42px !important;
-        font-size: 14px !important;
-        padding: 6px 36px !important;
-    }
-
-    .mapboxgl-ctrl-geocoder--icon-search {
-        top: 11px !important;
-        left: 8px !important;
-        width: 20px !important;
-        height: 20px !important;
-    }
-
-    /* Show the tab toggle, hide columns except the active one */
+    /* Segmented toggle, pinned while the content scrolls. */
     .popup-tabs {
         display: flex;
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        gap: 0;
+        margin: 0 -16px 0;
+        padding: 14px 64px 10px 16px;
+        background: #fff;
     }
 
-    .popup-container {
-        gap: 6px;
-        max-width: 100%;
+    .popup-tabs::before {
+        content: '';
+        position: absolute;
+        top: 14px;
+        bottom: 10px;
+        left: 16px;
+        right: 64px;
+        background: #ececec;
+        border-radius: 999px;
+    }
+
+    .popup-tab,
+    .popup-tab:hover:not(.active) {
+        position: relative;
+        height: 44px;
+        margin: 3px 0;
+        padding: 0 6px;
+        border: 0;
+        border-radius: 999px;
+        background: transparent;
+        color: #000;
+        font-size: 12px;
+    }
+
+    .popup-tab:first-child {
+        margin-left: 3px;
+    }
+
+    .popup-tab:last-child {
+        margin-right: 3px;
+    }
+
+    .popup-tab {
+        height: 38px;
+    }
+
+    .popup-tab.active {
+        background: #000;
+        color: #fff;
     }
 
     .popup-column {
         display: none;
-        flex: 1 1 100%;
     }
 
     .popup-column.active {
         display: block;
     }
 
-    /* Mobile only: split each tab's body into two balanced columns so the
-       right-side whitespace is actually used. Title + disaster-count (county
-       tab) and district chip (rep tab) still span full width above the grid. */
-    .popup-subgrid {
+    /* County tab */
+    .popup-county-header h3,
+    .popup-column .popup-county-header h3 {
+        margin: 2px 0 8px;
+        padding: 0;
+        border: 0;
+        font-size: 24px;
+        line-height: 1.15;
+    }
+
+    .popup-county-sub,
+    .popup-pop {
+        font-size: 14px;
+    }
+
+    .classification-badge {
+        font-size: 13px;
+    }
+
+    .disaster-count .count {
+        font-size: 40px;
+    }
+
+    .disaster-count .count-description {
+        font-size: 14px;
+        line-height: 1.3;
+    }
+
+    .indicators-table {
+        font-size: 14px;
+    }
+
+    .indicators-table td {
+        padding: 7px 4px;
+    }
+
+    .indicators-table tr.indicator-subheader td {
+        font-size: 12px;
+        padding-top: 14px;
+    }
+
+    .popup-container p {
+        margin: 6px 0;
+        line-height: 1.35;
+    }
+
+    /* Representatives tab: Congress left, Senate and Governor right */
+    .popup-col-rep {
+        flex-direction: column;
+    }
+
+    .popup-col-rep .rep-mobile-title {
+        display: block;
+        font-size: 24px;
+        font-weight: bold;
+        line-height: 1.15;
+        margin: 2px 0 2px;
+    }
+
+    .popup-col-rep .namelsad {
+        display: block;
+        margin: 0 0 10px;
+        padding: 0;
+        background: none;
+        color: #555;
+        font-size: 14px;
+        font-weight: normal;
+    }
+
+    .lbl-desktop {
+        display: none;
+    }
+
+    .lbl-mobile {
+        display: inline;
+    }
+
+    .popup-col-rep .rep-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 14px;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 0 14px;
         align-items: start;
+    }
+
+    .popup-col-rep .rep-col {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .popup-col-rep h3,
+    .popup-col-rep .rep-col-state h3:first-of-type {
+        margin: 4px 0 8px;
+        padding-bottom: 4px;
+        font-size: 12px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    .popup-col-rep .rep-col-state h3 + .senator-info + h3,
+    .popup-col-rep .rep-col-state .senator-info + h3 {
+        margin-top: 14px;
+    }
+
+    .popup-col-rep .rep-name {
+        color: #000;
+        font-weight: bold;
+    }
+
+    .popup-col-rep .rep-name .party {
+        color: #de2d26;
+    }
+
+    .rep-col-congress .rep-info {
+        display: contents;
+    }
+
+    .rep-col-congress h3 { order: 0; }
+    .rep-col-congress .rep-image { order: 1; }
+    .rep-col-congress .rep-name-line { order: 2; }
+    .rep-col-congress .rep-role { order: 3; }
+    .rep-col-congress .social-links { order: 4; }
+
+    .rep-col-congress .rep-image {
+        width: 72px;
+        height: 72px;
+        margin-bottom: 6px;
+    }
+
+    .popup-col-rep .rep-name-line {
+        margin: 0;
+        font-size: 16px;
+        line-height: 1.2;
+    }
+
+    .popup-col-rep .rep-role {
+        display: block;
+        margin: 2px 0 0;
+        font-size: 13px;
+        color: #555;
+    }
+
+    .rep-col-congress .social-links {
+        display: grid;
+        grid-template-columns: repeat(2, 44px);
+        gap: 8px;
         margin-top: 8px;
     }
 
-    .popup-subcol {
-        min-width: 0; /* allow children to shrink inside grid cell */
+    .rep-col-congress .social-links a {
+        width: 44px;
+        height: 44px;
+        display: grid;
+        place-items: center;
     }
 
-    /* Images inside a subcol must scale down to fit the narrower column. */
-    .popup-subcol .atlas-cover {
-        width: 100%;
-        max-width: 180px;
-    }
-
-    .popup-subcol .rep-image {
-        width: 100%;
-        max-width: 120px;
-        height: auto;
-        aspect-ratio: 1 / 1;
-        object-fit: cover;
-    }
-
-    .popup-subcol .rep-info {
-        gap: 10px;
-        flex-wrap: wrap;
-    }
-
-    .popup-subcol .social-links {
-        gap: 8px;
-    }
-
-    .popup-subcol .social-links img {
+    .rep-col-congress .social-links img {
         width: 22px;
         height: 22px;
     }
 
-    .popup-subcol .senator-image {
-        width: 42px;
-        height: 42px;
-        flex-shrink: 0;
+    .senator-info {
+        gap: 0;
     }
 
-    .popup-subcol .senator-row {
-        margin-bottom: 8px;
+    .senator-row {
+        margin-bottom: 10px;
+        font-size: 14px;
+        line-height: 1.2;
     }
 
-    /* Compact legend so it doesn't crowd the bottom-sheet popup */
-    #legend {
-        width: auto;
-        max-width: 200px;
-        padding: 6px;
-        font-size: 10px;
-        bottom: 10px;
+    .senator-image {
+        width: 40px;
+        height: 40px;
+        margin-right: 8px;
     }
 
-    .color-bar {
-        height: 22px;
+    .popup-col-rep .atlas-report-lead {
+        margin: 0 0 6px;
+        padding-top: 16px;
+        font-size: 13px;
     }
 
-    /* When a popup is open on mobile, hide only the legend + info panel
-       + control panel (they compete with the bottom-sheet popup for space).
-       The atlas title and info icon stay visible so branding/help stay accessible. */
+    .atlas-report-cta {
+        font-size: 12px;
+    }
+
+    /* Touch keeps :hover after a tap; hold the report button on its normal colour. */
+    .atlas-report-button:hover {
+        background: #de2d26;
+    }
+
+    /* Tribal tap sheet (REB-541) */
+    .tribal-sheet {
+        padding: 18px 56px 4px 0;
+    }
+
+    .tribal-sheet .hover-county {
+        font-size: 20px;
+        font-weight: bold;
+        line-height: 1.2;
+    }
+
+    .tribal-sheet .hover-summary {
+        margin-top: 4px;
+        font-size: 18px;
+        font-weight: bold;
+        color: #4d6b05;
+    }
+
+    .tribal-sheet .hover-sub {
+        margin-top: 2px;
+        font-size: 13px;
+        color: #555;
+    }
+
+    .tribal-sheet .hover-race {
+        margin: 10px -56px 0 0;
+        border-top: 1px solid #eee;
+    }
+
+    .tribal-sheet .hover-race-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+        font-size: 14px;
+    }
+
+    .tribal-sheet .hover-race-row span:last-child {
+        font-weight: bold;
+        color: #4d6b05;
+    }
+
+    /* Hide the legend and controls while the popup is open */
     body.popup-open #legend,
     body.popup-open #info-panel,
     body.popup-open #control-panel {
         display: none !important;
     }
 
-    /* Compact control panel on mobile.
-       Default state on mobile is COLLAPSED (set by JS), so the panel
-       only shows the toggle pill — which we shrink to an icon to leave
-       room for the legend on the left. When expanded, the panel widens
-       and is allowed to float above the legend (legend hides on popup
-       open anyway, and the user is actively engaging the panel). */
-    #control-panel {
-        width: auto;
-        max-width: 180px;
-        font-size: 11px;
-        bottom: 10px;
-    }
-
-    /* When collapsed on mobile: show ONLY the layers icon pill (no text
-       label, no +/− indicator). Compact ~44px square so the legend has
-       room. The .is-collapsed class is set by scripts.js. */
-    #control-panel.is-collapsed .control-collapse-label,
-    #control-panel.is-collapsed .control-collapse-icon {
-        display: none;
-    }
-    #control-panel.is-collapsed .control-collapse-toggle {
-        padding: 10px 12px;
-        justify-content: center;
-    }
-
-    /* When expanded on mobile, give the panel a real width so the
-       options text doesn't wrap awkwardly. */
-    #control-panel:not(.is-collapsed) {
-        width: 200px;
-    }
-
-    .control-collapse-toggle {
-        font-size: 11px;
-        padding: 6px 10px;
-    }
-    .control-panel-body {
-        padding: 8px 10px 10px;
-    }
-    .control-title {
-        font-size: 10px;
-    }
-
-    /* Info panel auto-dismissed on mobile (JS sets display:none on load);
-       if the user opens it, size it to be less overwhelming */
+    /* ---------- Help panel full screen (REB-542) ---------- */
     #info-panel {
-        max-width: 85vw;
-        max-height: 70vh;
-        padding: 14px;
-        font-size: 12px;
+        position: fixed;
+        inset: 0;
+        top: 0;
+        left: 0;
+        max-width: none;
+        max-height: none;
+        padding: 20px 16px calc(24px + env(safe-area-inset-bottom, 0px));
+        background: #fff;
+        font-size: 14px;
+        line-height: 1.45;
+        z-index: 1100;
+        box-shadow: none;
     }
 
-    /* --- REPRESENTATIVES TAB CLEANUP --- */
-    .popup-col-rep h3 {
-        font-size: 15px;
-        margin-top: 10px;
-        margin-bottom: 10px;
-        padding-bottom: 6px;
+    #close-info-panel {
+        top: 8px;
+        right: 8px;
+        width: 44px;
+        height: 44px;
+        display: grid;
+        place-items: center;
     }
 
-    .popup-col-rep h3:first-child {
-        margin-top: 0;
+    #close-info-panel .fa-times {
+        font-size: 26px;
     }
 
-    .popup-col-rep .namelsad {
-        display: inline-block;
-        font-size: 12px;
-        padding: 4px 8px;
-        margin-bottom: 10px;
-        letter-spacing: 0.5px;
-    }
-
-    .rep-info {
-        gap: 18px;
-        align-items: center;
-        margin-bottom: 4px;
-    }
-
-    .rep-image {
-        width: 110px;
-        height: 110px;
-    }
-
-    .social-links {
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .social-links img {
-        width: 26px;
-        height: 26px;
-    }
-
-    .senator-row {
-        margin-bottom: 10px;
-    }
-
-    .senator-image {
-        width: 52px;
-        height: 52px;
-    }
-
-    /* --- COUNTY DATA TAB CLEANUP --- */
-    .popup-col-disaster h3 {
-        font-size: 17px;
-        margin-bottom: 10px;
-        padding-bottom: 6px;
-    }
-
-    .popup-col-disaster .namelsad {
-        font-size: 13px;
-        padding: 5px 8px;
-        margin: 14px 0 10px;
-    }
-
-    .disaster-count {
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 10px;
-    }
-
-    .disaster-count .count {
-        font-size: 44px;
-        padding-right: 4px;
-    }
-
-    .disaster-count .count-description {
-        font-size: 13px;
-        line-height: 1.25;
-    }
-
-    .atlas-cover {
-        width: 200px;
-        margin-top: 4px;
-    }
-
-    .popup-container p {
-        margin-top: 6px;
-        margin-bottom: 6px;
-        line-height: 1.35;
-    }
-}
-
-/* MOBILE RESPONSIVE STYLE FOR MAX WIDTH 400PX */
-@media (max-width: 400px) {
-    .popup-container {
-        width: 100%;
-        max-width: 100%;
-    }
-
-    .popup-column {
-        flex: 1 1 100%;
-    }
-
-    .popup-column h3 {
-        font-size: calc(8px + 0.2vw);
-        margin-bottom: 3px;
-    }
-
-    .disaster-count .count {
-        font-size: 30px;
-        margin-top: 6px;
-    }
-
-    .disaster-count .count-description {
-        font-size: 9px;
-        line-height: 1.2;
-        margin-top: 2px;
-    }
-
-    .namelsad {
-        font-size: 9px;
-        margin-bottom: 1px;
-    }
-
-    .table-cell {
-        padding: 2px;
-    }
-
-    .atlas-cover {
-        width: 130px;
-        margin-bottom: 1px;
-    }
-
-    .rep-image {
-        width: 80px;
-        height: 80px;
-    }
-
-    .senator-image {
-        width: 50px;
-        height: 50px;
-    }
-
-    .social-links img {
-        width: 16px;
-        height: 16px;
-    }
-
-    p {
-        font-size: 9px;
-        line-height: 1.2;
-    }
-
-    b {
-        font-size: 9px;
-        line-height: 1.2;
-    }
-
-    li {
-        font-size: 9px;
-        line-height: 1.2;
-    }
-
-    h2,
-    h3 {
-        font-size: 11px;
-        line-height: 1.2;
-    }
-
-    a:link,
-    a:visited,
-    a:hover,
-    a:active {
-        font-size: 9px;
-        line-height: 1.2;
-    }
-
-    .formatted-value {
-        font-size: 9px;
-        line-height: 1.2;
-    }
-
-    .popup-container p {
-        margin-bottom: 2px;
-    }
-
-    .button-report {
-        font-size: 11px;
-        padding: 0.175em 0.35em;
-    }
-
-    #legend {
-        width: 180px;
-        padding: 2px;
-        font-size: 8px;
-    }
-
-    .color-bar {
-        height: 20px;
-    }
-
-    .color-description {
-        font-size: 9px;
-    }
-
-    .legend-item {
-        font-size: 9px;
-    }
-
-    .legend-rectangle {
-        width: 30px;
-        height: 10px;
-    }
-
-    #info-panel {
-        width: 280px;
+    .info-panel-partner-link {
+        font-size: 14px;
+        padding: 8px 12px;
     }
 }

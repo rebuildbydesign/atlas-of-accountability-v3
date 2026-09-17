@@ -9,6 +9,9 @@ const map = new mapboxgl.Map({
     style: 'mapbox://styles/j00by/clvx7jcp006zv01ph3miketyz',
     center: [-96.68288, 39.32267],
     zoom: initialZoom,
+    // Phones: fit the lower 48 between the header and the bottom bar.
+    bounds: window.innerWidth <= 768 ? [[-125.0, 24.4], [-66.9, 49.4]] : undefined,
+    fitBoundsOptions: { padding: { top: 130, bottom: 110, left: 12, right: 12 } },
     maxBounds: [
         [-220.0, -20.0],  // Southwest coordinates (including US Territories)
         [-50.0, 74.0]    // Northeast coordinates (including Puerto Rico)
@@ -207,6 +210,14 @@ map.on('load', function () {
                 requestAnimationFrame(fitPopupDesktopIntoView);
             });
         });
+    }
+
+    // Touch screens: help steps say tap and pinch instead of click and mouse.
+    if (window.matchMedia('(hover: none)').matches) {
+        var helpSteps = infoPanel.querySelectorAll('p');
+        if (helpSteps[0]) helpSteps[0].innerHTML = helpSteps[0].innerHTML.replace('1) CLICK ON A COUNTY', '1) TAP A COUNTY');
+        if (helpSteps[1]) helpSteps[1].innerHTML = helpSteps[1].innerHTML.replace('located at the top right corner of the map', 'using the search bar at the top of the map');
+        if (helpSteps[2]) helpSteps[2].innerHTML = '<b>3) NAVIGATE THE MAP</b> by dragging with one finger. Pinch to zoom in and out and explore other parts of the country.';
     }
 
     // Ensure that the info-icon event listener is added after the map has fully loaded
@@ -1250,6 +1261,22 @@ map.on('load', function () {
         });
     });
 
+    // Phones: legend shows the lens name and colour bar; the "i" button expands the note.
+    var legendEl = document.getElementById('legend');
+    if (legendEl) {
+        var legendInfoBtn = document.createElement('button');
+        legendInfoBtn.type = 'button';
+        legendInfoBtn.className = 'legend-info-toggle';
+        legendInfoBtn.setAttribute('aria-label', 'Show legend details');
+        legendInfoBtn.setAttribute('aria-expanded', 'false');
+        legendInfoBtn.textContent = 'i';
+        legendInfoBtn.addEventListener('click', function () {
+            var open = legendEl.classList.toggle('legend-expanded');
+            legendInfoBtn.setAttribute('aria-expanded', String(open));
+        });
+        legendEl.insertBefore(legendInfoBtn, legendEl.firstChild);
+    }
+
     // Render the initial legend body for the default lens.
     setLens('disaster');
 
@@ -1524,13 +1551,10 @@ map.on('load', function () {
     });
     map.on('mouseleave', 'tribal-areas-hit', function () { hoverPopup.remove(); });
 
-    // Tribal declaration hover, laid out like the county lenses: name and state,
-    // count, one grey context line, then disaster types as rows (like the race
-    // rows under Communities of Color). FEMA's "Fire" incident type is wildfire.
-    map.on('mousemove', 'tribal-decl-layer', function (e) {
-        if (popup.isOpen()) { hoverPopup.remove(); return; }
-        if (!e.features || !e.features.length) return;
-        var t = e.features[0].properties;
+    // Tribal declaration content, laid out like the county lenses: name and state,
+    // count, one grey context line, then disaster types as rows. Shared by the
+    // desktop hover and the phone bottom sheet. FEMA's "Fire" incident type is wildfire.
+    function tribalDeclHTML(t) {
         var counts = {};
         String(t.LIST || '').split(' | ').filter(Boolean).forEach(function (item) {
             var type = item.split(': ').slice(1).join(': ');
@@ -1544,15 +1568,20 @@ map.on('load', function () {
         parts = parts.map(function (x) { return x[0] + ' ' + x[1]; });
         var pop = fmtPopulation(t.POP);
         if (Number(t.POP_OK) === 1 && pop) parts.push('pop. ' + pop);
-        var html = ''
+        return ''
             + '<div class="hover-county">' + (t.NAMELSAD || 'Tribal land') + (t.STATE ? ', ' + t.STATE : '') + '</div>'
             + '<div class="hover-summary lens-tribal">' + fmtDisasterDeclarations(t.DECL) + '</div>'
             + '<div class="hover-sub">' + parts.join(' · ') + '</div>'
             + (types.length ? '<div class="hover-race">' + types.map(function (k) {
                 return '<div class="hover-race-row tribal"><span>' + k + '</span><span>' + counts[k] + '</span></div>';
             }).join('') + '</div>' : '');
+    }
+
+    map.on('mousemove', 'tribal-decl-layer', function (e) {
+        if (popup.isOpen() || isMobile()) { hoverPopup.remove(); return; }
+        if (!e.features || !e.features.length) return;
         hoverPopup.setMaxWidth('260px');
-        hoverPopup.setLngLat(e.lngLat).setHTML(html).addTo(map);
+        hoverPopup.setLngLat(e.lngLat).setHTML(tribalDeclHTML(e.features[0].properties)).addTo(map);
     });
     map.on('mouseleave', 'tribal-decl-layer', function () { hoverPopup.remove(); });
 
@@ -1832,10 +1861,10 @@ map.on('load', function () {
 
         var hasGovernor = c.GOVERNOR && c.GOVERNOR !== 'N/A' && c.GOVERNOR.trim() !== '';
         var governorBlock = hasGovernor ? (''
-            + '<h3>State Governor</h3>'
+            + '<h3><span class="lbl-desktop">State Governor</span><span class="lbl-mobile">Governor</span></h3>'
             + '<div class="senator-info"><div class="senator-row">'
             +   '<img src="' + c.GOVERNOR_PIC + '" alt="Governor" class="senator-image">'
-            +   '<div><a href="' + c.GOVERNOR_URL + '" target="_blank">' + c.GOVERNOR + ' (' + c.GOVERNOR_PARTY + ')</a></div>'
+            +   '<div><a class="rep-name" href="' + c.GOVERNOR_URL + '" target="_blank">' + c.GOVERNOR + '&nbsp;<span class="party">(' + c.GOVERNOR_PARTY + ')</span></a></div>'
             + '</div></div>'
         ) : '';
 
@@ -1884,9 +1913,13 @@ map.on('load', function () {
 
             // ===== REPRESENTATIVES COLUMN =====
             +   '<div class="popup-column popup-col-rep">'
+            +     '<div class="rep-mobile-title">' + p.NAMELSAD + ', ' + stateName + '</div>'
             +     '<p class="namelsad">' + c.NAMELSAD20 + '</p>'
-            +     '<h3>Congress Representative</h3>'
-            +     '<p><a href="' + c.WEBSITEURL + '" target="_blank">' + representativeName + ' (' + c.PARTY + ')</a></p>'
+            +     '<div class="rep-grid">'
+            +     '<div class="rep-col rep-col-congress">'
+            +     '<h3><span class="lbl-desktop">Congress Representative</span><span class="lbl-mobile">Congress</span></h3>'
+            +     '<p class="rep-name-line"><a class="rep-name" href="' + c.WEBSITEURL + '" target="_blank">' + representativeName + '&nbsp;<span class="party">(' + c.PARTY + ')</span></a></p>'
+            +     '<p class="rep-role">U.S. House, ' + String(c.NAMELSAD20).replace('Congressional ', '') + '</p>'
             +     '<div class="rep-info">'
             +       '<img src="' + c.PHOTOURL + '" alt="Profile Picture" class="rep-image">'
             +       '<div class="social-links">'
@@ -1896,18 +1929,22 @@ map.on('load', function () {
             +         '<a href="' + c.INSTAGRAM_ + '" target="_blank"><img src="img/instagram.svg" alt="Instagram"></a>'
             +       '</div>'
             +     '</div>'
-            +     '<h3>US Senators</h3>'
+            +     '</div>'
+            +     '<div class="rep-col rep-col-state">'
+            +     '<h3><span class="lbl-desktop">US Senators</span><span class="lbl-mobile">U.S. Senate</span></h3>'
             +     '<div class="senator-info">'
             +       '<div class="senator-row">'
             +         '<img src="' + c.SENATE1_PIC + '" alt="Senator 1" class="senator-image">'
-            +         '<div><a href="' + c.SENATOR1_URL + '" target="_blank">' + c.SENATOR1 + ' (' + c.SENATOR1_PARTY + ')</a></div>'
+            +         '<div><a class="rep-name" href="' + c.SENATOR1_URL + '" target="_blank">' + c.SENATOR1 + '&nbsp;<span class="party">(' + c.SENATOR1_PARTY + ')</span></a></div>'
             +       '</div>'
             +       '<div class="senator-row">'
             +         '<img src="' + c.SENATOR2_PIC + '" alt="Senator 2" class="senator-image">'
-            +         '<div><a href="' + c.SENATOR2_URL + '" target="_blank">' + c.SENATOR2 + ' (' + c.SENATOR2_PARTY + ')</a></div>'
+            +         '<div><a class="rep-name" href="' + c.SENATOR2_URL + '" target="_blank">' + c.SENATOR2 + '&nbsp;<span class="party">(' + c.SENATOR2_PARTY + ')</span></a></div>'
             +       '</div>'
             +     '</div>'
             +     governorBlock
+            +     '</div>'
+            +     '</div>'
             +     '<p class="atlas-report-lead">For more info, read the Atlas report:</p>'
             +     '<a href="' + c.ATLAS_URL + '" target="_blank" rel="noopener" class="atlas-report-button">'
             +       '<span class="atlas-report-cta">Atlas of Disaster (2011–2024):</span>'
@@ -1931,7 +1968,9 @@ map.on('load', function () {
         if (collapsed) {
             controlBody.classList.add('collapsed');
             controlPanel.classList.add('is-collapsed');
+            document.body.classList.remove('layers-open');
         } else {
+            document.body.classList.add('layers-open');
             controlBody.classList.remove('collapsed');
             controlPanel.classList.remove('is-collapsed');
         }
@@ -1940,8 +1979,19 @@ map.on('load', function () {
         if (iconEl) iconEl.textContent = collapsed ? '+' : '−';
     }
 
+    // Phones: dimmed backdrop behind the open layers drawer; tapping it closes the drawer.
+    var controlBackdrop = document.createElement('div');
+    controlBackdrop.id = 'control-backdrop';
+    document.body.appendChild(controlBackdrop);
+    controlBackdrop.addEventListener('click', function () { setControlCollapsed(true); });
+
     if (controlToggleBtn && controlBody && controlPanel) {
         if (isMobile()) setControlCollapsed(true);
+        document.querySelectorAll('#control-panel input[name="lens"], #control-panel .control-suboption input').forEach(function (input) {
+            input.addEventListener('change', function () {
+                if (isMobile()) setControlCollapsed(true);
+            });
+        });
         controlToggleBtn.addEventListener('click', function () {
             var nowCollapsed = !controlBody.classList.contains('collapsed');
             setControlCollapsed(nowCollapsed);
@@ -2008,7 +2058,20 @@ map.on('load', function () {
     map.on('click', function (e) {
         // Tribal lens: clicks on tribal declaration land stay on the hover, so a
         // county popup with a different number never opens for the same place.
-        if (activeLens === 'tribal' && map.queryRenderedFeatures(e.point, { layers: ['tribal-decl-layer'] }).length) return;
+        // Phones have no hover, so a tap opens the same content as a bottom sheet.
+        if (activeLens === 'tribal') {
+            var tribalHits = map.queryRenderedFeatures(e.point, { layers: ['tribal-decl-layer'] });
+            if (tribalHits.length) {
+                if (isMobile()) {
+                    hoverPopup.remove();
+                    popup.setLngLat(e.lngLat)
+                        .setHTML('<div class="popup-container tribal-sheet">' + tribalDeclHTML(tribalHits[0].properties) + '</div>')
+                        .addTo(map);
+                    finalizePopup(e.lngLat);
+                }
+                return;
+            }
+        }
 
         var congressFeatures = map.queryRenderedFeatures(e.point, { layers: ['congress-layer'] });
 
