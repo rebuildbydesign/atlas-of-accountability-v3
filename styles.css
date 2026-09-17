@@ -1897,6 +1897,8 @@ a:active {
        stays put while the content scrolls. */
     .mapboxgl-popup:not(.aoa-hover-popup) .mapboxgl-popup-content {
         position: static;
+        width: 100vw;
+        box-sizing: border-box;
         max-height: 62vh;
         overflow-y: scroll;
         padding: 0 16px calc(24px + env(safe-area-inset-bottom, 0px));
@@ -1936,6 +1938,7 @@ a:active {
 
     .popup-container {
         display: block;
+        width: 100%;
         max-width: 100%;
         font-size: 14px;
         /* Desktop gives this z-index 9999, which painted the whole sheet over
@@ -1950,8 +1953,12 @@ a:active {
         top: 0;
         z-index: 5;
         gap: 0;
+        /* Full-bleed white strip: border-box keeps the 60px right gutter for the
+           close button inside the width instead of pushing the row off-screen. */
+        box-sizing: border-box;
+        width: calc(100% + 32px);
         margin: 0 -16px 0;
-        padding: 14px 64px 10px 16px;
+        padding: 14px 60px 10px 16px;
         background: #fff;
     }
 
@@ -1961,7 +1968,7 @@ a:active {
         top: 14px;
         bottom: 10px;
         left: 16px;
-        right: 64px;
+        right: 60px;
         background: #ececec;
         border-radius: 999px;
     }
