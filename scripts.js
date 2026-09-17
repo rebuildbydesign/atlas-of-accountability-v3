@@ -212,6 +212,38 @@ map.on('load', function () {
         });
     }
 
+    // Phones: size the wordmark so one line fills the width, whatever the screen.
+    // Measured with a Range (sub-pixel) and refined once, because scrollWidth
+    // rounds and the outline stroke adds width the first pass can't see.
+    function fitAtlasTitle() {
+        var wrap = document.querySelector('.css-atlas-title');
+        var word = wrap && wrap.querySelector('.atlas-word');
+        if (!word || !word.firstChild) return;
+        if (!isMobile()) { word.style.fontSize = ''; return; }
+        var avail = wrap.clientWidth;
+        if (!avail) return;
+
+        function textWidth() {
+            var range = document.createRange();
+            range.selectNodeContents(word);
+            return range.getBoundingClientRect().width;
+        }
+
+        var size = 24;
+        for (var i = 0; i < 3; i++) {
+            word.style.fontSize = size + 'px';
+            var w = textWidth();
+            if (!w) return;
+            size = Math.max(13, Math.min(60, size * (avail / w)));
+        }
+        word.style.fontSize = Math.floor(size * 100) / 100 + 'px';
+    }
+    fitAtlasTitle();
+    window.addEventListener('resize', fitAtlasTitle);
+    window.addEventListener('orientationchange', fitAtlasTitle);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitAtlasTitle);
+    setTimeout(fitAtlasTitle, 600);
+
     // Touch screens: help steps say tap and pinch instead of click and mouse.
     if (window.matchMedia('(hover: none)').matches) {
         var helpSteps = infoPanel.querySelectorAll('p');
@@ -221,18 +253,21 @@ map.on('load', function () {
     }
 
     // Ensure that the info-icon event listener is added after the map has fully loaded
+    // Phones: the help panel is a bottom drawer like Data Layers, over a dimmed map.
+    function setHelpOpen(open) {
+        infoPanel.style.display = open ? 'block' : 'none';
+        document.body.classList.toggle('help-open', open && isMobile());
+        if (open && isMobile()) setControlCollapsed(true);
+    }
+
     document.getElementById('info-icon').addEventListener('click', function () {
-        if (infoPanel.style.display === 'none' || infoPanel.style.display === '') {
-            infoPanel.style.display = 'block';  // Show the panel
-        } else {
-            infoPanel.style.display = 'none';  // Hide the panel
-        }
+        setHelpOpen(infoPanel.style.display === 'none' || infoPanel.style.display === '');
     });
 
 
     // Add event listener for the close button
     document.getElementById('close-info-panel').addEventListener('click', function () {
-        infoPanel.style.display = 'none';
+        setHelpOpen(false);
     });
 
 
@@ -1022,6 +1057,7 @@ map.on('load', function () {
         var helpPanel = document.getElementById('info-panel');
         if (helpPanel && helpPanel.style.display !== 'none') {
             helpPanel.style.display = 'none';
+            document.body.classList.remove('help-open');
         }
     }
 
@@ -1260,22 +1296,6 @@ map.on('load', function () {
             if (e.target.checked) { setOMBFilter(e.target.value); autoHideHelpPanel(); }
         });
     });
-
-    // Phones: legend shows the lens name and colour bar; the "i" button expands the note.
-    var legendEl = document.getElementById('legend');
-    if (legendEl) {
-        var legendInfoBtn = document.createElement('button');
-        legendInfoBtn.type = 'button';
-        legendInfoBtn.className = 'legend-info-toggle';
-        legendInfoBtn.setAttribute('aria-label', 'Show legend details');
-        legendInfoBtn.setAttribute('aria-expanded', 'false');
-        legendInfoBtn.textContent = 'i';
-        legendInfoBtn.addEventListener('click', function () {
-            var open = legendEl.classList.toggle('legend-expanded');
-            legendInfoBtn.setAttribute('aria-expanded', String(open));
-        });
-        legendEl.insertBefore(legendInfoBtn, legendEl.firstChild);
-    }
 
     // Render the initial legend body for the default lens.
     setLens('disaster');
@@ -1983,7 +2003,10 @@ map.on('load', function () {
     var controlBackdrop = document.createElement('div');
     controlBackdrop.id = 'control-backdrop';
     document.body.appendChild(controlBackdrop);
-    controlBackdrop.addEventListener('click', function () { setControlCollapsed(true); });
+    controlBackdrop.addEventListener('click', function () {
+        setControlCollapsed(true);
+        setHelpOpen(false);
+    });
 
     if (controlToggleBtn && controlBody && controlPanel) {
         if (isMobile()) setControlCollapsed(true);

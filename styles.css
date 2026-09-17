@@ -1564,7 +1564,6 @@ a:active {
 .lbl-mobile,
 .rep-mobile-title,
 .rep-role,
-.legend-info-toggle,
 #control-backdrop {
     display: none;
 }
@@ -1588,40 +1587,54 @@ a:active {
 
     .css-atlas-title {
         top: 10px;
-        left: 12px;
-        right: 68px;
+        left: 10px;
+        right: 10px;
         width: auto;
         max-width: none;
         transform: none;
-        text-align: left;
+        text-align: center;
     }
 
+    /* One line, sized by fitAtlasTitle() in scripts.js to fill the width. */
     .css-atlas-title .atlas-word {
-        white-space: normal;
-        font-size: 23px;
+        white-space: nowrap;
+        font-size: 24px;
+        color: #de2d26;
+        -webkit-text-stroke: 1.3px #de2d26;
+        text-stroke: 1.3px #de2d26;
     }
 
     .css-atlas-title .atlas-sub {
-        display: none;
+        display: block;
+        margin-top: 3px;
+        padding: 0;
+        background: none;
+        border-radius: 0;
+        color: #555;
+        font-size: 11.5px;
+        font-weight: 500;
+        letter-spacing: 0.02em;
+        text-transform: none;
+        line-height: 1.3;
     }
 
+    /* Same square black button as Layers, stacked directly above it. */
     #info-icon {
-        top: 8px;
+        top: auto;
         left: auto;
-        right: 12px;
+        right: 10px;
+        bottom: calc(64px + env(safe-area-inset-bottom, 0px));
         width: 44px;
         height: 44px;
-        border-radius: 50%;
         background: #000;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
         display: grid;
         place-items: center;
     }
 
     #info-icon .fa-question-circle {
-        font-size: 44px;
-        color: #000;
-        background: #fff;
-        border-radius: 50%;
+        font-size: 20px;
+        color: #fff;
     }
 
     .mapboxgl-ctrl-top-right {
@@ -1674,36 +1687,10 @@ a:active {
         bottom: calc(12px + env(safe-area-inset-bottom, 0px));
         width: auto;
         max-width: none;
-        padding: 8px 40px 8px 10px;
+        padding: 8px 10px;
         background: #fff;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         font-size: 12px;
-    }
-
-    .legend-info-toggle {
-        display: grid;
-        place-items: center;
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 44px;
-        height: 44px;
-        background: none;
-        border: 0;
-        padding: 0;
-        font: 700 13px Georgia, serif;
-        color: #000;
-        cursor: pointer;
-    }
-
-    .legend-info-toggle::before {
-        content: '';
-        position: absolute;
-        width: 22px;
-        height: 22px;
-        border: 1.5px solid #000;
-        border-radius: 50%;
-        box-sizing: border-box;
     }
 
     #legend .legend-title {
@@ -1711,34 +1698,13 @@ a:active {
         margin-bottom: 6px;
     }
 
-    #legend .legend-title br,
-    #legend .legend-mode-name,
-    #legend .legend-units,
-    #legend .legend-no-data,
-    #legend .legend-item,
-    #legend .svi-scope-hint {
-        display: none;
-    }
-
-    #legend.legend-expanded .legend-title br,
-    #legend.legend-expanded .legend-mode-name,
-    #legend.legend-expanded .legend-units,
-    #legend.legend-expanded .legend-no-data,
-    #legend.legend-expanded .svi-scope-hint {
-        display: block;
-    }
-
-    #legend.legend-expanded .legend-no-data,
-    #legend.legend-expanded .legend-item {
-        display: flex;
-    }
-
     #legend .legend-units {
         font-size: 12px;
     }
 
     #legend .legend-mode-name,
-    #legend .legend-no-data {
+    #legend .legend-no-data,
+    #legend .legend-item {
         font-size: 12px;
     }
 
@@ -1895,7 +1861,12 @@ a:active {
     }
 
     /* ---------- Popup panel: county, reps, tribal (REB-535, REB-536, REB-537) ---------- */
-    .mapboxgl-popup {
+    /* Hover tooltip stays a small floating card, above the header fade and legend. */
+    .mapboxgl-popup.aoa-hover-popup {
+        z-index: 1002;
+    }
+
+    .mapboxgl-popup:not(.aoa-hover-popup) {
         position: fixed !important;
         top: auto !important;
         bottom: 0 !important;
@@ -1907,13 +1878,13 @@ a:active {
         z-index: 1050 !important;
     }
 
-    .mapboxgl-popup-tip {
+    .mapboxgl-popup:not(.aoa-hover-popup) .mapboxgl-popup-tip {
         display: none !important;
     }
 
     /* position: static lets the close button sit on the fixed popup, so it
        stays put while the content scrolls. */
-    .mapboxgl-popup-content {
+    .mapboxgl-popup:not(.aoa-hover-popup) .mapboxgl-popup-content {
         position: static;
         max-height: 62vh;
         overflow-y: scroll;
@@ -1925,21 +1896,21 @@ a:active {
         scrollbar-color: #7a7a7a #e4e4e4;
     }
 
-    .mapboxgl-popup-content::-webkit-scrollbar {
+    .mapboxgl-popup:not(.aoa-hover-popup) .mapboxgl-popup-content::-webkit-scrollbar {
         width: 6px;
     }
 
-    .mapboxgl-popup-content::-webkit-scrollbar-track {
+    .mapboxgl-popup:not(.aoa-hover-popup) .mapboxgl-popup-content::-webkit-scrollbar-track {
         background: #e4e4e4;
         border-radius: 3px;
     }
 
-    .mapboxgl-popup-content::-webkit-scrollbar-thumb {
+    .mapboxgl-popup:not(.aoa-hover-popup) .mapboxgl-popup-content::-webkit-scrollbar-thumb {
         background: #7a7a7a;
         border-radius: 3px;
     }
 
-    .mapboxgl-popup-close-button {
+    .mapboxgl-popup:not(.aoa-hover-popup) .mapboxgl-popup-close-button {
         top: 14px;
         right: 8px;
         width: 44px;
@@ -2160,15 +2131,19 @@ a:active {
         color: #555;
     }
 
+    /* One row of four across the Congress column. */
     .rep-col-congress .social-links {
-        display: grid;
-        grid-template-columns: repeat(2, 44px);
-        gap: 8px;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        gap: 2px;
         margin-top: 8px;
+        max-width: 184px;
     }
 
     .rep-col-congress .social-links a {
-        width: 44px;
+        flex: 1 1 0;
+        min-width: 0;
         height: 44px;
         display: grid;
         place-items: center;
@@ -2259,24 +2234,45 @@ a:active {
         display: none !important;
     }
 
-    /* ---------- Help panel full screen (REB-542) ---------- */
+    /* ---------- Help panel: same bottom drawer as Data Layers (REB-542) ---------- */
     #info-panel {
         position: fixed;
-        inset: 0;
-        top: 0;
-        left: 0;
+        top: auto;
+        inset: auto 0 0 0;
         max-width: none;
-        max-height: none;
-        padding: 20px 16px calc(24px + env(safe-area-inset-bottom, 0px));
+        max-height: 82vh;
+        overflow-y: auto;
+        padding: 26px 16px calc(24px + env(safe-area-inset-bottom, 0px));
         background: #fff;
+        border-radius: 14px 14px 0 0;
+        box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.2);
         font-size: 14px;
         line-height: 1.45;
-        z-index: 1100;
-        box-shadow: none;
+        z-index: 1060;
+    }
+
+    #info-panel::before {
+        content: '';
+        position: absolute;
+        top: 8px;
+        left: 50%;
+        width: 40px;
+        height: 5px;
+        margin-left: -20px;
+        border-radius: 3px;
+        background: #c8c8c8;
+    }
+
+    body.help-open #control-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.35);
+        z-index: 1055;
     }
 
     #close-info-panel {
-        top: 8px;
+        top: 14px;
         right: 8px;
         width: 44px;
         height: 44px;
