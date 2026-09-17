@@ -1,3 +1,14 @@
+/* RBD Outlined wordmark. Installed locally on RBD machines; served from the
+   repo so the outline renders for everyone else too (phones included).
+   Used by .atlas-word, .atlas-report-state and .disaster-count .count. */
+@font-face {
+    font-family: 'RBDBoldOutlined';
+    src: url('fonts/RBDBoldOutlined.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
 /* MAIN BODY STYLE */
 body {
     margin: 0;
