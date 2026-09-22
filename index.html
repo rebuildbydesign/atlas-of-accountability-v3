@@ -51,6 +51,28 @@
     </div>
 
 
+    <!-- ATLAS+ FINDINGS HEADLINE: lead finding for the active Who's Affected lens, with a collapsible top 10 -->
+    <div id="findings-headline" class="findings-headline" hidden>
+        <!-- Phones: number + finding bar; the chevron opens the top 10 in place -->
+        <button id="fh-bar" class="fh-bar" type="button" aria-expanded="false" aria-controls="fh-top10">
+            <span class="fh-bar-big"></span>
+            <span class="fh-bar-label"></span>
+            <i class="fas fa-chevron-down fh-bar-icon" aria-hidden="true"></i>
+        </button>
+        <div id="fh-body" class="fh-body">
+            <div class="fh-row">
+                <div class="fh-big"></div>
+                <p class="fh-text"></p>
+            </div>
+            <button id="fh-toggle" class="fh-toggle" type="button" aria-expanded="false" aria-controls="fh-top10">
+                <span class="fh-toggle-label"></span>
+                <span class="fh-toggle-icon" aria-hidden="true">+</span>
+            </button>
+            <ul id="fh-top10" class="fh-top10" hidden></ul>
+        </div>
+    </div>
+
+
     <!-- MAPBOX MAP -->
     <div id="map"></div>
 

@@ -568,7 +568,9 @@ map.on('load', function () {
                     // but reads as the same spectrum as the disaster lens.
                     paintExpression: [
                         'case',
-                        ['>=', ['to-number', ['coalesce', ['get', 'county-level-older-adults_PCT POP 60+'], 0]], 25],
+                        // Unrounded 60+ share, so 24.95-24.99% counties stay out (matches the workbook's 2,137).
+                        ['>=', ['/', ['to-number', ['coalesce', ['get', 'county-level-older-adults_60+ POP'], 0]],
+                                     ['max', ['to-number', ['coalesce', ['get', 'county-level-older-adults_TOTAL POP'], 0]], 1]], 0.25],
                         [
                             'step',
                             ['to-number', ['coalesce', ['get', 'COUNTY_DISASTER_COUNT'], 0]],
@@ -757,12 +759,12 @@ map.on('load', function () {
             ],
             legendHTML: `
                 <div class="legend-title"><b>Tribal Communities</b><br><span class="legend-mode-name">Tribal disaster declarations</span></div>
-                <div class="color-bar lens-tribal" style="background: linear-gradient(to right, #e6f598, #bede3a, #86a80f, #4d6b05);">
-                    <div class="color-description">
-                        <span>2</span>
-                        <span>4</span>
-                        <span>6</span>
-                        <span>8+</span>
+                <div class="color-bar lens-tribal" style="background: linear-gradient(to right, #e6f598 0 25%, #bede3a 25% 50%, #86a80f 50% 75%, #4d6b05 75% 100%);">
+                    <div class="color-description tribal-bins">
+                        <span>1&ndash;2</span>
+                        <span>3&ndash;4</span>
+                        <span>5&ndash;6</span>
+                        <span>7+</span>
                     </div>
                 </div>
                 <div class="legend-units">Major disaster declarations per FEMA designated tribal area, requested by the tribe or the state, 2011&ndash;2024. Outlines show all tribal land.</div>
@@ -1244,11 +1246,93 @@ map.on('load', function () {
         legendBody.appendChild(badge);
     }
 
+    // Atlas+ 2026 lead findings, copied from the workbook Findings tab (Tables 1-5).
+    const ATLAS_FINDINGS = {
+        urban: {
+            color: '#4a1486', big: '50.7%',
+            text: 'Of the 291.3 million people living in urban U.S. counties, 147.8 million (50.7%) live in a county with five or more federal disaster declarations from 2011 to 2024.',
+            topLabel: 'Top 10 Urban Counties by Declarations',
+            top: [['Washington County, Vermont', 22], ['Merrimack County, New Hampshire', 19], ['Franklin County, Kentucky', 16], ['Grafton County, New Hampshire', 15], ['Chittenden County, Vermont', 14], ['Lafourche Parish, Louisiana', 13], ['Cole County, Missouri', 13], ['Douglas County, Nebraska', 13], ['Davidson County, Tennessee', 12], ['Walker County, Texas', 12], ['St. Charles Parish, Louisiana', 12], ['Ascension Parish, Louisiana', 12], ['Hinds County, Mississippi', 12], ['Livingston Parish, Louisiana', 12]]
+        },
+        rural: {
+            color: '#084594', big: '11',
+            text: 'The 11 rural U.S. counties with the most federal disaster declarations from 2011 to 2024 are all in Kentucky or Vermont. Each had 14 or more.',
+            topLabel: 'Top 10 Rural Counties by Declarations',
+            top: [['Lamoille County, Vermont', 17], ['Essex County, Vermont', 16], ['Johnson County, Kentucky', 16], ['Orleans County, Vermont', 16], ['Lee County, Kentucky', 15], ['Owsley County, Kentucky', 15], ['Clay County, Kentucky', 15], ['Magoffin County, Kentucky', 15], ['Lawrence County, Kentucky', 15], ['Floyd County, Kentucky', 14], ['Orange County, Vermont', 14]]
+        },
+        older: {
+            color: '#005824', big: '47.9%',
+            text: 'Of the 31.5 million people age 60 and older living in U.S. counties where 25% or more of residents are age 60 and older, 15.1 million (47.9%) live in a county with five or more federal disaster declarations from 2011 to 2024.',
+            topLabel: 'Top 10 Counties Where 25%+ Are Age 60+',
+            top: [['Washington County, Vermont', 22], ['Merrimack County, New Hampshire', 19], ['Lamoille County, Vermont', 17], ['Essex County, Vermont', 16], ['Orleans County, Vermont', 16], ['Johnson County, Kentucky', 16], ['Franklin County, Kentucky', 16], ['Lawrence County, Kentucky', 15], ['Owsley County, Kentucky', 15], ['Grafton County, New Hampshire', 15], ['Magoffin County, Kentucky', 15]]
+        },
+        minority: {
+            color: '#7a0177', big: '54.9%',
+            text: 'Of all people of color in the U.S., 54.9% live in a county with five or more federal disaster declarations from 2011 to 2024, compared with 46.0% of non-Hispanic white residents.',
+            topLabel: 'Top 10 Counties Where 50%+ Are People of Color',
+            top: [['Hinds County, Mississippi', 12], ['Iberville Parish, Louisiana', 12], ['Yazoo County, Mississippi', 12], ['East Baton Rouge Parish, Louisiana', 11], ['Shelby County, Tennessee', 10], ['Haywood County, Tennessee', 10], ['Gadsden County, Florida', 10], ['St. Helena Parish, Louisiana', 10], ['Sacramento County, California', 10], ['Leflore County, Mississippi', 10], ['Cherokee County, Oklahoma', 10], ['Holmes County, Mississippi', 10], ['Warren County, Mississippi', 10]]
+        },
+        tribal: {
+            color: '#4d6b05', big: '118',
+            text: 'From 2011 to 2024, 118 tribal areas had at least one federal disaster declaration, and 53 of them had two or more.',
+            topLabel: 'Top 10 Tribal Areas by Declarations',
+            top: [['Pine Ridge Reservation', 8], ['Colville Reservation and Off-Reservation Trust Land', 7], ['Santa Clara Pueblo and Off-Reservation Trust Land', 7], ['Cheyenne River Reservation and Off-Reservation Trust Land', 5], ['Mashantucket Pequot Reservation and Off-Reservation Trust Land', 5], ['Navajo Nation Reservation and Off-Reservation Trust Land', 5], ['Red Lake Reservation', 5], ['Acoma Pueblo and Off-Reservation Trust Land', 4], ['Fort Belknap Reservation and Off-Reservation Trust Land', 4], ['Lake Traverse Reservation and Off-Reservation Trust Land', 4], ['Soboba Reservation and Off-Reservation Trust Land', 4], ['Standing Rock Reservation', 4]]
+        }
+    };
+
+    // Show the headline for Who's Affected lenses, hide it for the rest.
+    function renderFindingsHeadline() {
+        const box = document.getElementById('findings-headline');
+        const f = ATLAS_FINDINGS[activeLens];
+        if (!box) return;
+        box.hidden = !f;
+        if (!f) return;
+        box.querySelectorAll('.fh-big, .fh-bar-big').forEach(function (el) {
+            el.textContent = f.big;
+            el.style.color = f.color;
+        });
+        box.querySelector('.fh-bar-label').textContent = f.text;
+        box.querySelector('.fh-text').textContent = f.text;
+        box.querySelector('.fh-toggle-label').textContent = f.topLabel;
+        const list = document.getElementById('fh-top10');
+        list.innerHTML = '';
+        // Highest count first, A to Z within a tie, cut at 10.
+        f.top.slice().sort(function (a, b) {
+            return b[1] - a[1] || a[0].localeCompare(b[0]);
+        }).slice(0, 10).forEach(function (row) {
+            const li = document.createElement('li');
+            const name = document.createElement('span');
+            const n = document.createElement('span');
+            name.textContent = row[0];
+            n.className = 'fh-n';
+            n.textContent = row[1];
+            li.appendChild(name);
+            li.appendChild(n);
+            list.appendChild(li);
+        });
+    }
+
+    // Phones: the bar's chevron opens the top 10 in place, under the finding.
+    document.getElementById('fh-bar').addEventListener('click', function () {
+        document.getElementById('fh-toggle').click();
+    });
+
+    document.getElementById('fh-toggle').addEventListener('click', function () {
+        const list = document.getElementById('fh-top10');
+        const open = list.hidden;
+        list.hidden = !open;
+        this.setAttribute('aria-expanded', open);
+        this.querySelector('.fh-toggle-icon').textContent = open ? '\u2212' : '+';
+        document.getElementById('fh-bar').setAttribute('aria-expanded', open);
+        document.getElementById('findings-headline').classList.toggle('fh-open', open);
+    });
+
     function setLens(lensKey) {
         if (!lensConfig[lensKey]) return;
         activeLens = lensKey;
         applyActiveStyling();
         updateSubControlVisibility();
+        renderFindingsHeadline();
     }
 
     function setSubMode(lensKey, subKey) {

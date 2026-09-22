@@ -97,6 +97,70 @@ a:active {
     border-radius: 3px;
 }
 
+/* ATLAS+ FINDINGS HEADLINE: lead finding per Who's Affected lens, top left under the title */
+.findings-headline {
+    position: absolute;
+    top: 96px;
+    left: 10px;
+    z-index: 999;
+    width: min(520px, calc(100% - 20px));
+    box-sizing: border-box;
+    padding: 10px 16px 6px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.15);
+    font-family: Arial, sans-serif;
+    color: #222;
+}
+.findings-headline[hidden],
+.fh-top10[hidden] { display: none; }
+.fh-row { display: flex; gap: 14px; align-items: center; }
+.fh-big {
+    flex: none;
+    font-family: 'Arial Black', Arial, sans-serif;
+    font-weight: 900;
+    font-size: 48px;
+    line-height: 1;
+    letter-spacing: -0.02em;
+}
+.fh-text { margin: 0; font-size: 14px; line-height: 1.35; }
+.fh-toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    margin-top: 8px;
+    padding: 8px 0 4px;
+    border: 0;
+    border-top: 1px solid #ddd;
+    background: none;
+    font: 700 12px/1.3 Arial, sans-serif;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-align: left;
+    color: #111;
+    cursor: pointer;
+}
+.fh-toggle:focus-visible { outline: 2px solid #de2d26; outline-offset: 2px; }
+.fh-toggle-icon { font-size: 16px; }
+.fh-top10 {
+    list-style: none;
+    margin: 2px 0 6px;
+    padding: 0;
+    max-height: 280px;
+    overflow-y: auto;
+    font-size: 13px;
+}
+.fh-top10 li {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 4px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+.fh-n { font-weight: 700; font-variant-numeric: tabular-nums; }
+.fh-bar { display: none; }
+
 /* DATA LENS LEGEND — body content swaps based on active lens */
 #legend {
     position: absolute;
@@ -769,6 +833,10 @@ a:active {
 .no-data-swatch.energy {
     background: #C8CBD1;
 }
+
+/* Tribal legend: one label centred on each of the four colour blocks */
+.color-description.tribal-bins { padding: 3px 0; }
+.color-description.tribal-bins span { flex: 1; text-align: center; }
 
 .color-description {
     position: absolute;
@@ -1610,9 +1678,9 @@ a:active {
     .css-atlas-title .atlas-word {
         white-space: nowrap;
         font-size: 24px;
-        color: #de2d26;
-        -webkit-text-stroke: 1.3px #de2d26;
-        text-stroke: 1.3px #de2d26;
+        color: #1a1a1a;
+        -webkit-text-stroke: 1.3px #1a1a1a;
+        text-stroke: 1.3px #1a1a1a;
     }
 
     .css-atlas-title .atlas-sub {
@@ -1621,7 +1689,7 @@ a:active {
         padding: 0;
         background: none;
         border-radius: 0;
-        color: #555;
+        color: #de2d26;
         font-size: 11.5px;
         font-weight: 500;
         letter-spacing: 0.02em;
@@ -2249,7 +2317,45 @@ a:active {
         color: #4d6b05;
     }
 
+    /* Findings: number + finding bar under the search box, top 10 opens in place (REB-544) */
+    .findings-headline {
+        top: 118px;
+        left: 10px;
+        right: 10px;
+        width: auto;
+        padding: 0;
+        background: #fff;
+    }
+    .fh-bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        min-height: 44px;
+        padding: 8px 12px;
+        border: 0;
+        background: none;
+        font-family: Arial, sans-serif;
+        text-align: left;
+        color: #111;
+        cursor: pointer;
+    }
+    .fh-bar-big {
+        font-family: 'Arial Black', Arial, sans-serif;
+        font-weight: 900;
+        font-size: 24px;
+        line-height: 1;
+        letter-spacing: -0.02em;
+    }
+    .fh-bar-label { flex: 1; font-size: 13px; line-height: 1.35; }
+    .fh-bar-icon { display: none; }
+    .fh-row { display: none; }
+    .fh-toggle { width: auto; margin: 0 12px; padding: 8px 0 4px; font-size: 11.5px; }
+    .fh-top10 { margin: 0 12px 8px; max-height: 45vh; font-size: 14px; }
+    .fh-top10 li { padding: 6px 0; }
+
     /* Hide the legend and controls while the popup is open */
+    body.popup-open .findings-headline,
     body.popup-open #legend,
     body.popup-open #info-panel,
     body.popup-open #control-panel {
