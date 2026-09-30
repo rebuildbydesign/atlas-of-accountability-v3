@@ -1268,13 +1268,13 @@ map.on('load', function () {
         },
         minority: {
             color: '#7a0177', big: '54.9%',
-            text: 'Of all people of color in the U.S., 54.9% live in a county with five or more federal disaster declarations from 2011 to 2024, compared with 46.0% of non-Hispanic white residents.',
+            text: 'Of all people of color in the U.S., 74.7 million (54.9%) live in a county with five or more federal disaster declarations from 2011 to 2024, compared with 89.4 million non-Hispanic white residents (46.0%).',
             topLabel: 'Top 10 Counties Where 50%+ Are People of Color',
             top: [['Hinds County, Mississippi', 12], ['Iberville Parish, Louisiana', 12], ['Yazoo County, Mississippi', 12], ['East Baton Rouge Parish, Louisiana', 11], ['Shelby County, Tennessee', 10], ['Haywood County, Tennessee', 10], ['Gadsden County, Florida', 10], ['St. Helena Parish, Louisiana', 10], ['Sacramento County, California', 10], ['Leflore County, Mississippi', 10], ['Cherokee County, Oklahoma', 10], ['Holmes County, Mississippi', 10], ['Warren County, Mississippi', 10]]
         },
         tribal: {
             color: '#4d6b05', big: '118',
-            text: 'From 2011 to 2024, 118 tribal areas had at least one federal disaster declaration, and 53 of them had two or more.',
+            text: 'From 2011 to 2024, 118 of the 704 U.S. tribal areas (16.8%) had at least one federal disaster declaration, and 53 (7.5%) had two or more.',
             topLabel: 'Top 10 Tribal Areas by Declarations',
             top: [['Pine Ridge Reservation', 8], ['Colville Reservation and Off-Reservation Trust Land', 7], ['Santa Clara Pueblo and Off-Reservation Trust Land', 7], ['Cheyenne River Reservation and Off-Reservation Trust Land', 5], ['Mashantucket Pequot Reservation and Off-Reservation Trust Land', 5], ['Navajo Nation Reservation and Off-Reservation Trust Land', 5], ['Red Lake Reservation', 5], ['Acoma Pueblo and Off-Reservation Trust Land', 4], ['Fort Belknap Reservation and Off-Reservation Trust Land', 4], ['Lake Traverse Reservation and Off-Reservation Trust Land', 4], ['Soboba Reservation and Off-Reservation Trust Land', 4], ['Standing Rock Reservation', 4]]
         }
