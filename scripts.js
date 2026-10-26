@@ -610,7 +610,7 @@ map.on('load', function () {
                 large:   tierLens('Urban', 'Large metro', URBAN_RAMP, 'lens-urban', 'Urban Counties', 'Large metro',
                              'Federal disaster declarations in large metro counties (metro area of 1 million or more people), 2011–2024. OMB, 2023; Census, 2024.', 'Other counties'),
                 smaller: tierLens('Urban', 'Smaller metro', URBAN_RAMP, 'lens-urban', 'Urban Counties', 'Smaller metro',
-                             'Federal disaster declarations in smaller metro counties (metro area under 1 million people), 2011–2024. OMB, 2023; Census, 2024.', 'Other counties')
+                             'Federal disaster declarations in smaller metro counties (metro area of 50,000 to 1 million people), 2011–2024. OMB, 2023; Census, 2024.', 'Other counties')
             }
         },
 
@@ -639,7 +639,7 @@ map.on('load', function () {
         // hover surface the full race breakdown so users don't need the
         // tract layer.
         minority: {
-            label: 'Communities of Color',
+            label: 'Majority People of Color',
             paintExpression: [
                 'case',
                 ['>=', ['to-number', ['coalesce', ['get', 'COUNTY_PCT_MINORITY'], -1]], 50],
@@ -657,7 +657,7 @@ map.on('load', function () {
                 '#ECECEC'   // counties under 50% people of color (or no data)
             ],
             legendHTML: `
-                <div class="legend-title"><b>Communities of Color</b><br><span class="legend-mode-name">Number of disaster declarations</span></div>
+                <div class="legend-title"><b>Majority People of Color</b><br><span class="legend-mode-name">Number of disaster declarations</span></div>
                 <div class="color-bar lens-minority">
                     <div class="color-description">
                         <span>0</span>
@@ -1755,7 +1755,7 @@ map.on('load', function () {
         if (!tractProps) {
             var countyMinPct = Number(p.COUNTY_PCT_MINORITY);
             if (isFinite(countyMinPct)) {
-                raceRows.push({ subheader: 'Communities of Color (2022)' });
+                raceRows.push({ subheader: 'People of Color (2022)' });
                 raceRows.push({
                     key: 'minority',
                     label: countyMinPct >= 50 ? 'People of color (majority-minority)' : 'People of color',
@@ -1788,7 +1788,7 @@ map.on('load', function () {
             { group: 'statefunding', key: 'fema', label: 'Per person',                     value: fmtUSD(p.STATE_PER_CAPITA) }
         ].concat(sviRows).concat([
             { subheader: 'Energy Reliability (2022)' },
-            { caption: 'Power outage hours per year, by utility.' },
+            { caption: 'Average power outage hours per year (SAIDI), by utility.' },
             { key: 'energy', label: 'Average across utilities', value: fmtSAIDI(p.SAIDI_MIN_AVG) },
 
             { subheader: 'Older Adults 60+ (2020)' },
