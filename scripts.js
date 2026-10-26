@@ -329,6 +329,37 @@ map.on('load', function () {
     // Adding a new lens? Add an entry here and a radio button in
     // index.html with matching value attribute.
     // -------------------------------------------------------------
+    // Urban/Rural tiers (REB-596): OMB 2023 metro (urban) vs everything else
+    // (rural), split by OMB_TIER. Same 7-bin declaration ramp as the
+    // FEMA Disaster Declarations lens.
+    const URBAN_RAMP = ['#efedf5', '#dadaeb', '#bcbddc', '#9e9ac8', '#807dba', '#6a51a3', '#4a1486'];
+    const RURAL_RAMP = ['#eff3ff', '#c6dbef', '#9ecae1', '#6baed6', '#4292c6', '#2171b5', '#084594'];
+    function tierLens(cls, tier, ramp, barClass, title, modeName, units, otherLabel) {
+        return {
+            subLabel: modeName,
+            paintExpression: [
+                'case',
+                tier ? ['==', ['get', 'OMB_TIER'], tier] : ['==', ['get', 'OMB_CLASS'], cls],
+                ['step', ['to-number', ['coalesce', ['get', 'COUNTY_DISASTER_COUNT'], 0]],
+                    ramp[0], 1, ramp[1], 3, ramp[2], 5, ramp[3], 7, ramp[4], 10, ramp[5], 12, ramp[6]],
+                '#ECECEC'
+            ],
+            legendHTML: `
+                <div class="legend-title"><b>${title}</b><br><span class="legend-mode-name">${modeName}</span></div>
+                <div class="color-bar ${barClass}">
+                    <div class="color-description">
+                        <span>0</span><span>2</span><span>4</span><span>6</span><span>8</span><span>10</span><span>12+</span>
+                    </div>
+                </div>
+                <div class="legend-units">${units}</div>
+                <div class="legend-no-data">
+                    <span class="no-data-swatch" style="background:#ECECEC"></span>
+                    <span>${otherLabel}</span>
+                </div>
+            `
+        };
+    }
+
     const lensConfig = {
         // Default lens — # of Major Disaster Declarations (existing red ramp)
         disaster: {
@@ -429,9 +460,7 @@ map.on('load', function () {
         // stored in MINUTES on the feature (SAIDI_MIN_AVG / SAIDI_MIN_MAX),
         // so paint thresholds stay in minutes; legend labels are converted
         // to HOURS for readability (1 hr = 60 min).
-        // This lens has TWO sub-modes:
-        //   • avg → SAIDI_MIN_AVG (mean across utilities) — typical experience
-        //   • max → SAIDI_MIN_MAX (worst utility per county) — plan-for-worst
+        // Average across utilities only (SAIDI_MIN_AVG). Worst-case view removed per Amy (REB-571).
         // Bins (60/120/240/456 min = 1/2/4/7.6 hrs) and colors are shared
         // so the visual jump between modes encodes the disparity directly.
         energy: {
@@ -466,47 +495,7 @@ map.on('load', function () {
                                 <span>7.6+ hrs</span>
                             </div>
                         </div>
-                        <div class="legend-units">Average annual hours a customer is without power, across utilities serving the county. SAIDI, U.S. EIA, 2023.</div>
-                        <div class="legend-no-data">
-                            <span class="no-data-swatch energy"></span>
-                            <span>No utility data</span>
-                        </div>
-                    `
-                },
-                max: {
-                    subLabel: 'Worst-case outage',
-                    // MAX uses wider bin thresholds than AVG because MAX
-                    // values range up to 10,820 min (vs ~5,941 for AVG).
-                    // The 240 threshold is shared with AVG so readers
-                    // can compare "240+ on AVG" vs "1,500+ on MAX" for
-                    // the same county and see the worst-case shift.
-                    paintExpression: [
-                        'case',
-                        ['==', ['typeof', ['get', 'SAIDI_MIN_MAX']], 'number'],
-                        [
-                            'step',
-                            ['get', 'SAIDI_MIN_MAX'],
-                            '#F9ECDC',           //    0 –   240 min
-                            240,  '#F4C69A',     //  240 –   600 min
-                            600,  '#F07F2E',     //  600 – 1,500 min
-                            1500, '#C24400',     // 1,500 – 4,000 min
-                            4000, '#6E2800'      // 4,000 – 10,820 min
-                        ],
-                        '#C8CBD1'  // No utility data
-                    ],
-                    legendHTML: `
-                        <div class="legend-title"><b>Energy Reliability</b><br><span class="legend-mode-name">Worst-case outage</span></div>
-                        <div class="color-bar lens-energy">
-                            <div class="color-description">
-                                <span>0</span>
-                                <span>4</span>
-                                <span>10</span>
-                                <span>25</span>
-                                <span>67</span>
-                                <span>180 hrs</span>
-                            </div>
-                        </div>
-                        <div class="legend-units">Annual hours a customer is without power, from the worst-performing utility serving the county. SAIDI, U.S. EIA, 2023.</div>
+                        <div class="legend-units">Average hours a customer goes without power in a year, across the utilities serving the county. Utilities report this as SAIDI (System Average Interruption Duration Index). U.S. EIA, 2023.</div>
                         <div class="legend-no-data">
                             <span class="no-data-swatch energy"></span>
                             <span>No utility data</span>
@@ -524,7 +513,7 @@ map.on('load', function () {
         //                       forest-green dots overlay the older-adult
         //                       population. True bivariate read at a glance.
         //   • disastersFaced  → Filtered graded choropleth. Only counties
-        //                       with 25%+ adults 60+ are colored; the color
+        //                       with 30%+ adults 60+ are colored; the color
         //                       encodes disaster-declaration tiers on the
         //                       same 7-bin scheme as the FEMA Disaster
         //                       Declarations lens (0/2/4/6/8/10/12+),
@@ -561,7 +550,7 @@ map.on('load', function () {
                 },
                 disastersFaced: {
                     subLabel: 'Older adults & disaster declarations',
-                    // Filter to 25%+ age 60+, then step on COUNTY_DISASTER_COUNT
+                    // Filter to 30%+ age 60+, then step on COUNTY_DISASTER_COUNT
                     // through the same 7-bin scheme as the FEMA Disaster
                     // Declarations lens (bins at 0/1/3/5/7/10/12) — green
                     // palette so it stays in the older-adults visual family
@@ -570,7 +559,7 @@ map.on('load', function () {
                         'case',
                         // Unrounded 60+ share, so 24.95-24.99% counties stay out (matches the workbook's 2,137).
                         ['>=', ['/', ['to-number', ['coalesce', ['get', 'county-level-older-adults_60+ POP'], 0]],
-                                     ['max', ['to-number', ['coalesce', ['get', 'county-level-older-adults_TOTAL POP'], 0]], 1]], 0.25],
+                                     ['max', ['to-number', ['coalesce', ['get', 'county-level-older-adults_TOTAL POP'], 0]], 1]], 0.30],
                         [
                             'step',
                             ['to-number', ['coalesce', ['get', 'COUNTY_DISASTER_COUNT'], 0]],
@@ -582,7 +571,7 @@ map.on('load', function () {
                             10, '#238b45',      //  10–11
                             12, '#005824'       //  12+
                         ],
-                        '#ECECEC'   // counties with <25% age 60+ (or null)
+                        '#ECECEC'   // counties with <30% age 60+ (or null)
                     ],
                     legendHTML: `
                         <div class="legend-title"><b>Older Adults 60+</b><br><span class="legend-mode-name">Number of disaster declarations</span></div>
@@ -597,10 +586,10 @@ map.on('load', function () {
                                 <span>12+</span>
                             </div>
                         </div>
-                        <div class="legend-units">Federal disaster declarations in counties where at least 25% of residents are age 60 or older, 2011–2024. Age threshold from the federal Older Americans Act.</div>
+                        <div class="legend-units">Federal disaster declarations in counties where at least 30% of residents are age 60 or older (23.8% nationally), 2011–2024. Age threshold from the federal Older Americans Act.</div>
                         <div class="legend-no-data">
                             <span class="no-data-swatch" style="background:#ECECEC"></span>
-                            <span>Counties with &lt;25% age 60+</span>
+                            <span>Counties with &lt;30% age 60+</span>
                         </div>
                     `
                 }
@@ -614,85 +603,30 @@ map.on('load', function () {
         // party association.
         urban: {
             label: 'Urban Counties',
-            paintExpression: [
-                'case',
-                ['==', ['get', 'OMB_CLASS'], 'Urban'],
-                [
-                    'step',
-                    ['to-number', ['coalesce', ['get', 'COUNTY_DISASTER_COUNT'], 0]],
-                    '#efedf5',         //  0
-                    1,  '#dadaeb',     //  1–2
-                    3,  '#bcbddc',     //  3–4
-                    5,  '#9e9ac8',     //  5–6
-                    7,  '#807dba',     //  7–9
-                    10, '#6a51a3',     //  10–11
-                    12, '#4a1486'      //  12+
-                ],
-                '#ECECEC'   // Rural counties (or unclassified)
-            ],
-            legendHTML: `
-                <div class="legend-title"><b>Urban Counties</b><br><span class="legend-mode-name">Number of disaster declarations</span></div>
-                <div class="color-bar lens-urban">
-                    <div class="color-description">
-                        <span>0</span>
-                        <span>2</span>
-                        <span>4</span>
-                        <span>6</span>
-                        <span>8</span>
-                        <span>10</span>
-                        <span>12+</span>
-                    </div>
-                </div>
-                <div class="legend-units">Federal disaster declarations in urban counties (population 50,000 or more), 2011–2024.</div>
-                <div class="legend-no-data">
-                    <span class="no-data-swatch" style="background:#ECECEC"></span>
-                    <span>Rural counties</span>
-                </div>
-            `
+            defaultSubMode: 'all',
+            subModes: {
+                all:     tierLens('Urban', null, URBAN_RAMP, 'lens-urban', 'Urban Counties', 'All urban counties',
+                             'Federal disaster declarations in urban counties (part of a metropolitan area), 2011–2024. OMB, 2023.', 'Rural counties'),
+                large:   tierLens('Urban', 'Large metro', URBAN_RAMP, 'lens-urban', 'Urban Counties', 'Large metro',
+                             'Federal disaster declarations in large metro counties (metro area of 1 million or more people), 2011–2024. OMB, 2023; Census, 2024.', 'Other counties'),
+                smaller: tierLens('Urban', 'Smaller metro', URBAN_RAMP, 'lens-urban', 'Urban Counties', 'Smaller metro',
+                             'Federal disaster declarations in smaller metro counties (metro area under 1 million people), 2011–2024. OMB, 2023; Census, 2024.', 'Other counties')
+            }
         },
 
-        // Rural Counties — parallel to the Urban lens. Palette: blue ramp.
-        // Blue chosen for visual contrast against the purple Urban palette
-        // and to avoid the warm yellow/amber that read as unpleasant in the
-        // previous draft. Distinct from Social Vulnerability (which leans
-        // teal/green-blue) — this is a cleaner navy-blue progression.
+        // Rural Counties — same tier pattern. Palette: blue ramp, distinct
+        // from the purple Urban palette and the teal Social Vulnerability one.
         rural: {
             label: 'Rural Counties',
-            paintExpression: [
-                'case',
-                ['==', ['get', 'OMB_CLASS'], 'Rural'],
-                [
-                    'step',
-                    ['to-number', ['coalesce', ['get', 'COUNTY_DISASTER_COUNT'], 0]],
-                    '#eff3ff',         //  0
-                    1,  '#c6dbef',     //  1–2
-                    3,  '#9ecae1',     //  3–4
-                    5,  '#6baed6',     //  5–6
-                    7,  '#4292c6',     //  7–9
-                    10, '#2171b5',     //  10–11
-                    12, '#084594'      //  12+
-                ],
-                '#ECECEC'   // Urban counties (or unclassified)
-            ],
-            legendHTML: `
-                <div class="legend-title"><b>Rural Counties</b><br><span class="legend-mode-name">Number of disaster declarations</span></div>
-                <div class="color-bar lens-rural">
-                    <div class="color-description">
-                        <span>0</span>
-                        <span>2</span>
-                        <span>4</span>
-                        <span>6</span>
-                        <span>8</span>
-                        <span>10</span>
-                        <span>12+</span>
-                    </div>
-                </div>
-                <div class="legend-units">Federal disaster declarations in rural counties (population under 50,000), 2011–2024.</div>
-                <div class="legend-no-data">
-                    <span class="no-data-swatch" style="background:#ECECEC"></span>
-                    <span>Urban counties</span>
-                </div>
-            `
+            defaultSubMode: 'all',
+            subModes: {
+                all:       tierLens('Rural', null, RURAL_RAMP, 'lens-rural', 'Rural Counties', 'All rural counties',
+                               'Federal disaster declarations in rural counties (outside any metropolitan area), 2011–2024. OMB, 2023.', 'Urban counties'),
+                town:      tierLens('Rural', 'Small town', RURAL_RAMP, 'lens-rural', 'Rural Counties', 'Small town',
+                               'Federal disaster declarations in small-town counties (a town of 10,000 to 49,999 people), 2011–2024. OMB, 2023.', 'Other counties'),
+                veryrural: tierLens('Rural', 'Very rural', RURAL_RAMP, 'lens-rural', 'Rural Counties', 'Very rural',
+                               'Federal disaster declarations in very rural counties (no town of 10,000 or more), 2011–2024. OMB, 2023.', 'Other counties')
+            }
         },
 
         // Communities of Color — same "Who's Affected" pattern as Older
@@ -735,7 +669,7 @@ map.on('load', function () {
                         <span>12+</span>
                     </div>
                 </div>
-                <div class="legend-units">Federal disaster declarations in majority-minority counties — where at least 50% of residents are people of color. CDC SVI, 2022.</div>
+                <div class="legend-units">Federal disaster declarations in counties where at least half of residents are people of color, 2011–2024. CDC SVI, 2022.</div>
                 <div class="legend-no-data">
                     <span class="no-data-swatch" style="background:#ECECEC"></span>
                     <span>Counties under 50% people of color</span>
@@ -1246,39 +1180,59 @@ map.on('load', function () {
         legendBody.appendChild(badge);
     }
 
-    // Atlas+ 2026 lead findings, copied from the workbook Findings tab (Tables 1-5).
+    // Atlas+ 2026 lead findings, from the workbook Findings tab (Tables 1-5). Updated 26 Oct 2026: OMB metro urban/rural, older adults 30%+.
     const ATLAS_FINDINGS = {
         urban: {
-            color: '#4a1486', big: '50.7%',
-            text: 'Of the 291.3 million people living in urban U.S. counties, 147.8 million (50.7%) live in a county with five or more federal disaster declarations from 2011 to 2024.',
+            color: '#4a1486', big: '50.9%',
+            text: '50.9% of people in urban counties (144.8 million) live in a county with five or more federal disaster declarations from 2011 to 2024. The typical U.S. county had four.',
             topLabel: 'Top 10 Urban Counties by Declarations',
-            top: [['Washington County, Vermont', 22], ['Merrimack County, New Hampshire', 19], ['Franklin County, Kentucky', 16], ['Grafton County, New Hampshire', 15], ['Chittenden County, Vermont', 14], ['Lafourche Parish, Louisiana', 13], ['Cole County, Missouri', 13], ['Douglas County, Nebraska', 13], ['Davidson County, Tennessee', 12], ['Walker County, Texas', 12], ['St. Charles Parish, Louisiana', 12], ['Ascension Parish, Louisiana', 12], ['Hinds County, Mississippi', 12], ['Livingston Parish, Louisiana', 12]]
+            top: [['Lawrence County, Kentucky', 15], ['Chittenden County, Vermont', 14], ['Assumption Parish, Louisiana', 13], ['Lafourche Parish, Louisiana', 13], ['West Feliciana Parish, Louisiana', 13], ['Cole County, Missouri', 13], ['Douglas County, Nebraska', 13], ['Carter County, Kentucky', 12], ['Ascension Parish, Louisiana', 12], ['Iberville Parish, Louisiana', 12], ['Livingston Parish, Louisiana', 12], ['St. Charles Parish, Louisiana', 12], ['Hinds County, Mississippi', 12], ['Yazoo County, Mississippi', 12], ['Davidson County, Tennessee', 12]]
         },
         rural: {
-            color: '#084594', big: '11',
-            text: 'The 11 rural U.S. counties with the most federal disaster declarations from 2011 to 2024 are all in Kentucky or Vermont. Each had 14 or more.',
+            color: '#084594', big: '91.6%',
+            text: '91.6% of rural counties (1,794 of 1,958) had at least one federal disaster declaration from 2011 to 2024, about the same as urban counties (93.8%).',
             topLabel: 'Top 10 Rural Counties by Declarations',
-            top: [['Lamoille County, Vermont', 17], ['Essex County, Vermont', 16], ['Johnson County, Kentucky', 16], ['Orleans County, Vermont', 16], ['Lee County, Kentucky', 15], ['Owsley County, Kentucky', 15], ['Clay County, Kentucky', 15], ['Magoffin County, Kentucky', 15], ['Lawrence County, Kentucky', 15], ['Floyd County, Kentucky', 14], ['Orange County, Vermont', 14]]
+            top: [['Washington County, Vermont', 22], ['Merrimack County, New Hampshire', 19], ['Lamoille County, Vermont', 17], ['Franklin County, Kentucky', 16], ['Johnson County, Kentucky', 16], ['Essex County, Vermont', 16], ['Orleans County, Vermont', 16], ['Clay County, Kentucky', 15], ['Lee County, Kentucky', 15], ['Magoffin County, Kentucky', 15], ['Owsley County, Kentucky', 15], ['Grafton County, New Hampshire', 15]]
         },
         older: {
-            color: '#005824', big: '47.9%',
-            text: 'Of the 31.5 million people age 60 and older living in U.S. counties where 25% or more of residents are age 60 and older, 15.1 million (47.9%) live in a county with five or more federal disaster declarations from 2011 to 2024.',
-            topLabel: 'Top 10 Counties Where 25%+ Are Age 60+',
-            top: [['Washington County, Vermont', 22], ['Merrimack County, New Hampshire', 19], ['Lamoille County, Vermont', 17], ['Essex County, Vermont', 16], ['Orleans County, Vermont', 16], ['Johnson County, Kentucky', 16], ['Franklin County, Kentucky', 16], ['Lawrence County, Kentucky', 15], ['Owsley County, Kentucky', 15], ['Grafton County, New Hampshire', 15], ['Magoffin County, Kentucky', 15]]
+            color: '#005824', big: '58.2%',
+            text: 'In counties where 30% or more of residents are 60 or older, 58.2% of older adults (6.0 million) live in a county with five or more federal disaster declarations from 2011 to 2024, compared with 50.0% of older adults nationwide.',
+            topLabel: 'Top 10 Counties Where 30%+ Are Age 60+',
+            top: [['Essex County, Vermont', 16], ['Orleans County, Vermont', 16], ['Owsley County, Kentucky', 15], ['Grafton County, New Hampshire', 15], ['Orange County, Vermont', 14], ['Franklin County, Florida', 11], ['Jefferson County, Florida', 11], ['Madison County, Florida', 11], ['Pawnee County, Kansas', 11], ['Menifee County, Kentucky', 11], ['Roger Mills County, Oklahoma', 11], ['Lake County, South Dakota', 11], ['Caledonia County, Vermont', 11], ['Skamania County, Washington', 11]]
         },
         minority: {
             color: '#7a0177', big: '54.9%',
-            text: 'Of all people of color in the U.S., 74.7 million (54.9%) live in a county with five or more federal disaster declarations from 2011 to 2024, compared with 89.4 million non-Hispanic white residents (46.0%).',
+            text: '54.9% of people of color (74.7 million) live in a county with five or more federal disaster declarations from 2011 to 2024, compared with 46.0% of non-Hispanic white residents (89.4 million). The typical U.S. county had four.',
             topLabel: 'Top 10 Counties Where 50%+ Are People of Color',
             top: [['Hinds County, Mississippi', 12], ['Iberville Parish, Louisiana', 12], ['Yazoo County, Mississippi', 12], ['East Baton Rouge Parish, Louisiana', 11], ['Shelby County, Tennessee', 10], ['Haywood County, Tennessee', 10], ['Gadsden County, Florida', 10], ['St. Helena Parish, Louisiana', 10], ['Sacramento County, California', 10], ['Leflore County, Mississippi', 10], ['Cherokee County, Oklahoma', 10], ['Holmes County, Mississippi', 10], ['Warren County, Mississippi', 10]]
         },
         tribal: {
-            color: '#4d6b05', big: '118',
-            text: 'From 2011 to 2024, 118 of the 704 U.S. tribal areas (16.8%) had at least one federal disaster declaration, and 53 (7.5%) had two or more.',
+            color: '#4d6b05', big: '16.8%',
+            text: '16.8% of U.S. tribal areas (118 of 704) were named in at least one federal disaster declaration from 2011 to 2024, and 7.5% (53) in two or more.',
             topLabel: 'Top 10 Tribal Areas by Declarations',
             top: [['Pine Ridge Reservation', 8], ['Colville Reservation and Off-Reservation Trust Land', 7], ['Santa Clara Pueblo and Off-Reservation Trust Land', 7], ['Cheyenne River Reservation and Off-Reservation Trust Land', 5], ['Mashantucket Pequot Reservation and Off-Reservation Trust Land', 5], ['Navajo Nation Reservation and Off-Reservation Trust Land', 5], ['Red Lake Reservation', 5], ['Acoma Pueblo and Off-Reservation Trust Land', 4], ['Fort Belknap Reservation and Off-Reservation Trust Land', 4], ['Lake Traverse Reservation and Off-Reservation Trust Land', 4], ['Soboba Reservation and Off-Reservation Trust Land', 4], ['Standing Rock Reservation', 4]]
         }
     };
+
+    // Highest count first, A to Z within a tie, cut at 10.
+    function topTen(f) {
+        return f.top.slice().sort(function (a, b) {
+            return b[1] - a[1] || a[0].localeCompare(b[0]);
+        }).slice(0, 10);
+    }
+
+    // County popup banner (REB-572): which shown top 10 lists this county is on.
+    const TOP10_LABELS = { urban: 'urban counties', rural: 'rural counties', older: 'counties where 30%+ are 60 or older', minority: 'counties where most residents are people of color' };
+    function topTenBanner(countyName) {
+        var hits = Object.keys(TOP10_LABELS).map(function (k) {
+            var list = topTen(ATLAS_FINDINGS[k]);
+            var row = list.find(function (r) { return r[0] === countyName; });
+            if (!row) return null;
+            var rank = 1 + list.filter(function (r) { return r[1] > row[1]; }).length;
+            return '#' + rank + ' among ' + TOP10_LABELS[k];
+        }).filter(Boolean);
+        return hits.length ? '<div class="popup-top10"><b>Top 10 for disaster declarations:</b> ' + hits.join(' · ') + '</div>' : '';
+    }
 
     // Show the headline for Who's Affected lenses, hide it for the rest.
     function renderFindingsHeadline() {
@@ -1296,10 +1250,7 @@ map.on('load', function () {
         box.querySelector('.fh-toggle-label').textContent = f.topLabel;
         const list = document.getElementById('fh-top10');
         list.innerHTML = '';
-        // Highest count first, A to Z within a tie, cut at 10.
-        f.top.slice().sort(function (a, b) {
-            return b[1] - a[1] || a[0].localeCompare(b[0]);
-        }).slice(0, 10).forEach(function (row) {
+        topTen(f).forEach(function (row) {
             const li = document.createElement('li');
             const name = document.createElement('span');
             const n = document.createElement('span');
@@ -1441,7 +1392,7 @@ map.on('load', function () {
     // e.g. "8,234 (50.1%)". The Census AGE CLASS label ("Super-Aged" etc.)
     // is intentionally NOT shown — it's not defined anywhere in the tool
     // or on the Rebuild by Design website, so surfacing it would read as
-    // alarmist jargon to funders. The 25%+ threshold used by the Older
+    // alarmist jargon to funders. The 30%+ threshold used by the Older
     // Adults lens serves as the working definition of an "older-adults
     // concentrated" county.
     function fmtOlderPop(p) {
@@ -1506,8 +1457,8 @@ map.on('load', function () {
     //     legend, not by a scolding note.
     //   • Urban/Rural classification appears ONLY on the Urban/Rural lenses
     //     (where it's the subject) — never as a tag on every tooltip.
-    //   • Population appears ONLY on Urban/Rural, where the 50,000-resident
-    //     threshold is what defines the layer.
+    //   • Population appears ONLY on Urban/Rural, as context for the
+    //     OMB metro tier that defines the layer.
     function buildLensSummary(props) {
         var dis = Number(props.COUNTY_DISASTER_COUNT) || 0;
 
@@ -1521,9 +1472,8 @@ map.on('load', function () {
             return { lens: 'svi', headline: 'Vulnerability: ' + fmtSVIWithCategory(props['CDC SVI (2022)']), sub: null };
         }
         if (activeLens === 'energy') {
-            var sub = activeSubModes.energy || 'avg';
-            var key = sub === 'max' ? 'SAIDI_MIN_MAX' : 'SAIDI_MIN_AVG';
-            var label = sub === 'max' ? 'Worst-case outage' : 'Typical outage';
+            var key = 'SAIDI_MIN_AVG';
+            var label = 'Typical outage';
             var saidi = props[key];
             var headline = (typeof saidi === 'number')
                 ? label + ': ' + fmtSAIDI(saidi) + '/year'
@@ -1543,7 +1493,7 @@ map.on('load', function () {
                 };
             }
             // Default sub-mode: disaster declarations, with the 60+ share as
-            // context. Shown for every county — gray just means below 25%.
+            // context. Shown for every county; gray just means below 30%.
             return {
                 lens: 'older',
                 headline: fmtDisasterDeclarations(dis),
@@ -1551,10 +1501,10 @@ map.on('load', function () {
             };
         }
         if (activeLens === 'urban' || activeLens === 'rural') {
-            var cls = (props.OMB_CLASS === 'Urban' || props.OMB_CLASS === 'Rural') ? props.OMB_CLASS : null;
+            var cls = props.OMB_TIER || ((props.OMB_CLASS === 'Urban' || props.OMB_CLASS === 'Rural') ? props.OMB_CLASS : null);
             var pop = fmtPopulation(props.COUNTY_POPULATION);
             var parts = [];
-            if (cls) parts.push(cls + ' county');
+            if (cls) parts.push(cls);
             if (pop) parts.push('pop. ' + pop);
             return {
                 lens: activeLens,
@@ -1666,10 +1616,9 @@ map.on('load', function () {
             counts[type] = (counts[type] || 0) + 1;
         });
         var types = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a] || a.localeCompare(b); });
-        var parts = [[Number(t.TRIBE_N) || 0, 'requested by the tribe'], [Number(t.STATE_N) || 0, 'by the state']]
-            .filter(function (x) { return x[0] > 0; });
-        if (parts.length === 1) parts[0][1] = parts[0][1].replace(/^by/, 'requested by');
-        parts = parts.map(function (x) { return x[0] + ' ' + x[1]; });
+        var parts = [['Tribe*', Number(t.TRIBE_N) || 0], ['State*', Number(t.STATE_N) || 0]]
+            .filter(function (x) { return x[1] > 0; })
+            .map(function (x) { return x[0] + ' ' + x[1]; });
         var pop = fmtPopulation(t.POP);
         if (Number(t.POP_OK) === 1 && pop) parts.push('pop. ' + pop);
         return ''
@@ -1678,7 +1627,8 @@ map.on('load', function () {
             + '<div class="hover-sub">' + parts.join(' · ') + '</div>'
             + (types.length ? '<div class="hover-race">' + types.map(function (k) {
                 return '<div class="hover-race-row tribal"><span>' + k + '</span><span>' + counts[k] + '</span></div>';
-            }).join('') + '</div>' : '');
+            }).join('') + '</div>' : '')
+            + '<div class="hover-note">*Who asked for the declaration: the tribe or the state</div>';
     }
 
     map.on('mousemove', 'tribal-decl-layer', function (e) {
@@ -1840,7 +1790,6 @@ map.on('load', function () {
             { subheader: 'Energy Reliability (2022)' },
             { caption: 'Power outage hours per year, by utility.' },
             { key: 'energy', label: 'Average across utilities', value: fmtSAIDI(p.SAIDI_MIN_AVG) },
-            { key: 'energy', label: 'Worst utility',            value: fmtSAIDI(p.SAIDI_MIN_MAX) },
 
             { subheader: 'Older Adults 60+ (2020)' },
             { key: 'older', label: 'Residents 60 or older', value: fmtOlderPop(p) }
@@ -1973,7 +1922,7 @@ map.on('load', function () {
         ) : '';
 
         var classificationBadge = ombSlug
-            ? '<span class="classification-badge classification-' + ombSlug + '">' + omb + '</span>'
+            ? '<span class="classification-badge classification-' + ombSlug + '">' + omb + (p.OMB_TIER ? ' · ' + p.OMB_TIER : '') + '</span>'
             : '';
 
         // Format county population (skip if missing).
@@ -2006,6 +1955,7 @@ map.on('load', function () {
             +       (t ? '<div class="popup-tract-state">' + stateName + '</div>' : '')
             +       subLine
             +     '</div>'
+            +     (t ? '' : topTenBanner(p.NAMELSAD + ', ' + stateName))
             +     '<div id="disaster-count-block" class="disaster-count' + (function () { var k = headlineLensKey(); return k ? ' lens-active lens-' + k : ''; })() + '">'
             +       '<div class="count">' + disasterCount + '</div>'
             +       '<div class="count-description">Major weather disasters declared by FEMA (2011–2024)</div>'

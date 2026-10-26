@@ -2417,3 +2417,13 @@ a:active {
         padding: 8px 12px;
     }
 }
+
+/* County popup: top 10 banner (REB-572) */
+.popup-top10 {
+    margin: 0 0 8px;
+    padding: 6px 10px;
+    font-size: 13px;
+    line-height: 1.4;
+    background: #F3F3F3;
+    border-left: 3px solid #000000;
+}

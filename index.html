@@ -119,17 +119,6 @@
                         <input type="radio" name="lens" value="energy">
                         <span>Energy Reliability</span>
                     </label>
-                    <!-- Sub-toggle revealed only when Energy Reliability lens is active -->
-                    <div class="control-suboptions" data-lens="energy" style="display:none;">
-                        <label class="control-suboption">
-                            <input type="radio" name="energy-mode" value="avg" checked>
-                            <span>Average outage</span>
-                        </label>
-                        <label class="control-suboption">
-                            <input type="radio" name="energy-mode" value="max">
-                            <span>Worst-case outage</span>
-                        </label>
-                    </div>
                 </div>
 
                 <!-- Group 2: Who's Affected — population-overlay lenses that
@@ -140,10 +129,40 @@
                         <input type="radio" name="lens" value="urban">
                         <span>Urban Counties</span>
                     </label>
+                    <!-- Urban tiers (OMB 2023), shown only when Urban Counties is active -->
+                    <div class="control-suboptions" data-lens="urban" style="display:none;">
+                        <label class="control-suboption">
+                            <input type="radio" name="urban-mode" value="all" checked>
+                            <span>All urban</span>
+                        </label>
+                        <label class="control-suboption">
+                            <input type="radio" name="urban-mode" value="large">
+                            <span>Large metro</span>
+                        </label>
+                        <label class="control-suboption">
+                            <input type="radio" name="urban-mode" value="smaller">
+                            <span>Smaller metro</span>
+                        </label>
+                    </div>
                     <label class="control-option">
                         <input type="radio" name="lens" value="rural">
                         <span>Rural Counties</span>
                     </label>
+                    <!-- Rural tiers (OMB 2023), shown only when Rural Counties is active -->
+                    <div class="control-suboptions" data-lens="rural" style="display:none;">
+                        <label class="control-suboption">
+                            <input type="radio" name="rural-mode" value="all" checked>
+                            <span>All rural</span>
+                        </label>
+                        <label class="control-suboption">
+                            <input type="radio" name="rural-mode" value="town">
+                            <span>Small town</span>
+                        </label>
+                        <label class="control-suboption">
+                            <input type="radio" name="rural-mode" value="veryrural">
+                            <span>Very rural</span>
+                        </label>
+                    </div>
                     <label class="control-option">
                         <input type="radio" name="lens" value="older">
                         <span>Older Adults 60+</span>
