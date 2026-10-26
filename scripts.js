@@ -464,7 +464,7 @@ map.on('load', function () {
         // Bins (60/120/240/456 min = 1/2/4/7.6 hrs) and colors are shared
         // so the visual jump between modes encodes the disparity directly.
         energy: {
-            label: 'Energy Reliability (2022)',
+            label: 'Energy Reliability (2023)',
             defaultSubMode: 'avg',
             subModes: {
                 avg: {
@@ -1787,7 +1787,7 @@ map.on('load', function () {
             { group: 'statefunding', key: 'fema', label: 'Total federal aid',              value: stateCombinedFederal },
             { group: 'statefunding', key: 'fema', label: 'Per person',                     value: fmtUSD(p.STATE_PER_CAPITA) }
         ].concat(sviRows).concat([
-            { subheader: 'Energy Reliability (2022)' },
+            { subheader: 'Energy Reliability (2023)' },
             { caption: 'Average power outage hours per year (SAIDI), by utility.' },
             { key: 'energy', label: 'Average across utilities', value: fmtSAIDI(p.SAIDI_MIN_AVG) },
 
