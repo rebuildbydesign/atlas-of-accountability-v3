@@ -1661,6 +1661,8 @@ map.on('load', function () {
         if (p.GEOID === '36039' || (typeof p.COUNTY_PER_CAPITA !== 'string' && Number.isNaN(Number(p.COUNTY_PER_CAPITA)))) {
             return '$11,487 *Under Review';
         }
+        // Territories have no county-level FEMA total, so no per-person figure.
+        if (p.COUNTY_PER_CAPITA == null || p.COUNTY_PER_CAPITA === 'NULL') return '—';
         return '$' + Number(String(p.COUNTY_PER_CAPITA).replace(/\D/g, '')).toLocaleString('en-US');
     }
 
