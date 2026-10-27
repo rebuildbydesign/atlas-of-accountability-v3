@@ -722,6 +722,17 @@ map.on('load', function () {
         }
     }, 'state-label');
 
+    // White county borders, thicker as you zoom in.
+    map.addLayer({
+        'id': 'atlas-fema-outline',
+        'type': 'line',
+        'source': 'atlas-fema',
+        'paint': {
+            'line-color': '#ffffff',
+            'line-width': ['interpolate', ['linear'], ['zoom'], 3, 0.2, 6, 0.6, 10, 1.2]
+        }
+    }, 'state-label');
+
     // -------------------------------------------------------------
     // SVI CENSUS-TRACT LAYER — high-resolution overlay for the SVI lens.
     // Vector tileset hosted on Mapbox (mapbox://j00by.83jd1t0zvuxe),
