@@ -2,7 +2,7 @@
 
 Source: data/us_territories_workbook.csv (export of the workbook tab, 27 Oct 2026).
 Race/ethnicity breakdown: CDC SVI 2022 (Puerto Rico) and U.S. Census 2020 Island Areas,
-same files as tools/fetch_island_areas_2020.py. Also fixes the swapped USVI names (78020/78030) and the swapped American Samoa shapes (60040/60050).
+same files as tools/fetch_island_areas_2020.py. Also fills county FEMA where the workbook has it, and fixes the swapped USVI names (78020/78030) and the swapped American Samoa shapes (60040/60050).
 Run from the repo root: python3 tools/territories/apply_territories.py
 """
 import csv, json
@@ -41,6 +41,11 @@ for f in d['features']:
     pop, o60 = float(w['COUNTY_TOTAL_POP']), float(w['POP_60PLUS'])
     if p['COUNTY_POPULATION'] in (None, 'NULL'):
         p['COUNTY_POPULATION'] = str(int(pop))
+    # County FEMA (workbook col E): OpenFEMA PA projects naming the area; Guam = territory total, like DC.
+    if w['COUNTY_TOTAL_FEMA'] and p['COUNTY_TOTAL_FEMA'] in (None, 'NULL'):
+        fema = float(w['COUNTY_TOTAL_FEMA'])
+        p['COUNTY_TOTAL_FEMA'] = str(round(fema))
+        p['COUNTY_PER_CAPITA'] = str(round(fema / pop)) if pop > 0 else 'NULL'
     if pop > 0:
         p['county-level-older-adults_TOTAL POP'] = pop
         p['county-level-older-adults_60+ POP'] = o60
@@ -66,7 +71,18 @@ assert done == set(wb), set(wb) - done
 
 # American Samoa: the 60040 (Swains) and 60050 (Western District) shapes sit under each other's GEOID.
 # Swap the geometry so each GEOID's data draws in the right place.
+# Only swaps while 60050 still sits at Swains (north of -12 latitude), so reruns are safe.
+def mean_lat(geom):
+    pts = []
+    def walk(c):
+        if isinstance(c[0], (int, float)): pts.append(c)
+        else:
+            for x in c: walk(x)
+    walk(geom['coordinates'])
+    return sum(q[1] for q in pts) / len(pts)
 f40, f50 = [next(f for f in d['features'] if f['properties']['GEOID'] == g) for g in ('60040', '60050')]
-f40['geometry'], f50['geometry'] = f50['geometry'], f40['geometry']
+if mean_lat(f50['geometry']) > -12:
+    f40['geometry'], f50['geometry'] = f50['geometry'], f40['geometry']
+assert mean_lat(f40['geometry']) > -12 > mean_lat(f50['geometry'])
 open(SRC, 'w', encoding='utf-8').write(json.dumps(d))
 print('updated', len(done), 'DC and territory areas')

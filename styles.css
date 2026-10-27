@@ -1610,6 +1610,13 @@ a:active {
     height: 22px;
 }
 
+.senate-note {
+    margin: 6px 0 14px;
+    font-size: 14px;
+    line-height: 1.45;
+    color: #444;
+}
+
 .senator-info {
     display: flex;
     flex-direction: column;

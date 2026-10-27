@@ -1923,6 +1923,30 @@ map.on('load', function () {
             + '</div></div>'
         ) : '';
 
+        // DC and the territories have no U.S. senators; say so instead of two N/A rows.
+        var NO_SENATE = {
+            'D.C.': ['Washington, DC', 'Delegate'],
+            'Puerto Rico': ['Puerto Rico', 'Resident Commissioner'],
+            'Guam': ['Guam', 'Delegate'],
+            'U.S. Virgin Islands': ['The U.S. Virgin Islands', 'Delegate'],
+            'American Samoa': ['American Samoa', 'Delegate'],
+            'Commonwealth of the Northern Mariana Islands': ['The Northern Mariana Islands', 'Delegate']
+        };
+        var noSenate = NO_SENATE[stateName];
+        var senateBody = noSenate
+            ? '<p class="senate-note">' + noSenate[0] + ' has no U.S. senators. Residents elect a ' + noSenate[1]
+              + ', who serves in the House but cannot vote on final passage of bills.</p>'
+            : ('<div class="senator-info">'
+            +       '<div class="senator-row">'
+            +         '<img src="' + c.SENATE1_PIC + '" alt="Senator 1" class="senator-image">'
+            +         '<div><a class="rep-name" href="' + c.SENATOR1_URL + '" target="_blank">' + c.SENATOR1 + '&nbsp;<span class="party">(' + c.SENATOR1_PARTY + ')</span></a></div>'
+            +       '</div>'
+            +       '<div class="senator-row">'
+            +         '<img src="' + c.SENATOR2_PIC + '" alt="Senator 2" class="senator-image">'
+            +         '<div><a class="rep-name" href="' + c.SENATOR2_URL + '" target="_blank">' + c.SENATOR2 + '&nbsp;<span class="party">(' + c.SENATOR2_PARTY + ')</span></a></div>'
+            +       '</div>'
+            +     '</div>');
+
         var classificationBadge = ombSlug
             ? '<span class="classification-badge classification-' + ombSlug + '">' + omb + (p.OMB_TIER ? ' · ' + p.OMB_TIER : '') + '</span>'
             : '';
@@ -1988,16 +2012,7 @@ map.on('load', function () {
             +     '</div>'
             +     '<div class="rep-col rep-col-state">'
             +     '<h3><span class="lbl-desktop">US Senators</span><span class="lbl-mobile">U.S. Senate</span></h3>'
-            +     '<div class="senator-info">'
-            +       '<div class="senator-row">'
-            +         '<img src="' + c.SENATE1_PIC + '" alt="Senator 1" class="senator-image">'
-            +         '<div><a class="rep-name" href="' + c.SENATOR1_URL + '" target="_blank">' + c.SENATOR1 + '&nbsp;<span class="party">(' + c.SENATOR1_PARTY + ')</span></a></div>'
-            +       '</div>'
-            +       '<div class="senator-row">'
-            +         '<img src="' + c.SENATOR2_PIC + '" alt="Senator 2" class="senator-image">'
-            +         '<div><a class="rep-name" href="' + c.SENATOR2_URL + '" target="_blank">' + c.SENATOR2 + '&nbsp;<span class="party">(' + c.SENATOR2_PARTY + ')</span></a></div>'
-            +       '</div>'
-            +     '</div>'
+            +     senateBody
             +     governorBlock
             +     '</div>'
             +     '</div>'
