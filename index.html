@@ -129,7 +129,7 @@
                         <input type="radio" name="lens" value="urban">
                         <span>Urban Counties</span>
                     </label>
-                    <!-- Urban tiers (OMB 2023), shown only when Urban Counties is active -->
+                    <!-- Urban tiers by county population, shown only when Urban Counties is active -->
                     <div class="control-suboptions" data-lens="urban" style="display:none;">
                         <label class="control-suboption">
                             <input type="radio" name="urban-mode" value="all" checked>
@@ -137,18 +137,18 @@
                         </label>
                         <label class="control-suboption">
                             <input type="radio" name="urban-mode" value="large">
-                            <span>Large metro</span>
+                            <span>1 million or more</span>
                         </label>
                         <label class="control-suboption">
                             <input type="radio" name="urban-mode" value="smaller">
-                            <span>Smaller metro</span>
+                            <span>50,000 to 999,999</span>
                         </label>
                     </div>
                     <label class="control-option">
                         <input type="radio" name="lens" value="rural">
                         <span>Rural Counties</span>
                     </label>
-                    <!-- Rural tiers (OMB 2023), shown only when Rural Counties is active -->
+                    <!-- Rural tiers by county population, shown only when Rural Counties is active -->
                     <div class="control-suboptions" data-lens="rural" style="display:none;">
                         <label class="control-suboption">
                             <input type="radio" name="rural-mode" value="all" checked>
@@ -156,11 +156,11 @@
                         </label>
                         <label class="control-suboption">
                             <input type="radio" name="rural-mode" value="town">
-                            <span>Small town</span>
+                            <span>10,000 to 49,999</span>
                         </label>
                         <label class="control-suboption">
                             <input type="radio" name="rural-mode" value="veryrural">
-                            <span>Very rural</span>
+                            <span>Under 10,000</span>
                         </label>
                     </div>
                     <label class="control-option">

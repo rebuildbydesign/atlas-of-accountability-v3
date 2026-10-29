@@ -329,8 +329,8 @@ map.on('load', function () {
     // Adding a new lens? Add an entry here and a radio button in
     // index.html with matching value attribute.
     // -------------------------------------------------------------
-    // Urban/Rural tiers (REB-596): OMB 2023 metro (urban) vs everything else
-    // (rural), split by OMB_TIER. Same 7-bin declaration ramp as the
+    // Urban/Rural by each county's own population (29 Oct 2026): urban = 50,000+,
+    // split by POP_TIER. Same 7-bin declaration ramp as the
     // FEMA Disaster Declarations lens.
     const URBAN_RAMP = ['#efedf5', '#dadaeb', '#bcbddc', '#9e9ac8', '#807dba', '#6a51a3', '#4a1486'];
     const RURAL_RAMP = ['#eff3ff', '#c6dbef', '#9ecae1', '#6baed6', '#4292c6', '#2171b5', '#084594'];
@@ -339,7 +339,7 @@ map.on('load', function () {
             subLabel: modeName,
             paintExpression: [
                 'case',
-                tier ? ['==', ['get', 'OMB_TIER'], tier] : ['==', ['get', 'OMB_CLASS'], cls],
+                tier ? ['==', ['get', 'POP_TIER'], tier] : ['==', ['get', 'URBAN_RURAL'], cls],
                 ['step', ['to-number', ['coalesce', ['get', 'COUNTY_DISASTER_COUNT'], 0]],
                     ramp[0], 1, ramp[1], 3, ramp[2], 5, ramp[3], 7, ramp[4], 10, ramp[5], 12, ramp[6]],
                 '#ECECEC'
@@ -598,7 +598,7 @@ map.on('load', function () {
 
         // Urban Counties — disaster-overlay lens with no sub-modes.
         // Same 7-bin scheme as the FEMA Disaster Declarations lens
-        // (0/1/3/5/7/10/12) applied across all OMB-classified Urban
+        // (0/1/3/5/7/10/12) applied across all Urban
         // counties. Palette: purples — civic/government coding, no
         // party association.
         urban: {
@@ -606,11 +606,11 @@ map.on('load', function () {
             defaultSubMode: 'all',
             subModes: {
                 all:     tierLens('Urban', null, URBAN_RAMP, 'lens-urban', 'Urban Counties', 'All urban counties',
-                             'Federal disaster declarations in urban counties (part of a metropolitan area), 2011–2024. OMB, 2023.', 'Rural counties'),
-                large:   tierLens('Urban', 'Large metro', URBAN_RAMP, 'lens-urban', 'Urban Counties', 'Large metro',
-                             'Federal disaster declarations in large metro counties (metro area of 1 million or more people), 2011–2024. OMB, 2023; Census, 2024.', 'Other counties'),
-                smaller: tierLens('Urban', 'Smaller metro', URBAN_RAMP, 'lens-urban', 'Urban Counties', 'Smaller metro',
-                             'Federal disaster declarations in smaller metro counties (metro area of 50,000 to 1 million people), 2011–2024. OMB, 2023; Census, 2024.', 'Other counties')
+                             'Federal disaster declarations in urban counties (50,000 or more residents), 2011–2024.', 'Rural counties'),
+                large:   tierLens('Urban', '1 million or more', URBAN_RAMP, 'lens-urban', 'Urban Counties', '1 million or more residents',
+                             'Federal disaster declarations in counties with 1 million or more residents, 2011–2024.', 'Other counties'),
+                smaller: tierLens('Urban', '50,000 to 999,999', URBAN_RAMP, 'lens-urban', 'Urban Counties', '50,000 to 999,999 residents',
+                             'Federal disaster declarations in counties with 50,000 to 999,999 residents, 2011–2024.', 'Other counties')
             }
         },
 
@@ -621,11 +621,11 @@ map.on('load', function () {
             defaultSubMode: 'all',
             subModes: {
                 all:       tierLens('Rural', null, RURAL_RAMP, 'lens-rural', 'Rural Counties', 'All rural counties',
-                               'Federal disaster declarations in rural counties (outside any metropolitan area), 2011–2024. OMB, 2023.', 'Urban counties'),
-                town:      tierLens('Rural', 'Small town', RURAL_RAMP, 'lens-rural', 'Rural Counties', 'Small town',
-                               'Federal disaster declarations in small-town counties (a town of 10,000 to 49,999 people), 2011–2024. OMB, 2023.', 'Other counties'),
-                veryrural: tierLens('Rural', 'Very rural', RURAL_RAMP, 'lens-rural', 'Rural Counties', 'Very rural',
-                               'Federal disaster declarations in very rural counties (no town of 10,000 or more), 2011–2024. OMB, 2023.', 'Other counties')
+                               'Federal disaster declarations in rural counties (under 50,000 residents), 2011–2024.', 'Urban counties'),
+                town:      tierLens('Rural', '10,000 to 49,999', RURAL_RAMP, 'lens-rural', 'Rural Counties', '10,000 to 49,999 residents',
+                               'Federal disaster declarations in counties with 10,000 to 49,999 residents, 2011–2024.', 'Other counties'),
+                veryrural: tierLens('Rural', 'Under 10,000', RURAL_RAMP, 'lens-rural', 'Rural Counties', 'Under 10,000 residents',
+                               'Federal disaster declarations in counties with under 10,000 residents, 2011–2024.', 'Other counties')
             }
         },
 
@@ -985,13 +985,13 @@ map.on('load', function () {
     // When filter is 'all' the lens expression is returned unchanged.
     // When filter is 'rural' or 'urban', counties not matching the
     // selected class (including the 92 territory features without
-    // OMB_CLASS) render in FILTER_MASK_COLOR.
+    // URBAN_RURAL) render in FILTER_MASK_COLOR.
     function applyOMBFilter(lensExpression, filter) {
         if (filter === 'all') return lensExpression;
         const target = filter === 'rural' ? 'Rural' : 'Urban';
         return [
             'case',
-            ['==', ['get', 'OMB_CLASS'], target], lensExpression,
+            ['==', ['get', 'URBAN_RURAL'], target], lensExpression,
             FILTER_MASK_COLOR
         ];
     }
@@ -1121,7 +1121,7 @@ map.on('load', function () {
             return;
         }
         const target = filter === 'rural' ? 'Rural' : 'Urban';
-        map.setFilter('atlas-fema-dots-layer', ['==', ['get', 'OMB_CLASS'], target]);
+        map.setFilter('atlas-fema-dots-layer', ['==', ['get', 'URBAN_RURAL'], target]);
     }
 
     // The disaster-count headline doubles as the active "row" for any
@@ -1191,19 +1191,19 @@ map.on('load', function () {
         legendBody.appendChild(badge);
     }
 
-    // Atlas+ 2026 lead findings, from the workbook Findings tab (Tables 1-5). Updated 26 Oct 2026: OMB metro urban/rural, older adults 30%+.
+    // Atlas+ 2026 lead findings, from the workbook Findings tab (Tables 1-5). Updated 29 Oct 2026: urban/rural by county population (50,000+), older adults 30%+.
     const ATLAS_FINDINGS = {
         urban: {
-            color: '#4a1486', big: '50.9%',
-            text: '50.9% of people in urban counties (144.8 million) live in a county with five or more federal disaster declarations from 2011 to 2024. The typical U.S. county had four.',
+            color: '#4a1486', big: '50.8%',
+            text: '50.8% of people in urban counties (147.7 million) live in a county with five or more federal disaster declarations from 2011 to 2024. The typical U.S. county had four.',
             topLabel: 'Top 10 Urban Counties by Declarations',
-            top: [['Lawrence County, Kentucky', 15], ['Chittenden County, Vermont', 14], ['Assumption Parish, Louisiana', 13], ['Lafourche Parish, Louisiana', 13], ['West Feliciana Parish, Louisiana', 13], ['Cole County, Missouri', 13], ['Douglas County, Nebraska', 13], ['Carter County, Kentucky', 12], ['Ascension Parish, Louisiana', 12], ['Iberville Parish, Louisiana', 12], ['Livingston Parish, Louisiana', 12], ['St. Charles Parish, Louisiana', 12], ['Hinds County, Mississippi', 12], ['Yazoo County, Mississippi', 12], ['Davidson County, Tennessee', 12]]
+            top: [['Washington County, Vermont', 22], ['Merrimack County, New Hampshire', 19], ['Franklin County, Kentucky', 16], ['Grafton County, New Hampshire', 15], ['Chittenden County, Vermont', 14], ['Lafourche Parish, Louisiana', 13], ['Cole County, Missouri', 13], ['Douglas County, Nebraska', 13], ['Ascension Parish, Louisiana', 12], ['Livingston Parish, Louisiana', 12], ['St. Charles Parish, Louisiana', 12], ['Hinds County, Mississippi', 12], ['Davidson County, Tennessee', 12], ['Walker County, Texas', 12]]
         },
         rural: {
-            color: '#084594', big: '91.6%',
-            text: '91.6% of rural counties (1,794 of 1,958) had at least one federal disaster declaration from 2011 to 2024, about the same as urban counties (93.8%).',
+            color: '#084594', big: '92.2%',
+            text: '92.2% of rural counties (1,986 of 2,154) had at least one federal disaster declaration from 2011 to 2024, about the same as urban counties (92.9%).',
             topLabel: 'Top 10 Rural Counties by Declarations',
-            top: [['Washington County, Vermont', 22], ['Merrimack County, New Hampshire', 19], ['Lamoille County, Vermont', 17], ['Franklin County, Kentucky', 16], ['Johnson County, Kentucky', 16], ['Essex County, Vermont', 16], ['Orleans County, Vermont', 16], ['Clay County, Kentucky', 15], ['Lee County, Kentucky', 15], ['Magoffin County, Kentucky', 15], ['Owsley County, Kentucky', 15], ['Grafton County, New Hampshire', 15]]
+            top: [['Lamoille County, Vermont', 17], ['Johnson County, Kentucky', 16], ['Essex County, Vermont', 16], ['Orleans County, Vermont', 16], ['Clay County, Kentucky', 15], ['Lawrence County, Kentucky', 15], ['Lee County, Kentucky', 15], ['Magoffin County, Kentucky', 15], ['Owsley County, Kentucky', 15], ['Floyd County, Kentucky', 14], ['Orange County, Vermont', 14]]
         },
         older: {
             color: '#005824', big: '58.2%',
@@ -1469,7 +1469,7 @@ map.on('load', function () {
     //   • Urban/Rural classification appears ONLY on the Urban/Rural lenses
     //     (where it's the subject) — never as a tag on every tooltip.
     //   • Population appears ONLY on Urban/Rural, as context for the
-    //     OMB metro tier that defines the layer.
+    //     county population that defines the layer.
     function buildLensSummary(props) {
         var dis = Number(props.COUNTY_DISASTER_COUNT) || 0;
 
@@ -1512,8 +1512,9 @@ map.on('load', function () {
             };
         }
         if (activeLens === 'urban' || activeLens === 'rural') {
-            var cls = props.OMB_TIER || ((props.OMB_CLASS === 'Urban' || props.OMB_CLASS === 'Rural') ? props.OMB_CLASS : null);
-            var pop = fmtPopulation(props.COUNTY_POPULATION);
+            var cls = (props.URBAN_RURAL === 'Urban' || props.URBAN_RURAL === 'Rural') ? props.URBAN_RURAL : null;
+            // Workbook population (County Totals col I), the number the 50,000 rule uses
+            var pop = fmtPopulation(props['county-level-older-adults_TOTAL POP'] || props.COUNTY_POPULATION);
             var parts = [];
             if (cls) parts.push(cls);
             if (pop) parts.push('pop. ' + pop);
@@ -1921,7 +1922,7 @@ map.on('load', function () {
         var headerTitle = t ? (t.NAMELSAD + ', ' + (t.NAMELSADCO || p.NAMELSAD)) : (p.NAMELSAD + ', ' + stateName);
         var countyName = p.NAMELSAD;
         var disasterCount = p.COUNTY_DISASTER_COUNT;
-        var omb = fmtClass(p.OMB_CLASS);
+        var omb = fmtClass(p.URBAN_RURAL);
         var ombSlug = (omb === 'Rural' || omb === 'Urban') ? omb.toLowerCase() : '';
         var representativeName = c.FIRSTNAME + ' ' + c.LASTNAME;
 
@@ -1959,11 +1960,11 @@ map.on('load', function () {
             +     '</div>');
 
         var classificationBadge = ombSlug
-            ? '<span class="classification-badge classification-' + ombSlug + '">' + omb + (p.OMB_TIER ? ' · ' + p.OMB_TIER : '') + '</span>'
+            ? '<span class="classification-badge classification-' + ombSlug + '">' + omb + (p.POP_TIER ? ' · ' + p.POP_TIER + ' residents' : '') + '</span>'
             : '';
 
         // Format county population (skip if missing).
-        var popNum = Number(p.COUNTY_POPULATION);
+        var popNum = Number(p['county-level-older-adults_TOTAL POP'] || p.COUNTY_POPULATION);
         var popText = isFinite(popNum) && popNum > 0
             ? 'Population ' + popNum.toLocaleString('en-US')
             : '';
