@@ -1200,8 +1200,8 @@ map.on('load', function () {
             top: [['Washington County, Vermont', 22], ['Merrimack County, New Hampshire', 19], ['Franklin County, Kentucky', 16], ['Grafton County, New Hampshire', 15], ['Chittenden County, Vermont', 14], ['Lafourche Parish, Louisiana', 13], ['Cole County, Missouri', 13], ['Douglas County, Nebraska', 13], ['Ascension Parish, Louisiana', 12], ['Livingston Parish, Louisiana', 12], ['St. Charles Parish, Louisiana', 12], ['Hinds County, Mississippi', 12], ['Davidson County, Tennessee', 12], ['Walker County, Texas', 12]]
         },
         rural: {
-            color: '#084594', big: '92.2%',
-            text: '92.2% of rural counties (1,986 of 2,154) had at least one federal disaster declaration from 2011 to 2024, about the same as urban counties (92.9%).',
+            color: '#084594', big: '40.4%',
+            text: '40.4% of rural counties (871 of 2,154) had five or more federal disaster declarations from 2011 to 2024, about the same as urban counties (40.2%).',
             topLabel: 'Top 10 Rural Counties by Declarations',
             top: [['Lamoille County, Vermont', 17], ['Johnson County, Kentucky', 16], ['Essex County, Vermont', 16], ['Orleans County, Vermont', 16], ['Clay County, Kentucky', 15], ['Lawrence County, Kentucky', 15], ['Lee County, Kentucky', 15], ['Magoffin County, Kentucky', 15], ['Owsley County, Kentucky', 15], ['Floyd County, Kentucky', 14], ['Orange County, Vermont', 14]]
         },
