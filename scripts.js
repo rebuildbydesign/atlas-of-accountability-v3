@@ -1207,7 +1207,7 @@ map.on('load', function () {
         },
         older: {
             color: '#005824', big: '58.2%',
-            text: 'In counties where 30% or more of residents are 60 or older, 58.2% of older adults (6.0 million) live in a county with five or more federal disaster declarations from 2011 to 2024, compared with 50.0% of older adults nationwide.',
+            text: 'In counties where 30% or more of residents are 60 or older, 58.2% of older adults (6.0 million, about half in Florida) live in a county with five or more federal disaster declarations from 2011 to 2024.',
             topLabel: 'Top 10 Counties Where 30%+ Are Age 60+',
             top: [['Essex County, Vermont', 16], ['Orleans County, Vermont', 16], ['Owsley County, Kentucky', 15], ['Grafton County, New Hampshire', 15], ['Orange County, Vermont', 14], ['Franklin County, Florida', 11], ['Jefferson County, Florida', 11], ['Madison County, Florida', 11], ['Pawnee County, Kansas', 11], ['Menifee County, Kentucky', 11], ['Roger Mills County, Oklahoma', 11], ['Lake County, South Dakota', 11], ['Caledonia County, Vermont', 11], ['Skamania County, Washington', 11]]
         },
@@ -1218,8 +1218,8 @@ map.on('load', function () {
             top: [['Hinds County, Mississippi', 12], ['Iberville Parish, Louisiana', 12], ['Yazoo County, Mississippi', 12], ['East Baton Rouge Parish, Louisiana', 11], ['Shelby County, Tennessee', 10], ['Haywood County, Tennessee', 10], ['Gadsden County, Florida', 10], ['St. Helena Parish, Louisiana', 10], ['Sacramento County, California', 10], ['Leflore County, Mississippi', 10], ['Cherokee County, Oklahoma', 10], ['Holmes County, Mississippi', 10], ['Warren County, Mississippi', 10]]
         },
         tribal: {
-            color: '#4d6b05', big: '16.8%',
-            text: '16.8% of U.S. tribal areas (118 of 704) were named in at least one federal disaster declaration from 2011 to 2024, and 7.5% (53) in two or more.',
+            color: '#4d6b05', big: '16.6%',
+            text: '16.6% of U.S. tribal areas (117 of 704) were named in at least one federal disaster declaration from 2011 to 2024, and 7.5% (53) in two or more.',
             topLabel: 'Top 10 Tribal Areas by Declarations',
             top: [['Pine Ridge Reservation', 8], ['Colville Reservation and Off-Reservation Trust Land', 7], ['Santa Clara Pueblo and Off-Reservation Trust Land', 7], ['Cheyenne River Reservation and Off-Reservation Trust Land', 5], ['Mashantucket Pequot Reservation and Off-Reservation Trust Land', 5], ['Navajo Nation Reservation and Off-Reservation Trust Land', 5], ['Red Lake Reservation', 5], ['Acoma Pueblo and Off-Reservation Trust Land', 4], ['Fort Belknap Reservation and Off-Reservation Trust Land', 4], ['Lake Traverse Reservation and Off-Reservation Trust Land', 4], ['Soboba Reservation and Off-Reservation Trust Land', 4], ['Standing Rock Reservation', 4]]
         }
