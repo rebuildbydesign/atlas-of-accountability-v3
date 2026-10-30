@@ -1195,19 +1195,19 @@ map.on('load', function () {
     const ATLAS_FINDINGS = {
         urban: {
             color: '#4a1486', big: '50.8%',
-            text: '50.8% of people in urban counties (147.7 million) live in a county with five or more federal disaster declarations from 2011 to 2024. The typical U.S. county had four.',
+            text: 'Half of people in urban counties, those with 50,000 or more residents, live in a county with five or more federal disaster declarations from 2011 to 2024 (50.8%, 147.7 million). Nearly 1 in 5 Americans live in one of the 26 counties of 1 million or more with five or more.',
             topLabel: 'Top 10 Urban Counties by Declarations',
             top: [['Washington County, Vermont', 22], ['Merrimack County, New Hampshire', 19], ['Franklin County, Kentucky', 16], ['Grafton County, New Hampshire', 15], ['Chittenden County, Vermont', 14], ['Lafourche Parish, Louisiana', 13], ['Cole County, Missouri', 13], ['Douglas County, Nebraska', 13], ['Ascension Parish, Louisiana', 12], ['Livingston Parish, Louisiana', 12], ['St. Charles Parish, Louisiana', 12], ['Hinds County, Mississippi', 12], ['Davidson County, Tennessee', 12], ['Walker County, Texas', 12]]
         },
         rural: {
             color: '#084594', big: '40.4%',
-            text: '40.4% of rural counties (871 of 2,154) had five or more federal disaster declarations from 2011 to 2024, about the same as urban counties (40.2%).',
+            text: '40.4% of rural counties, those with fewer than 50,000 residents (871 of 2,154), had five or more federal disaster declarations from 2011 to 2024, about the same as urban counties (40.2%).',
             topLabel: 'Top 10 Rural Counties by Declarations',
             top: [['Lamoille County, Vermont', 17], ['Johnson County, Kentucky', 16], ['Essex County, Vermont', 16], ['Orleans County, Vermont', 16], ['Clay County, Kentucky', 15], ['Lawrence County, Kentucky', 15], ['Lee County, Kentucky', 15], ['Magoffin County, Kentucky', 15], ['Owsley County, Kentucky', 15], ['Floyd County, Kentucky', 14], ['Orange County, Vermont', 14]]
         },
         older: {
-            color: '#005824', big: '58.2%',
-            text: 'In counties where 30% or more of residents are 60 or older, 58.2% of older adults (6.0 million, about half in Florida) live in a county with five or more federal disaster declarations from 2011 to 2024.',
+            color: '#005824', big: '50.0%',
+            text: 'Half of Americans 60 and older (50.0%, 39.3 million) live in a county with five or more federal disaster declarations from 2011 to 2024. The map shows counties where 30% or more of residents are 60 or older.',
             topLabel: 'Top 10 Counties Where 30%+ Are Age 60+',
             top: [['Essex County, Vermont', 16], ['Orleans County, Vermont', 16], ['Owsley County, Kentucky', 15], ['Grafton County, New Hampshire', 15], ['Orange County, Vermont', 14], ['Franklin County, Florida', 11], ['Jefferson County, Florida', 11], ['Madison County, Florida', 11], ['Pawnee County, Kansas', 11], ['Menifee County, Kentucky', 11], ['Roger Mills County, Oklahoma', 11], ['Lake County, South Dakota', 11], ['Caledonia County, Vermont', 11], ['Skamania County, Washington', 11]]
         },
