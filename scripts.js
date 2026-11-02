@@ -1191,36 +1191,36 @@ map.on('load', function () {
         legendBody.appendChild(badge);
     }
 
-    // Atlas+ 2026 lead findings, from the workbook Findings tab (Tables 1-5). Updated 29 Oct 2026: urban/rural by county population (50,000+), older adults 30%+.
+    // Atlas+ 2026 lead findings, condensed from the Mailchimp V3 copy. <b> marks the numbers to highlight.
     const ATLAS_FINDINGS = {
         urban: {
             color: '#4a1486', big: '50.8%',
-            text: 'Half of people in urban counties, those with 50,000 or more residents, live in a county with five or more federal disaster declarations from 2011 to 2024 (50.8%, 147.7 million). Nearly 1 in 5 Americans live in one of the 26 counties of 1 million or more with five or more.',
-            topLabel: 'Top 10 Urban Counties by Declarations',
+            text: '<b>Half of people in urban counties</b> (50,000+ residents) live with frequent disasters, meaning 5+ federal declarations from 2011 to 2024. <b>Nearly 1 in 5 Americans</b> live in one of <b>26 large counties</b> with frequent disasters.',
+            topLabel: 'Urban Counties With Highest Disaster Declarations',
             top: [['Washington County, Vermont', 22], ['Merrimack County, New Hampshire', 19], ['Franklin County, Kentucky', 16], ['Grafton County, New Hampshire', 15], ['Chittenden County, Vermont', 14], ['Lafourche Parish, Louisiana', 13], ['Cole County, Missouri', 13], ['Douglas County, Nebraska', 13], ['Ascension Parish, Louisiana', 12], ['Livingston Parish, Louisiana', 12], ['St. Charles Parish, Louisiana', 12], ['Hinds County, Mississippi', 12], ['Davidson County, Tennessee', 12], ['Walker County, Texas', 12]]
         },
         rural: {
             color: '#084594', big: '40.4%',
-            text: '40.4% of rural counties, those with fewer than 50,000 residents (871 of 2,154), had five or more federal disaster declarations from 2011 to 2024, about the same as urban counties (40.2%).',
-            topLabel: 'Top 10 Rural Counties by Declarations',
+            text: '<b>About 4 in 10 rural counties</b> (under 50,000 residents) had frequent disasters, meaning 5+ federal declarations from 2011 to 2024. That\'s about the same share as urban counties, and includes <b>263 counties</b> with fewer than 10,000 residents.',
+            topLabel: 'Rural Counties With Highest Disaster Declarations',
             top: [['Lamoille County, Vermont', 17], ['Johnson County, Kentucky', 16], ['Essex County, Vermont', 16], ['Orleans County, Vermont', 16], ['Clay County, Kentucky', 15], ['Lawrence County, Kentucky', 15], ['Lee County, Kentucky', 15], ['Magoffin County, Kentucky', 15], ['Owsley County, Kentucky', 15], ['Floyd County, Kentucky', 14], ['Orange County, Vermont', 14]]
         },
         older: {
             color: '#005824', big: '50.0%',
-            text: 'Half of Americans 60 and older (50.0%, 39.3 million) live in a county with five or more federal disaster declarations from 2011 to 2024. The map shows counties where 30% or more of residents are 60 or older.',
-            topLabel: 'Top 10 Counties Where 30%+ Are Age 60+',
+            text: '<b>Half of Americans 60 and older, 39.3 million people,</b> live with frequent disasters, meaning 5+ federal declarations from 2011 to 2024. The map shows counties where at least 30% of residents are 60 and older; <b>829 of 956</b> are rural.',
+            topLabel: 'Older Adult Counties With Highest Disaster Declarations',
             top: [['Essex County, Vermont', 16], ['Orleans County, Vermont', 16], ['Owsley County, Kentucky', 15], ['Grafton County, New Hampshire', 15], ['Orange County, Vermont', 14], ['Franklin County, Florida', 11], ['Jefferson County, Florida', 11], ['Madison County, Florida', 11], ['Pawnee County, Kansas', 11], ['Menifee County, Kentucky', 11], ['Roger Mills County, Oklahoma', 11], ['Lake County, South Dakota', 11], ['Caledonia County, Vermont', 11], ['Skamania County, Washington', 11]]
         },
         minority: {
             color: '#7a0177', big: '54.9%',
-            text: '54.9% of people of color (74.7 million) live in a county with five or more federal disaster declarations from 2011 to 2024, compared with 46.0% of non-Hispanic white residents (89.4 million). The typical U.S. county had four.',
-            topLabel: 'Top 10 Counties Where 50%+ Are People of Color',
+            text: '<b>More than half of people of color (74.7 million)</b> live with frequent disasters, compared with <b>46.0%</b> of non-Hispanic white residents. Frequent means 5+ federal declarations from 2011 to 2024.',
+            topLabel: 'Majority People of Color Counties With Highest Disaster Declarations',
             top: [['Hinds County, Mississippi', 12], ['Iberville Parish, Louisiana', 12], ['Yazoo County, Mississippi', 12], ['East Baton Rouge Parish, Louisiana', 11], ['Shelby County, Tennessee', 10], ['Haywood County, Tennessee', 10], ['Gadsden County, Florida', 10], ['St. Helena Parish, Louisiana', 10], ['Sacramento County, California', 10], ['Leflore County, Mississippi', 10], ['Cherokee County, Oklahoma', 10], ['Holmes County, Mississippi', 10], ['Warren County, Mississippi', 10]]
         },
         tribal: {
-            color: '#4d6b05', big: '16.6%',
-            text: '16.6% of U.S. tribal areas (117 of 704) were named in at least one federal disaster declaration from 2011 to 2024, and 7.5% (53) in two or more.',
-            topLabel: 'Top 10 Tribal Areas by Declarations',
+            color: '#4d6b05', big: '65.2%',
+            text: '<b>Nearly two-thirds of declarations naming tribal land (88 of 135)</b> came through a state. Only <b>29 of 575</b> federally recognized tribes received one of their own. The map shows the 117 of 704 tribal areas named in a declaration.',
+            topLabel: 'Tribal Areas With Highest Disaster Declarations',
             top: [['Pine Ridge Reservation', 8], ['Colville Reservation and Off-Reservation Trust Land', 7], ['Santa Clara Pueblo and Off-Reservation Trust Land', 7], ['Cheyenne River Reservation and Off-Reservation Trust Land', 5], ['Mashantucket Pequot Reservation and Off-Reservation Trust Land', 5], ['Navajo Nation Reservation and Off-Reservation Trust Land', 5], ['Red Lake Reservation', 5], ['Acoma Pueblo and Off-Reservation Trust Land', 4], ['Fort Belknap Reservation and Off-Reservation Trust Land', 4], ['Lake Traverse Reservation and Off-Reservation Trust Land', 4], ['Soboba Reservation and Off-Reservation Trust Land', 4], ['Standing Rock Reservation', 4]]
         }
     };
@@ -1256,22 +1256,26 @@ map.on('load', function () {
             el.textContent = f.big;
             el.style.color = f.color;
         });
-        box.querySelector('.fh-bar-label').textContent = f.text;
-        box.querySelector('.fh-text').textContent = f.text;
+        box.querySelector('.fh-bar-label').innerHTML = f.text;
+        box.querySelector('.fh-text').innerHTML = f.text;
         box.querySelector('.fh-toggle-label').textContent = f.topLabel;
         const list = document.getElementById('fh-top10');
         list.innerHTML = '';
-        topTen(f).forEach(function (row) {
+        // Table like the fact sheet: name and count, no ranks.
+        const addRow = function (nameText, countText, cls) {
             const li = document.createElement('li');
             const name = document.createElement('span');
             const n = document.createElement('span');
-            name.textContent = row[0];
+            if (cls) li.className = cls;
+            name.textContent = nameText;
             n.className = 'fh-n';
-            n.textContent = row[1];
+            n.textContent = countText;
             li.appendChild(name);
             li.appendChild(n);
             list.appendChild(li);
-        });
+        };
+        addRow(activeLens === 'tribal' ? 'Tribal Area' : 'County', 'Declarations', 'fh-top10-head');
+        topTen(f).forEach(function (row) { addRow(row[0], row[1]); });
     }
 
     // Phones: the bar's chevron opens the top 10 in place, under the finding.

@@ -147,8 +147,6 @@ a:active {
     list-style: none;
     margin: 2px 0 6px;
     padding: 0;
-    max-height: 280px;
-    overflow-y: auto;
     font-size: 13px;
 }
 .fh-top10 li {
@@ -159,6 +157,7 @@ a:active {
     border-bottom: 1px solid #f0f0f0;
 }
 .fh-n { font-weight: 700; font-variant-numeric: tabular-nums; }
+.fh-top10 li.fh-top10-head { font-size: 12px; font-weight: 700; }
 .fh-bar { display: none; }
 
 /* DATA LENS LEGEND — body content swaps based on active lens */
@@ -2358,7 +2357,9 @@ a:active {
     .fh-bar-icon { display: none; }
     .fh-row { display: none; }
     .fh-toggle { width: auto; margin: 0 12px; padding: 8px 0 4px; font-size: 11.5px; }
-    .fh-top10 { margin: 0 12px 8px; max-height: 45vh; font-size: 14px; }
+    .fh-top10 { margin: 0 12px 8px; max-height: calc(100vh - 300px); overflow-y: auto; font-size: 14px; }
+    /* Open list gets the room the legend was using */
+    body:has(.findings-headline.fh-open:not([hidden])) #legend { display: none; }
     .fh-top10 li { padding: 6px 0; }
 
     /* Hide the legend and controls while the popup is open */
