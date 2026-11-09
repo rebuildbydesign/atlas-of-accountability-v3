@@ -1203,11 +1203,8 @@ map.on('load', function () {
             top: [['Washington County, Vermont', 22], ['Merrimack County, New Hampshire', 19], ['Lamoille County, Vermont', 17], ['Essex County, Vermont', 16], ['Franklin County, Kentucky', 16], ['Johnson County, Kentucky', 16], ['Orleans County, Vermont', 16], ['Clay County, Kentucky', 15], ['Grafton County, New Hampshire', 15], ['Lawrence County, Kentucky', 15], ['Lee County, Kentucky', 15], ['Magoffin County, Kentucky', 15], ['Owsley County, Kentucky', 15]]
         },
         fema: {
-            color: '#9A4B02', big: '51.7%',
-            text: '<b>More than half of FEMA recovery funding ($37.6 billion of $72.7 billion)</b> went to three states, New York, Florida and Louisiana, home to <b>14.0%</b> of Americans. Includes statewide declarations, 2011 to 2024.',
-            topLabel: 'States With the Most FEMA Recovery Funding',
-            topHead: ['State', 'FEMA Funding'],
-            top: [['New York', 18678713186, '$18.7B'], ['Florida', 10871996896, '$10.9B'], ['Louisiana', 8018397443, '$8.0B'], ['California', 6695775252, '$6.7B'], ['Texas', 4512639952, '$4.5B'], ['New Jersey', 3488671294, '$3.5B'], ['North Carolina', 2059139604, '$2.1B'], ['Kentucky', 1149124073, '$1.1B'], ['Georgia', 1042260332, '$1.0B'], ['South Carolina', 985892540, '$986M']]
+            color: '#9A4B02', big: '93.9%',
+            text: '<b>93.9% of Americans (310.4 million)</b> live in a county that received FEMA recovery funding from 2011 to 2024.'
         },
         svi: {
             color: '#007462', big: '55.5%',
