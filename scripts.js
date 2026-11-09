@@ -330,7 +330,8 @@ map.on('load', function () {
     // Adding a new lens? Add an entry here and a radio button in
     // index.html with matching value attribute.
     // -------------------------------------------------------------
-    // Urban/Rural by each county's own population (29 Oct 2026): urban = 50,000+,
+    // Urban/Rural by each county's own population (9 Nov 2026): urban = 250,000+, rural = under 50,000,
+    // 50,000 to 249,999 = Neither (grey on both lenses);
     // split by POP_TIER. Same 7-bin declaration ramp as the
     // FEMA Disaster Declarations lens.
     const URBAN_RAMP = ['#efedf5', '#dadaeb', '#bcbddc', '#9e9ac8', '#807dba', '#6a51a3', '#4a1486'];
@@ -607,11 +608,11 @@ map.on('load', function () {
             defaultSubMode: 'all',
             subModes: {
                 all:     tierLens('Urban', null, URBAN_RAMP, 'lens-urban', 'Urban Counties', 'All urban counties',
-                             'Federal disaster declarations in urban counties (50,000 or more residents), 2011–2024.', 'Rural counties'),
+                             'Federal disaster declarations in urban counties (250,000 or more residents), 2011–2024.', 'Other counties'),
                 large:   tierLens('Urban', '1 million or more', URBAN_RAMP, 'lens-urban', 'Urban Counties', '1 million or more residents',
                              'Federal disaster declarations in counties with 1 million or more residents, 2011–2024.', 'Other counties'),
-                smaller: tierLens('Urban', '50,000 to 999,999', URBAN_RAMP, 'lens-urban', 'Urban Counties', '50,000 to 999,999 residents',
-                             'Federal disaster declarations in counties with 50,000 to 999,999 residents, 2011–2024.', 'Other counties')
+                smaller: tierLens('Urban', '250,000 to 999,999', URBAN_RAMP, 'lens-urban', 'Urban Counties', '250,000 to 999,999 residents',
+                             'Federal disaster declarations in counties with 250,000 to 999,999 residents, 2011–2024.', 'Other counties')
             }
         },
 
@@ -622,7 +623,7 @@ map.on('load', function () {
             defaultSubMode: 'all',
             subModes: {
                 all:       tierLens('Rural', null, RURAL_RAMP, 'lens-rural', 'Rural Counties', 'All rural counties',
-                               'Federal disaster declarations in rural counties (under 50,000 residents), 2011–2024.', 'Urban counties'),
+                               'Federal disaster declarations in rural counties (under 50,000 residents), 2011–2024.', 'Other counties'),
                 town:      tierLens('Rural', '10,000 to 49,999', RURAL_RAMP, 'lens-rural', 'Rural Counties', '10,000 to 49,999 residents',
                                'Federal disaster declarations in counties with 10,000 to 49,999 residents, 2011–2024.', 'Other counties'),
                 veryrural: tierLens('Rural', 'Under 10,000', RURAL_RAMP, 'lens-rural', 'Rural Counties', 'Under 10,000 residents',
@@ -1224,14 +1225,14 @@ map.on('load', function () {
             top: [["Taylor County, Florida", 5941.7, "99.0", "4.1"], ["Dixie County, Florida", 4932.0, "82.2", "3.4"], ["Lafayette County, Florida", 4932.0, "82.2", "3.4"], ["Lowndes County, Georgia", 4547.5, "75.8", "3.2"], ["Wakulla County, Florida", 4073.0, "67.9", "2.8"], ["Suwannee County, Florida", 3961.2, "66.0", "2.8"], ["Hamilton County, Florida", 3653.6, "60.9", "2.5"], ["Madison County, Florida", 3653.6, "60.9", "2.5"], ["Aroostook County, Maine", 3613.5, "60.2", "2.5"], ["Washington County, Maine", 3613.5, "60.2", "2.5"]]
         },
         urban: {
-            color: '#4a1486', big: '50.8%',
-            text: '<b>Half of people in urban counties</b> (50,000+ residents) live with frequent disasters, meaning 5+ federal declarations from 2011 to 2024. <b>Nearly 1 in 5 Americans</b> live in one of <b>26 large counties</b> with frequent disasters.',
+            color: '#4a1486', big: '56.4%',
+            text: '<b>56.4% of people in urban counties</b> (250,000+ residents), or <b>120.0 million</b>, live with frequent disasters, meaning 5+ federal declarations from 2011 to 2024. <b>Nearly 1 in 5 Americans</b> live in one of <b>26 large counties</b> with frequent disasters.',
             topLabel: 'Urban Counties With Highest Disaster Declarations',
-            top: [['Washington County, Vermont', 22], ['Merrimack County, New Hampshire', 19], ['Franklin County, Kentucky', 16], ['Grafton County, New Hampshire', 15], ['Chittenden County, Vermont', 14], ['Lafourche Parish, Louisiana', 13], ['Cole County, Missouri', 13], ['Douglas County, Nebraska', 13], ['Ascension Parish, Louisiana', 12], ['Livingston Parish, Louisiana', 12], ['St. Charles Parish, Louisiana', 12], ['Hinds County, Mississippi', 12], ['Davidson County, Tennessee', 12], ['Walker County, Texas', 12]]
+            top: [["Douglas County, Nebraska", 13], ["Davidson County, Tennessee", 12], ["East Baton Rouge Parish, Louisiana", 11], ["Duval County, Florida", 10], ["Naugatuck Valley Planning Region, Connecticut", 10], ["Sacramento County, California", 10], ["Shelby County, Tennessee", 10], ["South Central Connecticut Planning Region, Connecticut", 10], ["Alachua County, Florida", 9], ["Collier County, Florida", 9], ["Fulton County, Georgia", 9], ["Greater Bridgeport Planning Region, Connecticut", 9], ["Harris County, Texas", 9], ["Hillsborough County, Florida", 9], ["Jefferson Parish, Louisiana", 9], ["King County, Washington", 9], ["Leon County, Florida", 9], ["Los Angeles County, California", 9], ["Manatee County, Florida", 9], ["Montgomery County, Texas", 9], ["Morris County, New Jersey", 9], ["Nassau County, New York", 9], ["Orleans Parish, Louisiana", 9], ["Pasco County, Florida", 9], ["Pinellas County, Florida", 9], ["Rockingham County, New Hampshire", 9], ["Sarasota County, Florida", 9], ["Snohomish County, Washington", 9], ["St. Tammany Parish, Louisiana", 9], ["Suffolk County, New York", 9], ["Travis County, Texas", 9]]
         },
         rural: {
             color: '#084594', big: '40.4%',
-            text: '<b>About 4 in 10 rural counties</b> (under 50,000 residents) had frequent disasters, meaning 5+ federal declarations from 2011 to 2024. That\'s about the same share as urban counties, and includes <b>263 counties</b> with fewer than 10,000 residents.',
+            text: '<b>About 4 in 10 rural counties</b> (under 50,000 residents) had frequent disasters, meaning 5+ federal declarations from 2011 to 2024, compared with <b>50.7%</b> of urban counties (250,000+ residents). That includes <b>263 counties</b> with fewer than 10,000 residents.',
             topLabel: 'Rural Counties With Highest Disaster Declarations',
             top: [['Lamoille County, Vermont', 17], ['Johnson County, Kentucky', 16], ['Essex County, Vermont', 16], ['Orleans County, Vermont', 16], ['Clay County, Kentucky', 15], ['Lawrence County, Kentucky', 15], ['Lee County, Kentucky', 15], ['Magoffin County, Kentucky', 15], ['Owsley County, Kentucky', 15], ['Floyd County, Kentucky', 14], ['Orange County, Vermont', 14]]
         },
@@ -1564,7 +1565,7 @@ map.on('load', function () {
         }
         if (activeLens === 'urban' || activeLens === 'rural') {
             var cls = (props.URBAN_RURAL === 'Urban' || props.URBAN_RURAL === 'Rural') ? props.URBAN_RURAL : null;
-            // Workbook population (County Totals col I), the number the 50,000 rule uses
+            // Workbook population (County Totals col I), the number the 50,000 / 250,000 cutoffs use
             var pop = fmtPopulation(props['county-level-older-adults_TOTAL POP'] || props.COUNTY_POPULATION);
             var parts = [];
             if (cls) parts.push(cls);
