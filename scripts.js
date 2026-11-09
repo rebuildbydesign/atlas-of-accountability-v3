@@ -1204,7 +1204,10 @@ map.on('load', function () {
         },
         fema: {
             color: '#9A4B02', big: '93.9%',
-            text: '<b>93.9% of Americans (310.4 million)</b> live in a county that received FEMA recovery funding from 2011 to 2024.'
+            text: '<b>93.9% of Americans (310.4 million)</b> live in a county that received FEMA recovery funding from 2011 to 2024.',
+            topLabel: 'Counties With the Most FEMA Recovery Funding',
+            topHead: ['County', 'FEMA Funding'],
+            top: [["New York County, New York", 9081110288, "$9.1B"], ["Nassau County, New York", 2566692330, "$2.6B"], ["Harris County, Texas", 1611303016, "$1.6B"], ["Calcasieu Parish, Louisiana", 1341056351, "$1.3B"], ["Queens County, New York", 1108487788, "$1.1B"], ["Bay County, Florida", 978089691, "$978M"], ["Terrebonne Parish, Louisiana", 730901848, "$731M"], ["Suffolk County, New York", 599064176, "$599M"], ["Lee County, Florida", 590407445, "$590M"], ["Greene County, New York", 552146983, "$552M"]]
         },
         svi: {
             color: '#007462', big: '55.5%',
@@ -1212,7 +1215,10 @@ map.on('load', function () {
         },
         energy: {
             color: '#6E2800', big: '56.8%',
-            text: '<b>56.8% of counties averaging more than twice the U.S. average hours without power (300 of 528)</b> had five or more federal disaster declarations, compared with <b>37.7%</b> of other counties.'
+            text: '<b>56.8% of counties averaging more than twice the U.S. average hours without power (300 of 528)</b> had five or more federal disaster declarations, compared with <b>37.7%</b> of other counties.',
+            topLabel: 'Counties With the Most Hours Without Power (2023)',
+            topHead: ['County', 'Hours'],
+            top: [["Taylor County, Florida", 5941.7, "99.0"], ["Dixie County, Florida", 4932.0, "82.2"], ["Lafayette County, Florida", 4932.0, "82.2"], ["Lowndes County, Georgia", 4547.5, "75.8"], ["Wakulla County, Florida", 4073.0, "67.9"], ["Suwannee County, Florida", 3961.2, "66.0"], ["Hamilton County, Florida", 3653.6, "60.9"], ["Madison County, Florida", 3653.6, "60.9"], ["Aroostook County, Maine", 3613.5, "60.2"], ["Washington County, Maine", 3613.5, "60.2"]]
         },
         urban: {
             color: '#4a1486', big: '50.8%',
