@@ -1211,7 +1211,10 @@ map.on('load', function () {
         },
         svi: {
             color: '#007462', big: '55.5%',
-            text: '<b>55.5% of people in the most socially vulnerable census tracts (45.1 million)</b> live in a county with five or more federal disaster declarations, compared with <b>47.7%</b> of people in other tracts.'
+            text: '<b>55.5% of people in the most socially vulnerable census tracts (45.1 million)</b> live in a county with five or more federal disaster declarations, compared with <b>47.7%</b> of people in other tracts.',
+            topLabel: 'Most Socially Vulnerable Counties With Highest Disaster Declarations',
+            topHead: ['County', 'Declarations', 'SVI Score'],
+            top: [["Johnson County, Kentucky", 16, "16", "0.75"], ["Clay County, Kentucky", 15, "15", "0.82"], ["Lee County, Kentucky", 15, "15", "0.85"], ["Magoffin County, Kentucky", 15, "15", "0.76"], ["Wolfe County, Kentucky", 13, "13", "0.78"], ["Craig County, Oklahoma", 12, "12", "0.93"], ["Estill County, Kentucky", 12, "12", "0.76"], ["Harlan County, Kentucky", 12, "12", "0.83"], ["Hinds County, Mississippi", 12, "12", "0.92"], ["Iberville Parish, Louisiana", 12, "12", "0.85"], ["Walker County, Texas", 12, "12", "0.94"], ["Whitley County, Kentucky", 12, "12", "0.84"], ["Yazoo County, Mississippi", 12, "12", "1.00"]]
         },
         energy: {
             color: '#6E2800', big: '56.8%',
