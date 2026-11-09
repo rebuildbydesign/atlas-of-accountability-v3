@@ -330,8 +330,8 @@ map.on('load', function () {
     // Adding a new lens? Add an entry here and a radio button in
     // index.html with matching value attribute.
     // -------------------------------------------------------------
-    // Urban/Rural by each county's own population (9 Nov 2026): urban = 250,000+, rural = under 50,000,
-    // 50,000 to 249,999 = Neither (grey on both lenses);
+    // Urban/Rural by each county's own population (9 Nov 2026), CDC/NCHS breakpoints: urban Large 1M+, Medium 250K-999,999,
+    // Small 50K-249,999; rural = under 50,000 (Rural 10K-49,999, Very rural under 10K). Default urban view = Large + medium;
     // split by POP_TIER. Same 7-bin declaration ramp as the
     // FEMA Disaster Declarations lens.
     const URBAN_RAMP = ['#efedf5', '#dadaeb', '#bcbddc', '#9e9ac8', '#807dba', '#6a51a3', '#4a1486'];
@@ -341,7 +341,7 @@ map.on('load', function () {
             subLabel: modeName,
             paintExpression: [
                 'case',
-                tier ? ['==', ['get', 'POP_TIER'], tier] : ['==', ['get', 'URBAN_RURAL'], cls],
+                Array.isArray(tier) ? ['in', ['get', 'POP_TIER'], ['literal', tier]] : tier ? ['==', ['get', 'POP_TIER'], tier] : ['==', ['get', 'URBAN_RURAL'], cls],
                 ['step', ['to-number', ['coalesce', ['get', 'COUNTY_DISASTER_COUNT'], 0]],
                     ramp[0], 1, ramp[1], 3, ramp[2], 5, ramp[3], 7, ramp[4], 10, ramp[5], 12, ramp[6]],
                 '#ECECEC'
@@ -607,12 +607,14 @@ map.on('load', function () {
             label: 'Urban Counties',
             defaultSubMode: 'all',
             subModes: {
-                all:     tierLens('Urban', null, URBAN_RAMP, 'lens-urban', 'Urban Counties', 'All urban counties',
-                             'Federal disaster declarations in urban counties (250,000 or more residents), 2011–2024.', 'Other counties'),
-                large:   tierLens('Urban', '1 million or more', URBAN_RAMP, 'lens-urban', 'Urban Counties', '1 million or more residents',
-                             'Federal disaster declarations in counties with 1 million or more residents, 2011–2024.', 'Other counties'),
-                smaller: tierLens('Urban', '250,000 to 999,999', URBAN_RAMP, 'lens-urban', 'Urban Counties', '250,000 to 999,999 residents',
-                             'Federal disaster declarations in counties with 250,000 to 999,999 residents, 2011–2024.', 'Other counties')
+                all:     tierLens('Urban', ['1 million or more', '250,000 to 999,999'], URBAN_RAMP, 'lens-urban', 'Urban Counties', 'Large + medium (250,000+)',
+                             'Federal disaster declarations in large and medium urban counties (250,000 or more residents), 2011–2024.', 'Other counties'),
+                large:   tierLens('Urban', '1 million or more', URBAN_RAMP, 'lens-urban', 'Urban Counties', 'Large (1 million+)',
+                             'Federal disaster declarations in large urban counties (1 million or more residents), 2011–2024.', 'Other counties'),
+                smaller: tierLens('Urban', '250,000 to 999,999', URBAN_RAMP, 'lens-urban', 'Urban Counties', 'Medium (250,000 to 999,999)',
+                             'Federal disaster declarations in medium urban counties (250,000 to 999,999 residents), 2011–2024.', 'Other counties'),
+                small:   tierLens('Urban', '50,000 to 249,999', URBAN_RAMP, 'lens-urban', 'Urban Counties', 'Small (50,000 to 249,999)',
+                             'Federal disaster declarations in small urban counties (50,000 to 249,999 residents), 2011–2024.', 'Other counties')
             }
         },
 
@@ -622,11 +624,11 @@ map.on('load', function () {
             label: 'Rural Counties',
             defaultSubMode: 'all',
             subModes: {
-                all:       tierLens('Rural', null, RURAL_RAMP, 'lens-rural', 'Rural Counties', 'All rural counties',
+                all:       tierLens('Rural', null, RURAL_RAMP, 'lens-rural', 'Rural Counties', 'All rural (under 50,000)',
                                'Federal disaster declarations in rural counties (under 50,000 residents), 2011–2024.', 'Other counties'),
-                town:      tierLens('Rural', '10,000 to 49,999', RURAL_RAMP, 'lens-rural', 'Rural Counties', '10,000 to 49,999 residents',
+                town:      tierLens('Rural', '10,000 to 49,999', RURAL_RAMP, 'lens-rural', 'Rural Counties', 'Rural (10,000 to 49,999)',
                                'Federal disaster declarations in counties with 10,000 to 49,999 residents, 2011–2024.', 'Other counties'),
-                veryrural: tierLens('Rural', 'Under 10,000', RURAL_RAMP, 'lens-rural', 'Rural Counties', 'Under 10,000 residents',
+                veryrural: tierLens('Rural', 'Under 10,000', RURAL_RAMP, 'lens-rural', 'Rural Counties', 'Very rural (under 10,000)',
                                'Federal disaster declarations in counties with under 10,000 residents, 2011–2024.', 'Other counties')
             }
         },
@@ -1226,13 +1228,13 @@ map.on('load', function () {
         },
         urban: {
             color: '#4a1486', big: '56.4%',
-            text: '<b>56.4% of people in urban counties</b> (250,000+ residents), or <b>120.0 million</b>, live with frequent disasters, meaning 5+ federal declarations from 2011 to 2024. <b>Nearly 1 in 5 Americans</b> live in one of <b>26 large counties</b> with frequent disasters.',
-            topLabel: 'Urban Counties With Highest Disaster Declarations',
+            text: '<b>56.4% of people in large and medium urban counties</b> (250,000+ residents), or <b>120.0 million</b>, live with frequent disasters, meaning 5+ federal declarations from 2011 to 2024. <b>Nearly 1 in 5 Americans</b> live in one of <b>26 large counties</b> with frequent disasters.',
+            topLabel: 'Urban Counties (250K+) With Highest Declarations',
             top: [["Douglas County, Nebraska", 13], ["Davidson County, Tennessee", 12], ["East Baton Rouge Parish, Louisiana", 11], ["Duval County, Florida", 10], ["Naugatuck Valley Planning Region, Connecticut", 10], ["Sacramento County, California", 10], ["Shelby County, Tennessee", 10], ["South Central Connecticut Planning Region, Connecticut", 10], ["Alachua County, Florida", 9], ["Collier County, Florida", 9], ["Fulton County, Georgia", 9], ["Greater Bridgeport Planning Region, Connecticut", 9], ["Harris County, Texas", 9], ["Hillsborough County, Florida", 9], ["Jefferson Parish, Louisiana", 9], ["King County, Washington", 9], ["Leon County, Florida", 9], ["Los Angeles County, California", 9], ["Manatee County, Florida", 9], ["Montgomery County, Texas", 9], ["Morris County, New Jersey", 9], ["Nassau County, New York", 9], ["Orleans Parish, Louisiana", 9], ["Pasco County, Florida", 9], ["Pinellas County, Florida", 9], ["Rockingham County, New Hampshire", 9], ["Sarasota County, Florida", 9], ["Snohomish County, Washington", 9], ["St. Tammany Parish, Louisiana", 9], ["Suffolk County, New York", 9], ["Travis County, Texas", 9]]
         },
         rural: {
             color: '#084594', big: '40.4%',
-            text: '<b>About 4 in 10 rural counties</b> (under 50,000 residents) had frequent disasters, meaning 5+ federal declarations from 2011 to 2024, compared with <b>50.7%</b> of urban counties (250,000+ residents). That includes <b>263 counties</b> with fewer than 10,000 residents.',
+            text: '<b>About 4 in 10 rural counties</b> (under 50,000 residents) had frequent disasters, meaning 5+ federal declarations from 2011 to 2024, compared with <b>50.7%</b> of large and medium urban counties (250,000+ residents). That includes <b>263 counties</b> with fewer than 10,000 residents.',
             topLabel: 'Rural Counties With Highest Disaster Declarations',
             top: [['Lamoille County, Vermont', 17], ['Johnson County, Kentucky', 16], ['Essex County, Vermont', 16], ['Orleans County, Vermont', 16], ['Clay County, Kentucky', 15], ['Lawrence County, Kentucky', 15], ['Lee County, Kentucky', 15], ['Magoffin County, Kentucky', 15], ['Owsley County, Kentucky', 15], ['Floyd County, Kentucky', 14], ['Orange County, Vermont', 14]]
         },
@@ -1264,7 +1266,7 @@ map.on('load', function () {
     }
 
     // County popup banner (REB-572): which shown top 10 lists this county is on.
-    const TOP10_LABELS = { urban: 'urban counties', rural: 'rural counties', older: 'counties where 30%+ are 60 or older', minority: 'counties where most residents are people of color' };
+    const TOP10_LABELS = { urban: 'large and medium urban counties', rural: 'rural counties', older: 'counties where 30%+ are 60 or older', minority: 'counties where most residents are people of color' };
     function topTenBanner(countyName) {
         var hits = Object.keys(TOP10_LABELS).map(function (k) {
             var list = topTen(ATLAS_FINDINGS[k]);
@@ -1438,6 +1440,13 @@ map.on('load', function () {
         if (hrs < 10) return hrs.toFixed(1) + ' hrs';
         return Math.round(hrs).toLocaleString('en-US') + ' hrs';
     }
+    // Size names for POP_TIER (CDC/NCHS breakpoints, county's own population).
+    const TIER_NAME = { '1 million or more': 'Large', '250,000 to 999,999': 'Medium', '50,000 to 249,999': 'Small', '10,000 to 49,999': 'Rural', 'Under 10,000': 'Very rural' };
+    function fmtTier(cls, tier) {
+        var n = TIER_NAME[tier];
+        if (!n) return cls;
+        return (n === cls ? cls : cls + ' · ' + n) + ' (' + tier.replace('Under', 'under') + ' residents)';
+    }
     function fmtClass(v) {
         return (v === 'Urban' || v === 'Rural') ? v : '—';
     }
@@ -1568,7 +1577,7 @@ map.on('load', function () {
             // Workbook population (County Totals col I), the number the 50,000 / 250,000 cutoffs use
             var pop = fmtPopulation(props['county-level-older-adults_TOTAL POP'] || props.COUNTY_POPULATION);
             var parts = [];
-            if (cls) parts.push(cls);
+            if (cls) parts.push(TIER_NAME[props.POP_TIER] && TIER_NAME[props.POP_TIER] !== cls ? cls + ' · ' + TIER_NAME[props.POP_TIER] : (TIER_NAME[props.POP_TIER] || cls));
             if (pop) parts.push('pop. ' + pop);
             return {
                 lens: activeLens,
@@ -2012,7 +2021,7 @@ map.on('load', function () {
             +     '</div>');
 
         var classificationBadge = ombSlug
-            ? '<span class="classification-badge classification-' + ombSlug + '">' + omb + (p.POP_TIER ? ' · ' + p.POP_TIER + ' residents' : '') + '</span>'
+            ? '<span class="classification-badge classification-' + ombSlug + '">' + fmtTier(omb, p.POP_TIER) + '</span>'
             : '';
 
         // Format county population (skip if missing).
