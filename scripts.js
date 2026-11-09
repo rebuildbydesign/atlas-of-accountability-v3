@@ -258,6 +258,7 @@ map.on('load', function () {
         infoPanel.style.display = open ? 'block' : 'none';
         document.body.classList.toggle('help-open', open && isMobile());
         if (open && isMobile()) setControlCollapsed(true);
+        if (typeof renderFindingsHeadline === 'function') renderFindingsHeadline();
     }
 
     document.getElementById('info-icon').addEventListener('click', function () {
@@ -1005,6 +1006,7 @@ map.on('load', function () {
         if (helpPanel && helpPanel.style.display !== 'none') {
             helpPanel.style.display = 'none';
             document.body.classList.remove('help-open');
+            renderFindingsHeadline();
         }
     }
 
@@ -1193,6 +1195,28 @@ map.on('load', function () {
 
     // Atlas+ 2026 lead findings, condensed from the Mailchimp V3 copy. <b> marks the numbers to highlight.
     const ATLAS_FINDINGS = {
+        // Federal Data layers (Nov 2026): headline number only, top 10 where it fits.
+        disaster: {
+            color: '#a50f15', big: '92.4%',
+            text: '<b>9 in 10 counties in the 50 states (2,905 of 3,143)</b> had at least one federal disaster declaration from 2011 to 2024. <b>40.4% (1,269)</b> had five or more.',
+            topLabel: 'Counties With Highest Disaster Declarations',
+            top: [['Washington County, Vermont', 22], ['Merrimack County, New Hampshire', 19], ['Lamoille County, Vermont', 17], ['Essex County, Vermont', 16], ['Franklin County, Kentucky', 16], ['Johnson County, Kentucky', 16], ['Orleans County, Vermont', 16], ['Clay County, Kentucky', 15], ['Grafton County, New Hampshire', 15], ['Lawrence County, Kentucky', 15], ['Lee County, Kentucky', 15], ['Magoffin County, Kentucky', 15], ['Owsley County, Kentucky', 15]]
+        },
+        fema: {
+            color: '#9A4B02', big: '51.7%',
+            text: '<b>More than half of FEMA recovery funding ($37.6 billion of $72.7 billion)</b> went to three states, New York, Florida and Louisiana, home to <b>14.0%</b> of Americans. Includes statewide declarations, 2011 to 2024.',
+            topLabel: 'States With the Most FEMA Recovery Funding',
+            topHead: ['State', 'FEMA Funding'],
+            top: [['New York', 18678713186, '$18.7B'], ['Florida', 10871996896, '$10.9B'], ['Louisiana', 8018397443, '$8.0B'], ['California', 6695775252, '$6.7B'], ['Texas', 4512639952, '$4.5B'], ['New Jersey', 3488671294, '$3.5B'], ['North Carolina', 2059139604, '$2.1B'], ['Kentucky', 1149124073, '$1.1B'], ['Georgia', 1042260332, '$1.0B'], ['South Carolina', 985892540, '$986M']]
+        },
+        svi: {
+            color: '#007462', big: '55.5%',
+            text: '<b>55.5% of people in the most socially vulnerable census tracts (45.1 million)</b> live in a county with five or more federal disaster declarations, compared with <b>47.7%</b> of people in other tracts.'
+        },
+        energy: {
+            color: '#6E2800', big: '56.8%',
+            text: '<b>56.8% of counties averaging more than twice the U.S. average hours without power (300 of 528)</b> had five or more federal disaster declarations, compared with <b>37.7%</b> of other counties.'
+        },
         urban: {
             color: '#4a1486', big: '50.8%',
             text: '<b>Half of people in urban counties</b> (50,000+ residents) live with frequent disasters, meaning 5+ federal declarations from 2011 to 2024. <b>Nearly 1 in 5 Americans</b> live in one of <b>26 large counties</b> with frequent disasters.',
@@ -1250,7 +1274,10 @@ map.on('load', function () {
         const box = document.getElementById('findings-headline');
         const f = ATLAS_FINDINGS[activeLens];
         if (!box) return;
-        box.hidden = !f;
+        // Stay hidden while the How to Use panel is open, so the two never stack.
+        const help = document.getElementById('info-panel');
+        const helpOpen = help && getComputedStyle(help).display !== 'none';
+        box.hidden = !f || helpOpen;
         if (!f) return;
         box.querySelectorAll('.fh-big, .fh-bar-big').forEach(function (el) {
             el.textContent = f.big;
@@ -1258,9 +1285,14 @@ map.on('load', function () {
         });
         box.querySelector('.fh-bar-label').innerHTML = f.text;
         box.querySelector('.fh-text').innerHTML = f.text;
-        box.querySelector('.fh-toggle-label').textContent = f.topLabel;
+        const hasTop = !!(f.top && f.top.length);
+        const toggle = document.getElementById('fh-toggle');
         const list = document.getElementById('fh-top10');
+        toggle.hidden = !hasTop;
+        document.getElementById('fh-bar').classList.toggle('fh-no-top', !hasTop);
         list.innerHTML = '';
+        if (!hasTop) { list.hidden = true; return; }
+        box.querySelector('.fh-toggle-label').textContent = f.topLabel;
         // Table like the fact sheet: name and count, no ranks.
         const addRow = function (nameText, countText, cls) {
             const li = document.createElement('li');
@@ -1274,13 +1306,15 @@ map.on('load', function () {
             li.appendChild(n);
             list.appendChild(li);
         };
-        addRow(activeLens === 'tribal' ? 'Tribal Area' : 'County', 'Declarations', 'fh-top10-head');
-        topTen(f).forEach(function (row) { addRow(row[0], row[1]); });
+        const head = f.topHead || [activeLens === 'tribal' ? 'Tribal Area' : 'County', 'Declarations'];
+        addRow(head[0], head[1], 'fh-top10-head');
+        topTen(f).forEach(function (row) { addRow(row[0], row.length > 2 ? row[2] : row[1]); });
     }
 
     // Phones: the bar's chevron opens the top 10 in place, under the finding.
     document.getElementById('fh-bar').addEventListener('click', function () {
-        document.getElementById('fh-toggle').click();
+        const t = document.getElementById('fh-toggle');
+        if (!t.hidden) t.click();
     });
 
     document.getElementById('fh-toggle').addEventListener('click', function () {
