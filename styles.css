@@ -159,6 +159,8 @@ a:active {
     border-bottom: 1px solid #f0f0f0;
 }
 .fh-n { font-weight: 700; font-variant-numeric: tabular-nums; }
+.fh-top10 li > span:first-child { flex: 1; }
+.fh-n2 { min-width: 44px; text-align: right; }
 .fh-top10 li.fh-top10-head { font-size: 12px; font-weight: 700; }
 .fh-bar { display: none; }
 

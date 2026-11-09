@@ -1217,8 +1217,8 @@ map.on('load', function () {
             color: '#6E2800', big: '56.8%',
             text: '<b>56.8% of counties averaging more than twice the U.S. average hours without power (300 of 528)</b> had five or more federal disaster declarations, compared with <b>37.7%</b> of other counties.',
             topLabel: 'Counties With the Most Hours Without Power (2023)',
-            topHead: ['County', 'Hours'],
-            top: [["Taylor County, Florida", 5941.7, "99.0"], ["Dixie County, Florida", 4932.0, "82.2"], ["Lafayette County, Florida", 4932.0, "82.2"], ["Lowndes County, Georgia", 4547.5, "75.8"], ["Wakulla County, Florida", 4073.0, "67.9"], ["Suwannee County, Florida", 3961.2, "66.0"], ["Hamilton County, Florida", 3653.6, "60.9"], ["Madison County, Florida", 3653.6, "60.9"], ["Aroostook County, Maine", 3613.5, "60.2"], ["Washington County, Maine", 3613.5, "60.2"]]
+            topHead: ['County', 'Hours', 'Days'],
+            top: [["Taylor County, Florida", 5941.7, "99.0", "4.1"], ["Dixie County, Florida", 4932.0, "82.2", "3.4"], ["Lafayette County, Florida", 4932.0, "82.2", "3.4"], ["Lowndes County, Georgia", 4547.5, "75.8", "3.2"], ["Wakulla County, Florida", 4073.0, "67.9", "2.8"], ["Suwannee County, Florida", 3961.2, "66.0", "2.8"], ["Hamilton County, Florida", 3653.6, "60.9", "2.5"], ["Madison County, Florida", 3653.6, "60.9", "2.5"], ["Aroostook County, Maine", 3613.5, "60.2", "2.5"], ["Washington County, Maine", 3613.5, "60.2", "2.5"]]
         },
         urban: {
             color: '#4a1486', big: '50.8%',
@@ -1297,7 +1297,7 @@ map.on('load', function () {
         if (!hasTop) { list.hidden = true; return; }
         box.querySelector('.fh-toggle-label').textContent = f.topLabel;
         // Table like the fact sheet: name and count, no ranks.
-        const addRow = function (nameText, countText, cls) {
+        const addRow = function (nameText, countText, cls, extraText) {
             const li = document.createElement('li');
             const name = document.createElement('span');
             const n = document.createElement('span');
@@ -1307,11 +1307,18 @@ map.on('load', function () {
             n.textContent = countText;
             li.appendChild(name);
             li.appendChild(n);
+            // Optional third column (energy: hours, then days).
+            if (extraText !== undefined) {
+                const x = document.createElement('span');
+                x.className = 'fh-n fh-n2';
+                x.textContent = extraText;
+                li.appendChild(x);
+            }
             list.appendChild(li);
         };
         const head = f.topHead || [activeLens === 'tribal' ? 'Tribal Area' : 'County', 'Declarations'];
-        addRow(head[0], head[1], 'fh-top10-head');
-        topTen(f).forEach(function (row) { addRow(row[0], row.length > 2 ? row[2] : row[1]); });
+        addRow(head[0], head[1], 'fh-top10-head', head[2]);
+        topTen(f).forEach(function (row) { addRow(row[0], row.length > 2 ? row[2] : row[1], null, row[3]); });
     }
 
     // Phones: the bar's chevron opens the top 10 in place, under the finding.
