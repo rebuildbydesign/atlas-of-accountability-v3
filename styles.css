@@ -111,6 +111,8 @@ a:active {
     font-family: Arial, sans-serif;
     color: #222;
 }
+/* Hide the headline while a county popup is open, so it never covers the popup. */
+body.popup-open .findings-headline { display: none; }
 .findings-headline[hidden],
 .fh-top10[hidden] { display: none; }
 .fh-row { display: flex; gap: 14px; align-items: center; }
@@ -1693,6 +1695,8 @@ a:active {
         text-stroke: 1.3px #1a1a1a;
     }
 
+    /* Phones drop "(by county & district)" so the subtitle fits one line. */
+    .css-atlas-title .atlas-sub-extra { display: none; }
     .css-atlas-title .atlas-sub {
         display: block;
         margin-top: 3px;

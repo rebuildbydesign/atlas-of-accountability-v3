@@ -12,9 +12,10 @@ const map = new mapboxgl.Map({
     // Phones: fit the lower 48 between the header and the bottom bar.
     bounds: window.innerWidth <= 768 ? [[-125.0, 24.4], [-66.9, 49.4]] : undefined,
     fitBoundsOptions: { padding: { top: 130, bottom: 110, left: 12, right: 12 } },
+    // East edge reaches -10 so the lower 48 can be panned to the centre at full zoom-out (for screenshots).
     maxBounds: [
         [-220.0, -20.0],  // Southwest coordinates (including US Territories)
-        [-50.0, 74.0]    // Northeast coordinates (including Puerto Rico)
+        [-10.0, 74.0]     // Northeast coordinates (room to centre the U.S.)
     ],
     projection: {
         name: 'mercator'
@@ -24,6 +25,17 @@ const map = new mapboxgl.Map({
     maxPitch: 0               // Ensure no tilt at all
 });
 
+
+// Keep the old zoom-out limit (the view that just fit -220 to -50), now that the pan area is wider.
+function atlasMinZoom() {
+    const c = map.getContainer();
+    const merc = function (lat) { return Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360)); };
+    const zW = Math.log2(c.clientWidth * 360 / (170 * 512));
+    const zH = Math.log2(c.clientHeight / (512 * (merc(74) - merc(-20)) / (2 * Math.PI)));
+    return Math.max(0, zW, zH);
+}
+map.setMinZoom(atlasMinZoom());
+map.on('resize', function () { map.setMinZoom(atlasMinZoom()); });
 
 // Add zoom and rotation controls to the map.
 map.addControl(new mapboxgl.NavigationControl({showCompass: false}), 'top-right');
@@ -1190,14 +1202,14 @@ map.on('load', function () {
     const ATLAS_FINDINGS = {
         // Federal Data layers (Nov 2026): headline number only, top 10 where it fits.
         disaster: {
-            color: '#a50f15', big: '92.4%',
-            text: '<b>9 in 10 counties in the 50 states (2,905 of 3,143)</b> had at least one federal disaster declaration from 2011 to 2024. <b>40.4% (1,269)</b> had five or more.',
+            color: '#a50f15', big: '92%',
+            text: '<b>Ninety-two percent of U.S. counties</b> had at least one federal disaster declaration. <b>About 40%</b> had five or more.',
             topLabel: 'Counties With Highest Disaster Declarations',
             top: [['Washington County, Vermont', 22], ['Merrimack County, New Hampshire', 19], ['Lamoille County, Vermont', 17], ['Essex County, Vermont', 16], ['Franklin County, Kentucky', 16], ['Johnson County, Kentucky', 16], ['Orleans County, Vermont', 16], ['Clay County, Kentucky', 15], ['Grafton County, New Hampshire', 15], ['Lawrence County, Kentucky', 15], ['Lee County, Kentucky', 15], ['Magoffin County, Kentucky', 15], ['Owsley County, Kentucky', 15]]
         },
         fema: {
-            color: '#9A4B02', big: '93.9%',
-            text: '<b>93.9% of Americans (310.4 million)</b> live in a county that received FEMA recovery funding from 2011 to 2024.',
+            color: '#9A4B02', big: '94%',
+            text: '<b>Ninety-four percent of U.S. residents</b> live in a county that received FEMA recovery funding.',
             topLabel: 'Counties With the Most FEMA Recovery Funding',
             topHead: ['County', 'FEMA Funding'],
             top: [["New York County, New York", 9081110288, "$9.1B"], ["Nassau County, New York", 2566692330, "$2.6B"], ["Harris County, Texas", 1611303016, "$1.6B"], ["Calcasieu Parish, Louisiana", 1341056351, "$1.3B"], ["Queens County, New York", 1108487788, "$1.1B"], ["Bay County, Florida", 978089691, "$978M"], ["Terrebonne Parish, Louisiana", 730901848, "$731M"], ["Suffolk County, New York", 599064176, "$599M"], ["Lee County, Florida", 590407445, "$590M"], ["Greene County, New York", 552146983, "$552M"]]
@@ -1205,7 +1217,7 @@ map.on('load', function () {
         svi: {
             color: '#007462',
             text: '<b>Counties with high social vulnerability averaged five federal disaster declarations.</b> Other counties averaged four.',
-            topLabel: 'Counties With High Social Vulnerability (SVI 0.75+) With Highest Disaster Declarations',
+            topLabel: 'High Social Vulnerability Counties With Highest Disaster Declarations',
             topHead: ['County', 'Declarations', 'SVI Score'],
             top: [["Johnson County, Kentucky", 16, "16", "0.75"], ["Clay County, Kentucky", 15, "15", "0.82"], ["Lee County, Kentucky", 15, "15", "0.85"], ["Magoffin County, Kentucky", 15, "15", "0.76"], ["Wolfe County, Kentucky", 13, "13", "0.78"], ["Craig County, Oklahoma", 12, "12", "0.93"], ["Estill County, Kentucky", 12, "12", "0.76"], ["Harlan County, Kentucky", 12, "12", "0.83"], ["Hinds County, Mississippi", 12, "12", "0.92"], ["Iberville Parish, Louisiana", 12, "12", "0.85"], ["Walker County, Texas", 12, "12", "0.94"], ["Whitley County, Kentucky", 12, "12", "0.84"], ["Yazoo County, Mississippi", 12, "12", "1.00"]]
         },
@@ -1219,7 +1231,7 @@ map.on('load', function () {
         urban: {
             color: '#4a1486', big: '96%',
             text: '<b>Ninety-six percent of urban counties</b> had at least one federal disaster declaration. <b>More than half of urban residents</b> live in a county with five or more recent disasters.',
-            topLabel: 'Urban Counties (250K+) With Highest Declarations',
+            topLabel: 'Urban Counties With Highest Disaster Declarations',
             top: [["Douglas County, Nebraska", 13], ["Davidson County, Tennessee", 12], ["East Baton Rouge Parish, Louisiana", 11], ["Duval County, Florida", 10], ["Naugatuck Valley Planning Region, Connecticut", 10], ["Sacramento County, California", 10], ["Shelby County, Tennessee", 10], ["South Central Connecticut Planning Region, Connecticut", 10], ["Alachua County, Florida", 9], ["Collier County, Florida", 9], ["Fulton County, Georgia", 9], ["Greater Bridgeport Planning Region, Connecticut", 9], ["Harris County, Texas", 9], ["Hillsborough County, Florida", 9], ["Jefferson Parish, Louisiana", 9], ["King County, Washington", 9], ["Leon County, Florida", 9], ["Los Angeles County, California", 9], ["Manatee County, Florida", 9], ["Montgomery County, Texas", 9], ["Morris County, New Jersey", 9], ["Nassau County, New York", 9], ["Orleans Parish, Louisiana", 9], ["Pasco County, Florida", 9], ["Pinellas County, Florida", 9], ["Rockingham County, New Hampshire", 9], ["Sarasota County, Florida", 9], ["Snohomish County, Washington", 9], ["St. Tammany Parish, Louisiana", 9], ["Suffolk County, New York", 9], ["Travis County, Texas", 9]]
         },
         rural: {
@@ -1256,7 +1268,7 @@ map.on('load', function () {
     }
 
     // County popup banner (REB-572): which shown top 10 lists this county is on.
-    const TOP10_LABELS = { urban: 'urban counties', rural: 'rural counties', older: 'counties where 30%+ are 60 or older', minority: 'majority-minority counties' };
+    const TOP10_LABELS = { urban: 'urban counties', rural: 'rural counties', older: 'counties with a large share of adults 60 and older', minority: 'majority-minority counties' };
     function topTenBanner(countyName) {
         var hits = Object.keys(TOP10_LABELS).map(function (k) {
             var list = topTen(ATLAS_FINDINGS[k]);
