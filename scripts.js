@@ -330,8 +330,8 @@ map.on('load', function () {
     // Adding a new lens? Add an entry here and a radio button in
     // index.html with matching value attribute.
     // -------------------------------------------------------------
-    // Urban/Rural by each county's own population (9 Nov 2026), CDC/NCHS breakpoints: urban Large 1M+, Medium 250K-999,999,
-    // Small 50K-249,999; rural = under 50,000 (Rural 10K-49,999, Very rural under 10K). Default urban view = Large + medium;
+    // Urban/Rural by each county's own population (9 Nov 2026), CDC/NCHS breakpoints: urban = 250,000+, rural = under 50,000;
+    // 50,000-249,999 is neither and shows grey on both lenses. Tier toggles removed 11 Nov 2026 (no finding used them);
     // split by POP_TIER. Same 7-bin declaration ramp as the
     // FEMA Disaster Declarations lens.
     const URBAN_RAMP = ['#efedf5', '#dadaeb', '#bcbddc', '#9e9ac8', '#807dba', '#6a51a3', '#4a1486'];
@@ -607,14 +607,8 @@ map.on('load', function () {
             label: 'Urban Counties',
             defaultSubMode: 'all',
             subModes: {
-                all:     tierLens('Urban', ['1 million or more', '250,000 to 999,999'], URBAN_RAMP, 'lens-urban', 'Urban Counties', 'Large + medium (250,000+)',
-                             'Federal disaster declarations in large and medium urban counties (250,000 or more residents), 2011–2024.', 'Other counties'),
-                large:   tierLens('Urban', '1 million or more', URBAN_RAMP, 'lens-urban', 'Urban Counties', 'Large (1 million+)',
-                             'Federal disaster declarations in large urban counties (1 million or more residents), 2011–2024.', 'Other counties'),
-                smaller: tierLens('Urban', '250,000 to 999,999', URBAN_RAMP, 'lens-urban', 'Urban Counties', 'Medium (250,000 to 999,999)',
-                             'Federal disaster declarations in medium urban counties (250,000 to 999,999 residents), 2011–2024.', 'Other counties'),
-                small:   tierLens('Urban', '50,000 to 249,999', URBAN_RAMP, 'lens-urban', 'Urban Counties', 'Small (50,000 to 249,999)',
-                             'Federal disaster declarations in small urban counties (50,000 to 249,999 residents), 2011–2024.', 'Other counties')
+                all:     tierLens('Urban', ['1 million or more', '250,000 to 999,999'], URBAN_RAMP, 'lens-urban', 'Urban Counties', '250,000+ population',
+                             'Federal disaster declarations in urban counties (250,000 or more residents), 2011–2024.', 'Other counties')
             }
         },
 
@@ -624,12 +618,8 @@ map.on('load', function () {
             label: 'Rural Counties',
             defaultSubMode: 'all',
             subModes: {
-                all:       tierLens('Rural', null, RURAL_RAMP, 'lens-rural', 'Rural Counties', 'All rural (under 50,000)',
-                               'Federal disaster declarations in rural counties (under 50,000 residents), 2011–2024.', 'Other counties'),
-                town:      tierLens('Rural', '10,000 to 49,999', RURAL_RAMP, 'lens-rural', 'Rural Counties', 'Rural (10,000 to 49,999)',
-                               'Federal disaster declarations in counties with 10,000 to 49,999 residents, 2011–2024.', 'Other counties'),
-                veryrural: tierLens('Rural', 'Under 10,000', RURAL_RAMP, 'lens-rural', 'Rural Counties', 'Very rural (under 10,000)',
-                               'Federal disaster declarations in counties with under 10,000 residents, 2011–2024.', 'Other counties')
+                all:       tierLens('Rural', null, RURAL_RAMP, 'lens-rural', 'Rural Counties', 'Under 50,000 population',
+                               'Federal disaster declarations in rural counties (under 50,000 residents), 2011–2024.', 'Other counties')
             }
         },
 
@@ -643,7 +633,7 @@ map.on('load', function () {
         // hover surface the full race breakdown so users don't need the
         // tract layer.
         minority: {
-            label: 'Majority People of Color',
+            label: 'Majority-Minority Counties',
             paintExpression: [
                 'case',
                 ['>=', ['to-number', ['coalesce', ['get', 'COUNTY_PCT_MINORITY'], -1]], 50],
@@ -661,7 +651,7 @@ map.on('load', function () {
                 '#ECECEC'   // counties under 50% people of color (or no data)
             ],
             legendHTML: `
-                <div class="legend-title"><b>Majority People of Color</b><br><span class="legend-mode-name">Number of disaster declarations</span></div>
+                <div class="legend-title"><b>Majority-Minority Counties</b><br><span class="legend-mode-name">Number of disaster declarations</span></div>
                 <div class="color-bar lens-minority">
                     <div class="color-description">
                         <span>0</span>
@@ -1196,7 +1186,7 @@ map.on('load', function () {
         legendBody.appendChild(badge);
     }
 
-    // Atlas+ 2026 lead findings, condensed from the Mailchimp V3 copy. <b> marks the numbers to highlight.
+    // Atlas+ 2026 lead findings, same wording as the Mailchimp V4 Key Findings. <b> marks the numbers to highlight.
     const ATLAS_FINDINGS = {
         // Federal Data layers (Nov 2026): headline number only, top 10 where it fits.
         disaster: {
@@ -1213,46 +1203,46 @@ map.on('load', function () {
             top: [["New York County, New York", 9081110288, "$9.1B"], ["Nassau County, New York", 2566692330, "$2.6B"], ["Harris County, Texas", 1611303016, "$1.6B"], ["Calcasieu Parish, Louisiana", 1341056351, "$1.3B"], ["Queens County, New York", 1108487788, "$1.1B"], ["Bay County, Florida", 978089691, "$978M"], ["Terrebonne Parish, Louisiana", 730901848, "$731M"], ["Suffolk County, New York", 599064176, "$599M"], ["Lee County, Florida", 590407445, "$590M"], ["Greene County, New York", 552146983, "$552M"]]
         },
         svi: {
-            color: '#007462', big: '55.5%',
-            text: '<b>55.5% of people in the most socially vulnerable census tracts (45.1 million)</b> live in a county with five or more federal disaster declarations, compared with <b>47.7%</b> of people in other tracts.',
-            topLabel: 'Most Socially Vulnerable Counties (SVI 0.75+) With Highest Disaster Declarations',
+            color: '#007462',
+            text: '<b>Counties with high social vulnerability averaged five federal disaster declarations.</b> Other counties averaged four.',
+            topLabel: 'Counties With High Social Vulnerability (SVI 0.75+) With Highest Disaster Declarations',
             topHead: ['County', 'Declarations', 'SVI Score'],
             top: [["Johnson County, Kentucky", 16, "16", "0.75"], ["Clay County, Kentucky", 15, "15", "0.82"], ["Lee County, Kentucky", 15, "15", "0.85"], ["Magoffin County, Kentucky", 15, "15", "0.76"], ["Wolfe County, Kentucky", 13, "13", "0.78"], ["Craig County, Oklahoma", 12, "12", "0.93"], ["Estill County, Kentucky", 12, "12", "0.76"], ["Harlan County, Kentucky", 12, "12", "0.83"], ["Hinds County, Mississippi", 12, "12", "0.92"], ["Iberville Parish, Louisiana", 12, "12", "0.85"], ["Walker County, Texas", 12, "12", "0.94"], ["Whitley County, Kentucky", 12, "12", "0.84"], ["Yazoo County, Mississippi", 12, "12", "1.00"]]
         },
         energy: {
-            color: '#6E2800', big: '56.8%',
-            text: '<b>56.8% of counties averaging more than twice the U.S. average hours without power (300 of 528)</b> had five or more federal disaster declarations, compared with <b>37.7%</b> of other counties.',
+            color: '#6E2800',
+            text: '<b>Counties with five or more federal disaster declarations averaged nine hours without power in 2023.</b> Other counties averaged seven.',
             topLabel: 'Counties With the Most Hours Without Power (2023)',
             topHead: ['County', 'Hours', 'Days'],
             top: [["Taylor County, Florida", 5941.7, "99.0", "4.1"], ["Dixie County, Florida", 4932.0, "82.2", "3.4"], ["Lafayette County, Florida", 4932.0, "82.2", "3.4"], ["Lowndes County, Georgia", 4547.5, "75.8", "3.2"], ["Wakulla County, Florida", 4073.0, "67.9", "2.8"], ["Suwannee County, Florida", 3961.2, "66.0", "2.8"], ["Hamilton County, Florida", 3653.6, "60.9", "2.5"], ["Madison County, Florida", 3653.6, "60.9", "2.5"], ["Aroostook County, Maine", 3613.5, "60.2", "2.5"], ["Washington County, Maine", 3613.5, "60.2", "2.5"]]
         },
         urban: {
-            color: '#4a1486', big: '56.4%',
-            text: '<b>56.4% of people in large and medium urban counties</b> (250,000+ residents), or <b>120.0 million</b>, live with frequent disasters, meaning 5+ federal declarations from 2011 to 2024. <b>Nearly 1 in 5 Americans</b> live in one of <b>26 large counties</b> with frequent disasters.',
+            color: '#4a1486', big: '96%',
+            text: '<b>Ninety-six percent of urban counties</b> had at least one federal disaster declaration. <b>More than half of urban residents</b> live in a county with five or more recent disasters.',
             topLabel: 'Urban Counties (250K+) With Highest Declarations',
             top: [["Douglas County, Nebraska", 13], ["Davidson County, Tennessee", 12], ["East Baton Rouge Parish, Louisiana", 11], ["Duval County, Florida", 10], ["Naugatuck Valley Planning Region, Connecticut", 10], ["Sacramento County, California", 10], ["Shelby County, Tennessee", 10], ["South Central Connecticut Planning Region, Connecticut", 10], ["Alachua County, Florida", 9], ["Collier County, Florida", 9], ["Fulton County, Georgia", 9], ["Greater Bridgeport Planning Region, Connecticut", 9], ["Harris County, Texas", 9], ["Hillsborough County, Florida", 9], ["Jefferson Parish, Louisiana", 9], ["King County, Washington", 9], ["Leon County, Florida", 9], ["Los Angeles County, California", 9], ["Manatee County, Florida", 9], ["Montgomery County, Texas", 9], ["Morris County, New Jersey", 9], ["Nassau County, New York", 9], ["Orleans Parish, Louisiana", 9], ["Pasco County, Florida", 9], ["Pinellas County, Florida", 9], ["Rockingham County, New Hampshire", 9], ["Sarasota County, Florida", 9], ["Snohomish County, Washington", 9], ["St. Tammany Parish, Louisiana", 9], ["Suffolk County, New York", 9], ["Travis County, Texas", 9]]
         },
         rural: {
-            color: '#084594', big: '40.4%',
-            text: '<b>About 4 in 10 rural counties</b> (under 50,000 residents) had frequent disasters, meaning 5+ federal declarations from 2011 to 2024, compared with <b>50.7%</b> of large and medium urban counties (250,000+ residents). That includes <b>263 counties</b> with fewer than 10,000 residents.',
+            color: '#084594', big: '92%',
+            text: '<b>Ninety-two percent of rural counties</b> had at least one federal disaster declaration. <b>About 40% of rural residents</b> live in a county with five or more recent disasters.',
             topLabel: 'Rural Counties With Highest Disaster Declarations',
             top: [['Lamoille County, Vermont', 17], ['Johnson County, Kentucky', 16], ['Essex County, Vermont', 16], ['Orleans County, Vermont', 16], ['Clay County, Kentucky', 15], ['Lawrence County, Kentucky', 15], ['Lee County, Kentucky', 15], ['Magoffin County, Kentucky', 15], ['Owsley County, Kentucky', 15], ['Floyd County, Kentucky', 14], ['Orange County, Vermont', 14]]
         },
         older: {
-            color: '#005824', big: '50.0%',
-            text: '<b>Half of Americans 60 and older, 39.3 million people,</b> live with frequent disasters, meaning 5+ federal declarations from 2011 to 2024. The map shows counties where at least 30% of residents are 60 and older; <b>829 of 956</b> are rural.',
+            color: '#005824', big: '90%',
+            text: '<b>Ninety percent of counties with a large share of adults 60 and older</b> had at least one federal disaster declaration. <b>Half of Americans 60 and older</b> live in a county with five or more recent disasters.',
             topLabel: 'Older Adult Counties With Highest Disaster Declarations',
             top: [['Essex County, Vermont', 16], ['Orleans County, Vermont', 16], ['Owsley County, Kentucky', 15], ['Grafton County, New Hampshire', 15], ['Orange County, Vermont', 14], ['Franklin County, Florida', 11], ['Jefferson County, Florida', 11], ['Madison County, Florida', 11], ['Pawnee County, Kansas', 11], ['Menifee County, Kentucky', 11], ['Roger Mills County, Oklahoma', 11], ['Lake County, South Dakota', 11], ['Caledonia County, Vermont', 11], ['Skamania County, Washington', 11]]
         },
         minority: {
-            color: '#7a0177', big: '54.9%',
-            text: '<b>More than half of people of color (74.7 million)</b> live with frequent disasters, compared with <b>46.0%</b> of non-Hispanic white residents. Frequent means 5+ federal declarations from 2011 to 2024.',
-            topLabel: 'Majority People of Color Counties With Highest Disaster Declarations',
+            color: '#7a0177', big: '95%',
+            text: '<b>Ninety-five percent of majority-minority counties</b> had at least one federal disaster declaration. Nationally, <b>55% of racial and ethnic minority residents</b> live in a county with five or more recent disasters, compared with <b>46%</b> of non-Hispanic white residents.',
+            topLabel: 'Majority-Minority Counties With Highest Disaster Declarations',
             top: [['Hinds County, Mississippi', 12], ['Iberville Parish, Louisiana', 12], ['Yazoo County, Mississippi', 12], ['East Baton Rouge Parish, Louisiana', 11], ['Shelby County, Tennessee', 10], ['Haywood County, Tennessee', 10], ['Gadsden County, Florida', 10], ['St. Helena Parish, Louisiana', 10], ['Sacramento County, California', 10], ['Leflore County, Mississippi', 10], ['Cherokee County, Oklahoma', 10], ['Holmes County, Mississippi', 10], ['Warren County, Mississippi', 10]]
         },
         tribal: {
-            color: '#4d6b05', big: '65.2%',
-            text: '<b>Nearly two-thirds of declarations naming tribal land (88 of 135)</b> came through a state. Only <b>29 of 575</b> federally recognized tribes received one of their own. The map shows the 117 of 704 tribal areas named in a declaration.',
+            color: '#4d6b05', big: '17%',
+            text: '<b>About 17% of U.S. tribal areas</b> had at least one federal disaster declaration.',
             topLabel: 'Tribal Areas With Highest Disaster Declarations',
             top: [['Pine Ridge Reservation', 8], ['Colville Reservation and Off-Reservation Trust Land', 7], ['Santa Clara Pueblo and Off-Reservation Trust Land', 7], ['Cheyenne River Reservation and Off-Reservation Trust Land', 5], ['Mashantucket Pequot Reservation and Off-Reservation Trust Land', 5], ['Navajo Nation Reservation and Off-Reservation Trust Land', 5], ['Red Lake Reservation', 5], ['Acoma Pueblo and Off-Reservation Trust Land', 4], ['Fort Belknap Reservation and Off-Reservation Trust Land', 4], ['Lake Traverse Reservation and Off-Reservation Trust Land', 4], ['Soboba Reservation and Off-Reservation Trust Land', 4], ['Standing Rock Reservation', 4]]
         }
@@ -1266,7 +1256,7 @@ map.on('load', function () {
     }
 
     // County popup banner (REB-572): which shown top 10 lists this county is on.
-    const TOP10_LABELS = { urban: 'large and medium urban counties', rural: 'rural counties', older: 'counties where 30%+ are 60 or older', minority: 'counties where most residents are people of color' };
+    const TOP10_LABELS = { urban: 'urban counties', rural: 'rural counties', older: 'counties where 30%+ are 60 or older', minority: 'majority-minority counties' };
     function topTenBanner(countyName) {
         var hits = Object.keys(TOP10_LABELS).map(function (k) {
             var list = topTen(ATLAS_FINDINGS[k]);
@@ -1289,7 +1279,9 @@ map.on('load', function () {
         box.hidden = !f || helpOpen;
         if (!f) return;
         box.querySelectorAll('.fh-big, .fh-bar-big').forEach(function (el) {
-            el.textContent = f.big;
+            // Some findings (SVI average) have no big number: sentence only.
+            el.textContent = f.big || '';
+            el.style.display = f.big ? '' : 'none';
             el.style.color = f.color;
         });
         box.querySelector('.fh-bar-label').innerHTML = f.text;
@@ -1440,12 +1432,13 @@ map.on('load', function () {
         if (hrs < 10) return hrs.toFixed(1) + ' hrs';
         return Math.round(hrs).toLocaleString('en-US') + ' hrs';
     }
-    // Size names for POP_TIER (CDC/NCHS breakpoints, county's own population).
-    const TIER_NAME = { '1 million or more': 'Large', '250,000 to 999,999': 'Medium', '50,000 to 249,999': 'Small', '10,000 to 49,999': 'Rural', 'Under 10,000': 'Very rural' };
+    // Popup badge: Urban = 250,000+, Rural = under 50,000. 50,000 to 249,999 is neither, so no badge.
+    const MID_TIER = '50,000 to 249,999';
     function fmtTier(cls, tier) {
-        var n = TIER_NAME[tier];
-        if (!n) return cls;
-        return (n === cls ? cls : cls + ' · ' + n) + ' (' + tier.replace('Under', 'under') + ' residents)';
+        if (tier === MID_TIER) return '';
+        if (cls === 'Urban') return 'Urban (250,000+ residents)';
+        if (cls === 'Rural') return 'Rural (under 50,000 residents)';
+        return '';
     }
     function fmtClass(v) {
         return (v === 'Urban' || v === 'Rural') ? v : '—';
@@ -1577,7 +1570,7 @@ map.on('load', function () {
             // Workbook population (County Totals col I), the number the 50,000 / 250,000 cutoffs use
             var pop = fmtPopulation(props['county-level-older-adults_TOTAL POP'] || props.COUNTY_POPULATION);
             var parts = [];
-            if (cls) parts.push(TIER_NAME[props.POP_TIER] && TIER_NAME[props.POP_TIER] !== cls ? cls + ' · ' + TIER_NAME[props.POP_TIER] : (TIER_NAME[props.POP_TIER] || cls));
+            if (cls && props.POP_TIER !== MID_TIER) parts.push(cls);
             if (pop) parts.push('pop. ' + pop);
             return {
                 lens: activeLens,
@@ -1985,6 +1978,7 @@ map.on('load', function () {
         var disasterCount = p.COUNTY_DISASTER_COUNT;
         var omb = fmtClass(p.URBAN_RURAL);
         var ombSlug = (omb === 'Rural' || omb === 'Urban') ? omb.toLowerCase() : '';
+        var tierSlug = p.POP_TIER === MID_TIER ? 'mid' : ombSlug;
         var representativeName = c.FIRSTNAME + ' ' + c.LASTNAME;
 
         var hasGovernor = c.GOVERNOR && c.GOVERNOR !== 'N/A' && c.GOVERNOR.trim() !== '';
@@ -2020,8 +2014,8 @@ map.on('load', function () {
             +       '</div>'
             +     '</div>');
 
-        var classificationBadge = ombSlug
-            ? '<span class="classification-badge classification-' + ombSlug + '">' + fmtTier(omb, p.POP_TIER) + '</span>'
+        var classificationBadge = (ombSlug && p.POP_TIER !== MID_TIER)
+            ? '<span class="classification-badge classification-' + tierSlug + '">' + fmtTier(omb, p.POP_TIER) + '</span>'
             : '';
 
         // Format county population (skip if missing).
