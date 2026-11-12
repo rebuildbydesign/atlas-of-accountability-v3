@@ -402,7 +402,7 @@ map.on('load', function () {
                         <span>12+</span>
                     </div>
                 </div>
-                <div class="legend-units">Federally declared major disasters for extreme weather events, 2011–2024. Excludes heat.</div>
+                <div class="legend-units">Federal disaster declarations for extreme weather events, 2011–2024. Excludes heat.</div>
             `
         },
 
@@ -424,7 +424,7 @@ map.on('load', function () {
                 100000000, '#9A4B02'      //  $100M+
             ],
             legendHTML: `
-                <div class="legend-title"><b>FEMA Disaster Funding</b><br><span class="legend-mode-name">Total federal funding</span></div>
+                <div class="legend-title"><b>FEMA Disaster Funding</b><br><span class="legend-mode-name">FEMA recovery funding</span></div>
                 <div class="color-bar lens-fema">
                     <div class="color-description">
                         <span>$0</span>
@@ -684,10 +684,10 @@ map.on('load', function () {
                         <span>12+</span>
                     </div>
                 </div>
-                <div class="legend-units">Federal disaster declarations in counties where at least half of residents are people of color, 2011–2024. CDC SVI, 2022.</div>
+                <div class="legend-units">Federal disaster declarations in majority-minority counties, where at least half of residents are racial and ethnic minorities, 2011–2024. CDC SVI, 2022.</div>
                 <div class="legend-no-data">
                     <span class="no-data-swatch" style="background:#ECECEC"></span>
-                    <span>Counties under 50% people of color</span>
+                    <span>Other counties</span>
                 </div>
             `
         },
@@ -716,7 +716,7 @@ map.on('load', function () {
                         <span>7+</span>
                     </div>
                 </div>
-                <div class="legend-units">Major disaster declarations per FEMA designated tribal area, requested by the tribe or the state, 2011&ndash;2024. Outlines show all tribal land.</div>
+                <div class="legend-units">Federal disaster declarations per FEMA-designated tribal area, requested by the tribe or the state, 2011&ndash;2024. Outlines show all tribal land.</div>
                 <div class="legend-no-data">
                     <span class="no-data-swatch" style="background:#ECECEC"></span>
                     <span>Counties (not part of this lens)</span>
@@ -1552,7 +1552,7 @@ map.on('load', function () {
             return { lens: 'disaster', headline: fmtDisasterDeclarations(dis), sub: null };
         }
         if (activeLens === 'fema') {
-            return { lens: 'fema', headline: fmtUSDCompact(props.COUNTY_TOTAL_FEMA) + ' in FEMA funding', sub: null };
+            return { lens: 'fema', headline: fmtUSDCompact(props.COUNTY_TOTAL_FEMA) + ' in FEMA recovery funding', sub: null };
         }
         if (activeLens === 'svi') {
             return { lens: 'svi', headline: 'Vulnerability: ' + fmtSVIWithCategory(props['CDC SVI (2022)']), sub: null };
@@ -1604,7 +1604,7 @@ map.on('load', function () {
             return {
                 lens: 'minority',
                 headline: fmtDisasterDeclarations(dis),
-                sub: isFinite(minPct) ? minPct.toFixed(1) + '% people of color' : null
+                sub: isFinite(minPct) ? minPct.toFixed(1) + '% racial and ethnic minority' : null
             };
         }
         return { lens: activeLens, headline: '', sub: null };
@@ -1809,8 +1809,8 @@ map.on('load', function () {
                 { group: 'themes', label: 'Housing & transportation theme', value: fmtSVI(tractProps.RPL_THEME4) },
                 { collapsible: 'race', label: 'Race & ethnicity', value: pocSummary },
                 { group: 'race', caption: tractProps.EP_MINRTY >= 50
-                    ? 'Majority-minority tract — ' + fmtPctNum(tractProps.EP_MINRTY) + ' people of color'
-                    : fmtPctNum(tractProps.EP_MINRTY) + ' people of color' },
+                    ? 'Majority-minority tract · ' + fmtPctNum(tractProps.EP_MINRTY) + ' racial and ethnic minority'
+                    : fmtPctNum(tractProps.EP_MINRTY) + ' racial and ethnic minority' },
                 { group: 'race', label: 'Black or African American',       value: fmtPctNum(tractProps.EP_AFAM) },
                 { group: 'race', label: 'Hispanic or Latino',              value: fmtPctNum(tractProps.EP_HISP) },
                 { group: 'race', label: 'Asian',                           value: fmtPctNum(tractProps.EP_ASIAN) },
@@ -1845,10 +1845,10 @@ map.on('load', function () {
         if (!tractProps) {
             var countyMinPct = Number(p.COUNTY_PCT_MINORITY);
             if (isFinite(countyMinPct)) {
-                raceRows.push({ subheader: 'People of Color (2022)' });
+                raceRows.push({ subheader: 'Majority-Minority Counties (2022)' });
                 raceRows.push({
                     key: 'minority',
-                    label: countyMinPct >= 50 ? 'People of color (majority-minority)' : 'People of color',
+                    label: countyMinPct >= 50 ? 'Racial and ethnic minority residents (majority-minority)' : 'Racial and ethnic minority residents',
                     value: fmtPctNum(countyMinPct)
                 });
                 raceRows.push({ collapsible: 'countyrace', accent: 'coc', label: 'Race & ethnicity breakdown' });
@@ -1863,7 +1863,7 @@ map.on('load', function () {
         var stateTotalCompact = (!isFinite(stateFema) && !isFinite(stateCdbg)) ? '' : fmtUSDCompact(stateTotalNum);
 
         var rows = [
-            { subheader: 'Federal disaster aid (2011–2024)' },
+            { subheader: 'FEMA Recovery Funding (2011–2024)' },
             // County hero: the headline number people came for, shown
             // abbreviated. Lights up (orange) under the FEMA Disaster Funding
             // lens via the table's lens-fema class.
@@ -1871,7 +1871,7 @@ map.on('load', function () {
             // Statewide context collapses behind a toggle so the default view
             // stays short; exact figures live inside. Rows keep key='fema' so
             // they highlight when expanded under the FEMA lens.
-            { collapsible: 'statefunding', accent: 'fema', label: 'Statewide (' + (p.STATE_NAME || 'state') + ')', value: stateTotalCompact },
+            { collapsible: 'statefunding', accent: 'fema', label: 'Statewide FEMA + HUD (' + (p.STATE_NAME || 'state') + ')', value: stateTotalCompact },
             { group: 'statefunding', key: 'fema', label: 'FEMA — rebuilding & prevention', value: fmtUSD(p.STATE_FEMA_TOTAL) },
             { group: 'statefunding', key: 'fema', label: 'HUD — long-term recovery',       value: fmtUSD(p.STATE_CDBG_TOTAL) },
             { group: 'statefunding', key: 'fema', label: 'Total federal aid',              value: stateCombinedFederal },
@@ -1903,7 +1903,7 @@ map.on('load', function () {
                 html += '<tr class="fema-hero-row"><td colspan="2">'
                       + '<div class="fema-hero">'
                       +   '<div class="hero-amount">' + r.heroFema.amount + '</div>'
-                      +   '<div class="hero-sub">FEMA aid to this county · ' + r.heroFema.per + ' per person</div>'
+                      +   '<div class="hero-sub">FEMA recovery funding for this county' + (r.heroFema.per === '—' ? '' : ' · ' + r.heroFema.per + ' per person') + '</div>'
                       + '</div></td></tr>';
                 return;
             }
@@ -2005,7 +2005,7 @@ map.on('load', function () {
 
         var hasGovernor = c.GOVERNOR && c.GOVERNOR !== 'N/A' && c.GOVERNOR.trim() !== '';
         var governorBlock = hasGovernor ? (''
-            + '<h3><span class="lbl-desktop">State Governor</span><span class="lbl-mobile">Governor</span></h3>'
+            + '<h3>Governor</h3>'
             + '<div class="senator-info"><div class="senator-row">'
             +   '<img src="' + c.GOVERNOR_PIC + '" alt="Governor" class="senator-image">'
             +   '<div><a class="rep-name" href="' + c.GOVERNOR_URL + '" target="_blank">' + c.GOVERNOR + '&nbsp;<span class="party">(' + c.GOVERNOR_PARTY + ')</span></a></div>'
@@ -2073,7 +2073,7 @@ map.on('load', function () {
             +     (t ? '' : topTenBanner(p.NAMELSAD + ', ' + stateName))
             +     '<div id="disaster-count-block" class="disaster-count' + (function () { var k = headlineLensKey(); return k ? ' lens-active lens-' + k : ''; })() + '">'
             +       '<div class="count">' + disasterCount + '</div>'
-            +       '<div class="count-description">Major weather disasters declared by FEMA (2011–2024)</div>'
+            +       '<div class="count-description">Federal disaster declarations (2011–2024)</div>'
             +     '</div>'
             +     '<div id="indicators-block" class="indicators-block">'
             +       buildIndicatorsTable(p, t)
@@ -2086,7 +2086,7 @@ map.on('load', function () {
             +     '<p class="namelsad">' + c.NAMELSAD20 + '</p>'
             +     '<div class="rep-grid">'
             +     '<div class="rep-col rep-col-congress">'
-            +     '<h3><span class="lbl-desktop">Congress Representative</span><span class="lbl-mobile">Congress</span></h3>'
+            +     '<h3>House Representative</h3>'
             +     '<p class="rep-name-line"><a class="rep-name" href="' + c.WEBSITEURL + '" target="_blank">' + representativeName + '&nbsp;<span class="party">(' + c.PARTY + ')</span></a></p>'
             +     '<p class="rep-role">U.S. House, ' + String(c.NAMELSAD20).replace('Congressional ', '') + '</p>'
             +     '<div class="rep-info">'
@@ -2100,7 +2100,7 @@ map.on('load', function () {
             +     '</div>'
             +     '</div>'
             +     '<div class="rep-col rep-col-state">'
-            +     '<h3><span class="lbl-desktop">US Senators</span><span class="lbl-mobile">U.S. Senate</span></h3>'
+            +     '<h3>U.S. Senate</h3>'
             +     senateBody
             +     governorBlock
             +     '</div>'
@@ -2320,7 +2320,7 @@ map.on('load', function () {
             ? 'Vulnerability: ' + fmtSVIWithCategory(t.RPL_THEMES)
             : 'Vulnerability: No data';
         var minorityNote = (typeof t.EP_MINRTY === 'number' && t.EP_MINRTY >= 50)
-            ? '<div class="hover-sub">Majority people of color · ' + t.EP_MINRTY.toFixed(1) + '%</div>'
+            ? '<div class="hover-sub">Majority-minority · ' + t.EP_MINRTY.toFixed(1) + '%</div>'
             : '';
         var html = ''
             + '<div class="hover-county">' + tractName + '</div>'
