@@ -1457,8 +1457,8 @@ map.on('load', function () {
     const MID_TIER = '50,000 to 249,999';
     function fmtTier(cls, tier) {
         if (tier === MID_TIER) return '';
-        if (cls === 'Urban') return 'Urban (250,000+ residents)';
-        if (cls === 'Rural') return 'Rural (under 50,000 residents)';
+        if (cls === 'Urban') return 'Urban';
+        if (cls === 'Rural') return 'Rural';
         return '';
     }
     function fmtClass(v) {
