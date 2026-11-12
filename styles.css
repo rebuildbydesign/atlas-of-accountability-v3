@@ -1342,7 +1342,8 @@ body.popup-open .findings-headline { display: none; }
     color: #fff;
     margin-bottom: 3px;
     line-height: 1.2;
-    white-space: nowrap;
+    /* Wraps only when larger text makes it wider than the column. */
+    white-space: normal;
 }
 .atlas-report-state {
     display: block;
@@ -1416,9 +1417,17 @@ body.popup-open .findings-headline { display: none; }
     overflow-y: auto;
 }
 
+/* The popup columns use z-index 9999; keep the close X above them. */
+.mapboxgl-popup-close-button {
+    z-index: 10000;
+}
+
 .popup-column {
     /* Default; overridden per-column below for the desktop 60/40 split. */
     flex: 1 1 45%;
+    /* Lets columns shrink with larger text instead of scrolling sideways. */
+    min-width: 0;
+    overflow-wrap: break-word;
 }
 
 /* Desktop column ratio — left (county data + table) takes 60% of the
@@ -2291,6 +2300,8 @@ body.popup-open .findings-headline { display: none; }
 
     /* Tribal tap sheet (REB-541) */
     .tribal-sheet {
+        /* border-box keeps the close-button gutter inside the screen width */
+        box-sizing: border-box;
         padding: 18px 56px 4px 0;
     }
 

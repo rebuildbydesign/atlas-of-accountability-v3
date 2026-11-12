@@ -103,14 +103,24 @@ map.on('load', function () {
         var popupEl = document.querySelector('.mapboxgl-popup');
         if (!popupEl) return;
         var mapRect = map.getContainer().getBoundingClientRect();
-        var popupRect = popupEl.getBoundingClientRect();
         var MARGIN = 16;
+        // The title banner floats over the map, so the popup must start below it.
+        var titleEl = document.querySelector('.css-atlas-title');
+        var topBound = Math.max(mapRect.top, titleEl ? titleEl.getBoundingClientRect().bottom : 0) + MARGIN;
+        // Cap the height to the space under the banner; larger text scrolls inside the popup.
+        var contentEl = popupEl.querySelector('.mapboxgl-popup-content');
+        if (contentEl) {
+            var cs = getComputedStyle(contentEl);
+            var pad = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+            contentEl.style.maxHeight = Math.max(200, mapRect.bottom - MARGIN - topBound - pad) + 'px';
+        }
+        var popupRect = popupEl.getBoundingClientRect();
 
         var targetTop;
-        if (popupRect.height + 2 * MARGIN >= mapRect.height) {
-            targetTop = mapRect.top + MARGIN;
-        } else if (popupRect.top < mapRect.top + MARGIN) {
-            targetTop = mapRect.top + MARGIN;
+        if (popupRect.height + MARGIN >= mapRect.bottom - topBound) {
+            targetTop = topBound;
+        } else if (popupRect.top < topBound) {
+            targetTop = topBound;
         } else if (popupRect.bottom > mapRect.bottom - MARGIN) {
             targetTop = mapRect.bottom - MARGIN - popupRect.height;
         } else {
@@ -505,7 +515,6 @@ map.on('load', function () {
                                 <span>1</span>
                                 <span>2</span>
                                 <span>4</span>
-                                <span>7.6</span>
                                 <span>7.6+ hrs</span>
                             </div>
                         </div>
@@ -1736,11 +1745,12 @@ map.on('load', function () {
     // Format the county per-capita FEMA (preserves the "Under Review"
     // carve-out for NYC GEOID 36039 that the original code shipped).
     function formatCountyPerCapita(p) {
-        if (p.GEOID === '36039' || (typeof p.COUNTY_PER_CAPITA !== 'string' && Number.isNaN(Number(p.COUNTY_PER_CAPITA)))) {
-            return '$11,487 *Under Review';
-        }
+        if (p.GEOID === '36039') return '$11,487 *Under Review';
         // Territories have no county-level FEMA total, so no per-person figure.
         if (p.COUNTY_PER_CAPITA == null || p.COUNTY_PER_CAPITA === 'NULL') return '—';
+        if (typeof p.COUNTY_PER_CAPITA !== 'string' && Number.isNaN(Number(p.COUNTY_PER_CAPITA))) {
+            return '$11,487 *Under Review';
+        }
         return '$' + Number(String(p.COUNTY_PER_CAPITA).replace(/\D/g, '')).toLocaleString('en-US');
     }
 
