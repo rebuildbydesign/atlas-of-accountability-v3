@@ -37,6 +37,31 @@ function atlasMinZoom() {
 map.setMinZoom(atlasMinZoom());
 map.on('resize', function () { map.setMinZoom(atlasMinZoom()); });
 
+// Desktop start view: fit the lower 48 below the title and clear of the Data Layers panel.
+const LOWER48 = [[-124.8, 24.4], [-66.9, 49.4]];
+let atlasUserMoved = false;
+map.on('dragstart', function () { atlasUserMoved = true; });
+map.on('zoomstart', function (e) { if (e.originalEvent) atlasUserMoved = true; });
+function lower48Padding() {
+    const box = map.getContainer().getBoundingClientRect();
+    const pad = { top: 24, bottom: 24, left: 24, right: 24 };
+    const title = document.querySelector('.css-atlas-title');
+    if (title) pad.top = Math.max(pad.top, title.getBoundingClientRect().bottom - box.top + 12);
+    const panel = document.getElementById('control-panel');
+    if (panel) pad.right = Math.max(pad.right, box.right - panel.getBoundingClientRect().left + 16);
+    // Keep at least half the width for the U.S.
+    const room = box.width * 0.5;
+    if (pad.left + pad.right > room) { const k = room / (pad.left + pad.right); pad.left *= k; pad.right *= k; }
+    return pad;
+}
+function fitLower48(duration) {
+    if (window.innerWidth <= 768) return;
+    map.fitBounds(LOWER48, { padding: lower48Padding(), duration: duration || 0 });
+}
+fitLower48(0);
+// Refit when the frame changes size (e.g. an embed that loads narrow, then widens) until the user moves the map.
+map.on('resize', function () { if (!atlasUserMoved) fitLower48(0); });
+
 // Add zoom and rotation controls to the map.
 map.addControl(new mapboxgl.NavigationControl({showCompass: false}), 'top-right');
 
