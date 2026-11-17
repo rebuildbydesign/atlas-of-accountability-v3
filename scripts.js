@@ -427,7 +427,7 @@ map.on('load', function () {
                         <span>12+</span>
                     </div>
                 </div>
-                <div class="legend-units">Federal disaster declarations for extreme weather events, 2011–2024. Excludes heat.</div>
+                <div class="legend-units">Major disaster declarations for extreme weather events, 2011–2024. Excludes heat.</div>
             `
         },
 
@@ -634,10 +634,10 @@ map.on('load', function () {
                                 <span>12+</span>
                             </div>
                         </div>
-                        <div class="legend-units">Federal disaster declarations in counties where at least 30% of residents are age 60 or older (23.8% nationally), 2011–2024. Age threshold from the federal Older Americans Act.</div>
+                        <div class="legend-units">Major disaster declarations in counties where 30% or more of residents are 60 or older (23.8% nationally), 2011–2024. Age 60 is the threshold in the federal Older Americans Act.</div>
                         <div class="legend-no-data">
                             <span class="no-data-swatch" style="background:#ECECEC"></span>
-                            <span>Counties with &lt;30% age 60+</span>
+                            <span>Other counties</span>
                         </div>
                     `
                 }
@@ -654,7 +654,7 @@ map.on('load', function () {
             defaultSubMode: 'all',
             subModes: {
                 all:     tierLens('Urban', ['1 million or more', '250,000 to 999,999'], URBAN_RAMP, 'lens-urban', 'Urban Counties', '250,000+ population',
-                             'Federal disaster declarations in urban counties (250,000 or more residents), 2011–2024.', 'Other counties')
+                             'Major disaster declarations in urban counties (250,000 or more residents), 2011–2024.', 'Other counties')
             }
         },
 
@@ -665,7 +665,7 @@ map.on('load', function () {
             defaultSubMode: 'all',
             subModes: {
                 all:       tierLens('Rural', null, RURAL_RAMP, 'lens-rural', 'Rural Counties', 'Under 50,000 population',
-                               'Federal disaster declarations in rural counties (under 50,000 residents), 2011–2024.', 'Other counties')
+                               'Major disaster declarations in rural counties (fewer than 50,000 residents), 2011–2024.', 'Other counties')
             }
         },
 
@@ -709,7 +709,7 @@ map.on('load', function () {
                         <span>12+</span>
                     </div>
                 </div>
-                <div class="legend-units">Federal disaster declarations in majority-minority counties, where at least half of residents are racial and ethnic minorities, 2011–2024. CDC SVI, 2022.</div>
+                <div class="legend-units">Major disaster declarations in majority-minority counties, where 50% or more of residents are minority-status, 2011–2024. CDC SVI, 2022.</div>
                 <div class="legend-no-data">
                     <span class="no-data-swatch" style="background:#ECECEC"></span>
                     <span>Other counties</span>
@@ -741,7 +741,7 @@ map.on('load', function () {
                         <span>7+</span>
                     </div>
                 </div>
-                <div class="legend-units">Federal disaster declarations per FEMA-designated tribal area, requested by the tribe or the state, 2011&ndash;2024. Outlines show all tribal land.</div>
+                <div class="legend-units">Major disaster declarations per FEMA-designated tribal area, requested by the tribe or the state, 2011&ndash;2024. Outlines show all tribal land.</div>
                 <div class="legend-no-data">
                     <span class="no-data-swatch" style="background:#ECECEC"></span>
                     <span>Counties (not part of this lens)</span>
@@ -1237,58 +1237,58 @@ map.on('load', function () {
         // Federal Data layers (Nov 2026): headline number only, top 10 where it fits.
         disaster: {
             color: '#a50f15', big: '92%',
-            text: '<b>Ninety-two percent of U.S. counties</b> had at least one federal disaster declaration. <b>About 40%</b> had five or more.',
+            text: '<b>of U.S. counties</b> had at least one major disaster declaration. <b>About 40%</b> had five or more.',
             topLabel: 'Counties With Highest Disaster Declarations',
             top: [['Washington County, Vermont', 22], ['Merrimack County, New Hampshire', 19], ['Lamoille County, Vermont', 17], ['Essex County, Vermont', 16], ['Franklin County, Kentucky', 16], ['Johnson County, Kentucky', 16], ['Orleans County, Vermont', 16], ['Clay County, Kentucky', 15], ['Grafton County, New Hampshire', 15], ['Lawrence County, Kentucky', 15], ['Lee County, Kentucky', 15], ['Magoffin County, Kentucky', 15], ['Owsley County, Kentucky', 15]]
         },
         fema: {
             color: '#9A4B02', big: '94%',
-            text: '<b>Ninety-four percent of U.S. residents</b> live in a county that received FEMA recovery funding.',
+            text: '<b>of U.S. residents</b> live in a county that received FEMA recovery funding.',
             topLabel: 'Counties With the Most FEMA Recovery Funding',
             topHead: ['County', 'FEMA Funding'],
             top: [["New York County, New York", 9081110288, "$9.1B"], ["Nassau County, New York", 2566692330, "$2.6B"], ["Harris County, Texas", 1611303016, "$1.6B"], ["Calcasieu Parish, Louisiana", 1341056351, "$1.3B"], ["Queens County, New York", 1108487788, "$1.1B"], ["Bay County, Florida", 978089691, "$978M"], ["Terrebonne Parish, Louisiana", 730901848, "$731M"], ["Suffolk County, New York", 599064176, "$599M"], ["Lee County, Florida", 590407445, "$590M"], ["Greene County, New York", 552146983, "$552M"]]
         },
         svi: {
             color: '#007462',
-            text: '<b>Counties with high social vulnerability averaged five federal disaster declarations.</b> Other counties averaged four.',
+            text: '<b>Counties with high social vulnerability averaged five major disaster declarations.</b> Other counties averaged four.',
             topLabel: 'High Social Vulnerability Counties With Highest Disaster Declarations',
             topHead: ['County', 'Declarations', 'SVI Score'],
             top: [["Johnson County, Kentucky", 16, "16", "0.75"], ["Clay County, Kentucky", 15, "15", "0.82"], ["Lee County, Kentucky", 15, "15", "0.85"], ["Magoffin County, Kentucky", 15, "15", "0.76"], ["Wolfe County, Kentucky", 13, "13", "0.78"], ["Craig County, Oklahoma", 12, "12", "0.93"], ["Estill County, Kentucky", 12, "12", "0.76"], ["Harlan County, Kentucky", 12, "12", "0.83"], ["Hinds County, Mississippi", 12, "12", "0.92"], ["Iberville Parish, Louisiana", 12, "12", "0.85"], ["Walker County, Texas", 12, "12", "0.94"], ["Whitley County, Kentucky", 12, "12", "0.84"], ["Yazoo County, Mississippi", 12, "12", "1.00"]]
         },
         energy: {
             color: '#6E2800',
-            text: '<b>Counties with five or more federal disaster declarations averaged nine hours without power in 2023.</b> Other counties averaged seven.',
+            text: '<b>Counties with five or more major disaster declarations averaged nine hours without power in 2023.</b> Other counties averaged seven.',
             topLabel: 'Counties With the Most Hours Without Power (2023)',
             topHead: ['County', 'Hours', 'Days'],
             top: [["Taylor County, Florida", 5941.7, "99.0", "4.1"], ["Dixie County, Florida", 4932.0, "82.2", "3.4"], ["Lafayette County, Florida", 4932.0, "82.2", "3.4"], ["Lowndes County, Georgia", 4547.5, "75.8", "3.2"], ["Wakulla County, Florida", 4073.0, "67.9", "2.8"], ["Suwannee County, Florida", 3961.2, "66.0", "2.8"], ["Hamilton County, Florida", 3653.6, "60.9", "2.5"], ["Madison County, Florida", 3653.6, "60.9", "2.5"], ["Aroostook County, Maine", 3613.5, "60.2", "2.5"], ["Washington County, Maine", 3613.5, "60.2", "2.5"]]
         },
         urban: {
             color: '#4a1486', big: '96%',
-            text: '<b>96% of urban counties</b>, those with 250,000 or more residents, had at least one major disaster declaration.',
+            text: '<b>of urban counties</b>, those with 250,000 or more residents, had at least one major disaster declaration.',
             topLabel: 'Urban Counties With Highest Disaster Declarations',
             top: [["Douglas County, Nebraska", 13], ["Davidson County, Tennessee", 12], ["East Baton Rouge Parish, Louisiana", 11], ["Duval County, Florida", 10], ["Naugatuck Valley Planning Region, Connecticut", 10], ["Sacramento County, California", 10], ["Shelby County, Tennessee", 10], ["South Central Connecticut Planning Region, Connecticut", 10], ["Alachua County, Florida", 9], ["Collier County, Florida", 9], ["Fulton County, Georgia", 9], ["Greater Bridgeport Planning Region, Connecticut", 9], ["Harris County, Texas", 9], ["Hillsborough County, Florida", 9], ["Jefferson Parish, Louisiana", 9], ["King County, Washington", 9], ["Leon County, Florida", 9], ["Los Angeles County, California", 9], ["Manatee County, Florida", 9], ["Montgomery County, Texas", 9], ["Morris County, New Jersey", 9], ["Nassau County, New York", 9], ["Orleans Parish, Louisiana", 9], ["Pasco County, Florida", 9], ["Pinellas County, Florida", 9], ["Rockingham County, New Hampshire", 9], ["Sarasota County, Florida", 9], ["Snohomish County, Washington", 9], ["St. Tammany Parish, Louisiana", 9], ["Suffolk County, New York", 9], ["Travis County, Texas", 9]]
         },
         rural: {
             color: '#084594', big: '92%',
-            text: '<b>92% of rural counties</b>, those with fewer than 50,000 residents, had at least one major disaster declaration.',
+            text: '<b>of rural counties</b>, those with fewer than 50,000 residents, had at least one major disaster declaration.',
             topLabel: 'Rural Counties With Highest Disaster Declarations',
             top: [['Lamoille County, Vermont', 17], ['Johnson County, Kentucky', 16], ['Essex County, Vermont', 16], ['Orleans County, Vermont', 16], ['Clay County, Kentucky', 15], ['Lawrence County, Kentucky', 15], ['Lee County, Kentucky', 15], ['Magoffin County, Kentucky', 15], ['Owsley County, Kentucky', 15], ['Floyd County, Kentucky', 14], ['Orange County, Vermont', 14]]
         },
         older: {
             color: '#005824', big: '90%',
-            text: '<b>90% of counties where 30% or more of residents are 60 or older</b> had at least one major disaster declaration.',
+            text: '<b>of counties where 30% or more of residents are 60 or older</b> had at least one major disaster declaration.',
             topLabel: 'Older Adult Counties With Highest Disaster Declarations',
             top: [['Essex County, Vermont', 16], ['Orleans County, Vermont', 16], ['Owsley County, Kentucky', 15], ['Grafton County, New Hampshire', 15], ['Orange County, Vermont', 14], ['Franklin County, Florida', 11], ['Jefferson County, Florida', 11], ['Madison County, Florida', 11], ['Pawnee County, Kansas', 11], ['Menifee County, Kentucky', 11], ['Roger Mills County, Oklahoma', 11], ['Lake County, South Dakota', 11], ['Caledonia County, Vermont', 11], ['Skamania County, Washington', 11]]
         },
         minority: {
             color: '#7a0177', big: '95%',
-            text: '<b>95% of majority-minority counties</b>, where 50% or more of residents are minority-status, had at least one major disaster declaration. Nationally, <b>55% of minority-status residents</b> live in a county with five or more recent disasters, compared with <b>46%</b> of non-Hispanic white residents.',
+            text: '<b>of majority-minority counties</b>, where 50% or more of residents are minority-status, had at least one major disaster declaration. Nationally, <b>55% of minority-status residents</b> live in a county with five or more recent disasters, compared with <b>46%</b> of non-Hispanic white residents.',
             topLabel: 'Majority-Minority Counties With Highest Disaster Declarations',
             top: [['Hinds County, Mississippi', 12], ['Iberville Parish, Louisiana', 12], ['Yazoo County, Mississippi', 12], ['East Baton Rouge Parish, Louisiana', 11], ['Shelby County, Tennessee', 10], ['Haywood County, Tennessee', 10], ['Gadsden County, Florida', 10], ['St. Helena Parish, Louisiana', 10], ['Sacramento County, California', 10], ['Leflore County, Mississippi', 10], ['Cherokee County, Oklahoma', 10], ['Holmes County, Mississippi', 10], ['Warren County, Mississippi', 10]]
         },
         tribal: {
             color: '#4d6b05', big: '17%',
-            text: '<b>17% of U.S. tribal areas</b> had at least one major disaster declaration. Only <b>29 of 575 federally recognized tribes (5%)</b> have ever requested their own declaration.',
+            text: '<b>of U.S. tribal areas</b> had at least one major disaster declaration. Only <b>29 of 575 federally recognized tribes (5%)</b> have ever requested their own declaration.',
             topLabel: 'Tribal Areas With Highest Disaster Declarations',
             top: [['Pine Ridge Reservation', 8], ['Colville Reservation and Off-Reservation Trust Land', 7], ['Santa Clara Pueblo and Off-Reservation Trust Land', 7], ['Cheyenne River Reservation and Off-Reservation Trust Land', 5], ['Mashantucket Pequot Reservation and Off-Reservation Trust Land', 5], ['Navajo Nation Reservation and Off-Reservation Trust Land', 5], ['Red Lake Reservation', 5], ['Acoma Pueblo and Off-Reservation Trust Land', 4], ['Fort Belknap Reservation and Off-Reservation Trust Land', 4], ['Lake Traverse Reservation and Off-Reservation Trust Land', 4], ['Soboba Reservation and Off-Reservation Trust Land', 4], ['Standing Rock Reservation', 4]]
         }
