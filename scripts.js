@@ -637,7 +637,7 @@ map.on('load', function () {
                         <div class="legend-units">Major disaster declarations in counties where 30% or more of residents are 60 or older (23.8% nationally), 2011–2024. Age 60 is the threshold in the federal Older Americans Act.</div>
                         <div class="legend-no-data">
                             <span class="no-data-swatch" style="background:#ECECEC"></span>
-                            <span>Counties where under 30% of residents are 60 or older</span>
+                            <span>Other counties</span>
                         </div>
                     `
                 }
