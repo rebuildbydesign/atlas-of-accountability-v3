@@ -1264,31 +1264,31 @@ map.on('load', function () {
         },
         urban: {
             color: '#4a1486', big: '96%',
-            text: '<b>Ninety-six percent of urban counties</b> had at least one federal disaster declaration. <b>More than half of urban residents</b> live in a county with five or more recent disasters.',
+            text: '<b>96% of urban counties</b>, those with 250,000 or more residents, had at least one major disaster declaration.',
             topLabel: 'Urban Counties With Highest Disaster Declarations',
             top: [["Douglas County, Nebraska", 13], ["Davidson County, Tennessee", 12], ["East Baton Rouge Parish, Louisiana", 11], ["Duval County, Florida", 10], ["Naugatuck Valley Planning Region, Connecticut", 10], ["Sacramento County, California", 10], ["Shelby County, Tennessee", 10], ["South Central Connecticut Planning Region, Connecticut", 10], ["Alachua County, Florida", 9], ["Collier County, Florida", 9], ["Fulton County, Georgia", 9], ["Greater Bridgeport Planning Region, Connecticut", 9], ["Harris County, Texas", 9], ["Hillsborough County, Florida", 9], ["Jefferson Parish, Louisiana", 9], ["King County, Washington", 9], ["Leon County, Florida", 9], ["Los Angeles County, California", 9], ["Manatee County, Florida", 9], ["Montgomery County, Texas", 9], ["Morris County, New Jersey", 9], ["Nassau County, New York", 9], ["Orleans Parish, Louisiana", 9], ["Pasco County, Florida", 9], ["Pinellas County, Florida", 9], ["Rockingham County, New Hampshire", 9], ["Sarasota County, Florida", 9], ["Snohomish County, Washington", 9], ["St. Tammany Parish, Louisiana", 9], ["Suffolk County, New York", 9], ["Travis County, Texas", 9]]
         },
         rural: {
             color: '#084594', big: '92%',
-            text: '<b>Ninety-two percent of rural counties</b> had at least one federal disaster declaration. <b>About 40% of rural residents</b> live in a county with five or more recent disasters.',
+            text: '<b>92% of rural counties</b>, those with fewer than 50,000 residents, had at least one major disaster declaration.',
             topLabel: 'Rural Counties With Highest Disaster Declarations',
             top: [['Lamoille County, Vermont', 17], ['Johnson County, Kentucky', 16], ['Essex County, Vermont', 16], ['Orleans County, Vermont', 16], ['Clay County, Kentucky', 15], ['Lawrence County, Kentucky', 15], ['Lee County, Kentucky', 15], ['Magoffin County, Kentucky', 15], ['Owsley County, Kentucky', 15], ['Floyd County, Kentucky', 14], ['Orange County, Vermont', 14]]
         },
         older: {
             color: '#005824', big: '90%',
-            text: '<b>Ninety percent of counties with a large share of adults 60 and older</b> had at least one federal disaster declaration. <b>Half of Americans 60 and older</b> live in a county with five or more recent disasters.',
+            text: '<b>90% of counties where 30% or more of residents are 60 or older</b> had at least one major disaster declaration.',
             topLabel: 'Older Adult Counties With Highest Disaster Declarations',
             top: [['Essex County, Vermont', 16], ['Orleans County, Vermont', 16], ['Owsley County, Kentucky', 15], ['Grafton County, New Hampshire', 15], ['Orange County, Vermont', 14], ['Franklin County, Florida', 11], ['Jefferson County, Florida', 11], ['Madison County, Florida', 11], ['Pawnee County, Kansas', 11], ['Menifee County, Kentucky', 11], ['Roger Mills County, Oklahoma', 11], ['Lake County, South Dakota', 11], ['Caledonia County, Vermont', 11], ['Skamania County, Washington', 11]]
         },
         minority: {
             color: '#7a0177', big: '95%',
-            text: '<b>Ninety-five percent of majority-minority counties</b> had at least one federal disaster declaration. Nationally, <b>55% of racial and ethnic minority residents</b> live in a county with five or more recent disasters, compared with <b>46%</b> of non-Hispanic white residents.',
+            text: '<b>95% of majority-minority counties</b>, where 50% or more of residents are minority-status, had at least one major disaster declaration. Nationally, <b>55% of minority-status residents</b> live in a county with five or more recent disasters, compared with <b>46%</b> of non-Hispanic white residents.',
             topLabel: 'Majority-Minority Counties With Highest Disaster Declarations',
             top: [['Hinds County, Mississippi', 12], ['Iberville Parish, Louisiana', 12], ['Yazoo County, Mississippi', 12], ['East Baton Rouge Parish, Louisiana', 11], ['Shelby County, Tennessee', 10], ['Haywood County, Tennessee', 10], ['Gadsden County, Florida', 10], ['St. Helena Parish, Louisiana', 10], ['Sacramento County, California', 10], ['Leflore County, Mississippi', 10], ['Cherokee County, Oklahoma', 10], ['Holmes County, Mississippi', 10], ['Warren County, Mississippi', 10]]
         },
         tribal: {
             color: '#4d6b05', big: '17%',
-            text: '<b>About 17% of U.S. tribal areas</b> had at least one federal disaster declaration.',
+            text: '<b>17% of U.S. tribal areas</b> had at least one major disaster declaration. Only <b>29 of 575 federally recognized tribes (5%)</b> have ever requested their own declaration.',
             topLabel: 'Tribal Areas With Highest Disaster Declarations',
             top: [['Pine Ridge Reservation', 8], ['Colville Reservation and Off-Reservation Trust Land', 7], ['Santa Clara Pueblo and Off-Reservation Trust Land', 7], ['Cheyenne River Reservation and Off-Reservation Trust Land', 5], ['Mashantucket Pequot Reservation and Off-Reservation Trust Land', 5], ['Navajo Nation Reservation and Off-Reservation Trust Land', 5], ['Red Lake Reservation', 5], ['Acoma Pueblo and Off-Reservation Trust Land', 4], ['Fort Belknap Reservation and Off-Reservation Trust Land', 4], ['Lake Traverse Reservation and Off-Reservation Trust Land', 4], ['Soboba Reservation and Off-Reservation Trust Land', 4], ['Standing Rock Reservation', 4]]
         }
