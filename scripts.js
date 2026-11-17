@@ -510,7 +510,7 @@ map.on('load', function () {
         // so paint thresholds stay in minutes; legend labels are converted
         // to HOURS for readability (1 hr = 60 min).
         // Average across utilities only (SAIDI_MIN_AVG). Worst-case view removed per Amy (REB-571).
-        // Bins (60/120/240/456 min = 1/2/4/7.6 hrs) and colors are shared
+        // Bins (60/120/240/480 min = 1/2/4/8 hrs) and colors are shared
         // so the visual jump between modes encodes the disparity directly.
         energy: {
             label: 'Energy Reliability (2023)',
@@ -527,8 +527,8 @@ map.on('load', function () {
                             '#F9ECDC',           //   0 –  60 min
                             60,  '#F4C69A',      //  60 – 120 min
                             120, '#F07F2E',      // 120 – 240 min
-                            240, '#C24400',      // 240 – 456 min
-                            456, '#6E2800'       // 456+ min (max ~5,941)
+                            240, '#C24400',      // 240 – 480 min
+                            480, '#6E2800'       // 480+ min (max ~5,941)
                         ],
                         '#C8CBD1'  // No utility data
                     ],
@@ -540,7 +540,7 @@ map.on('load', function () {
                                 <span>1</span>
                                 <span>2</span>
                                 <span>4</span>
-                                <span>7.6+ hrs</span>
+                                <span>8+ hrs</span>
                             </div>
                         </div>
                         <div class="legend-units">Average hours a customer goes without power in a year, across the utilities serving the county. Utilities report this as SAIDI (System Average Interruption Duration Index). U.S. EIA, 2023.</div>
@@ -637,7 +637,7 @@ map.on('load', function () {
                         <div class="legend-units">Major disaster declarations in counties where 30% or more of residents are 60 or older (23.8% nationally), 2011–2024. Age 60 is the threshold in the federal Older Americans Act.</div>
                         <div class="legend-no-data">
                             <span class="no-data-swatch" style="background:#ECECEC"></span>
-                            <span>Other counties</span>
+                            <span>Counties where under 30% of residents are 60 or older</span>
                         </div>
                     `
                 }
