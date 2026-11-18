@@ -49,6 +49,9 @@ function lower48Padding() {
     if (title) pad.top = Math.max(pad.top, title.getBoundingClientRect().bottom - box.top + 12);
     const panel = document.getElementById('control-panel');
     if (panel) pad.right = Math.max(pad.right, box.right - panel.getBoundingClientRect().left + 16);
+    // Clear about half the How to Use panel; the far Northwest can sit under it.
+    const help = document.getElementById('info-panel');
+    if (help && getComputedStyle(help).display !== 'none') pad.left = Math.max(pad.left, (help.getBoundingClientRect().right - box.left) * 0.5);
     // Keep at least half the width for the U.S.
     const room = box.width * 0.5;
     if (pad.left + pad.right > room) { const k = room / (pad.left + pad.right); pad.left *= k; pad.right *= k; }
@@ -1314,6 +1317,13 @@ map.on('load', function () {
         return hits.length ? '<div class="popup-top10"><b>Top 10 for disaster declarations:</b> ' + hits.join(' · ') + '</div>' : '';
     }
 
+    // Closed with its X; comes back when the user picks another lens.
+    let fhDismissed = false;
+    document.getElementById('fh-close').addEventListener('click', function () {
+        fhDismissed = true;
+        renderFindingsHeadline();
+    });
+
     // Show the headline for Who's Affected lenses, hide it for the rest.
     function renderFindingsHeadline() {
         const box = document.getElementById('findings-headline');
@@ -1322,7 +1332,7 @@ map.on('load', function () {
         // Stay hidden while the How to Use panel is open, so the two never stack.
         const help = document.getElementById('info-panel');
         const helpOpen = help && getComputedStyle(help).display !== 'none';
-        box.hidden = !f || helpOpen;
+        box.hidden = !f || helpOpen || fhDismissed;
         if (!f) return;
         box.querySelectorAll('.fh-big, .fh-bar-big').forEach(function (el) {
             // Some findings (SVI average) have no big number: sentence only.
@@ -1383,6 +1393,7 @@ map.on('load', function () {
 
     function setLens(lensKey) {
         if (!lensConfig[lensKey]) return;
+        if (lensKey !== activeLens) fhDismissed = false;
         activeLens = lensKey;
         applyActiveStyling();
         updateSubControlVisibility();
