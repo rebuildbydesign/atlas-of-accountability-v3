@@ -1446,8 +1446,12 @@ map.on('load', function () {
         });
     });
 
-    // Render the initial legend body for the default lens.
-    setLens('disaster');
+    // Start lens: ?lens=rural etc. (lensConfig keys) so each lens page can embed its own view.
+    const urlLens = new URLSearchParams(location.search).get('lens');
+    const startLens = lensConfig[urlLens] ? urlLens : 'disaster';
+    const startRadio = document.querySelector('input[name="lens"][value="' + startLens + '"]');
+    if (startRadio) startRadio.checked = true;
+    setLens(startLens);
 
 
     // -------------------------------------------------------------
