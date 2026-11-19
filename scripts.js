@@ -53,7 +53,8 @@ function lower48Padding() {
     const title = document.querySelector('.css-atlas-title');
     if (title) pad.top = Math.max(pad.top, title.getBoundingClientRect().bottom - box.top + 12);
     const panel = document.getElementById('control-panel');
-    if (panel) pad.right = Math.max(pad.right, box.right - panel.getBoundingClientRect().left + 16);
+    // Collapsed Data Layers is a small bar at the bottom right, so it gets no room.
+    if (panel && !panel.classList.contains('is-collapsed')) pad.right = Math.max(pad.right, box.right - panel.getBoundingClientRect().left + 16);
     // Clear about half the How to Use panel; the far Northwest can sit under it.
     const help = document.getElementById('info-panel');
     if (help && getComputedStyle(help).display !== 'none') pad.left = Math.max(pad.left, (help.getBoundingClientRect().right - box.left) * 0.5);
