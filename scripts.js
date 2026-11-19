@@ -1,3 +1,8 @@
+// Lens page embeds (?lens=rural etc.): no How to Use panel, Data Layers collapsed.
+const LENS_EMBED = ['disaster', 'fema', 'svi', 'energy', 'urban', 'rural', 'older', 'minority', 'tribal']
+    .includes(new URLSearchParams(location.search).get('lens'));
+if (LENS_EMBED) document.getElementById('info-panel').style.display = 'none';
+
 mapboxgl.accessToken = 'pk.eyJ1IjoiajAwYnkiLCJhIjoiY2x1bHUzbXZnMGhuczJxcG83YXY4czJ3ayJ9.S5PZpU9VDwLMjoX_0x5FDQ';
 
 // ZOOM LEVELS FOR STARTING DEPENDENT ON VIEWPORT SIZE
@@ -2189,7 +2194,8 @@ map.on('load', function () {
     });
 
     if (controlToggleBtn && controlBody && controlPanel) {
-        if (isMobile()) setControlCollapsed(true);
+        if (isMobile() || LENS_EMBED) setControlCollapsed(true);
+        if (LENS_EMBED && !atlasUserMoved) fitLower48(0);
         document.querySelectorAll('#control-panel input[name="lens"], #control-panel .control-suboption input').forEach(function (input) {
             input.addEventListener('change', function () {
                 if (isMobile()) setControlCollapsed(true);
