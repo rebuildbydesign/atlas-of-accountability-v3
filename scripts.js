@@ -119,7 +119,7 @@ map.on('load', function () {
     // Display the info panel on startup (desktop only; mobile starts hidden to reduce clutter)
     var infoPanel = document.getElementById('info-panel');
     var isMobile = function () { return window.innerWidth <= 768; };
-    infoPanel.style.display = isMobile() ? 'none' : 'block';
+    infoPanel.style.display = (isMobile() || LENS_EMBED) ? 'none' : 'block';
 
     // Helper: after a popup opens, keep it inside the viewport by measuring its actual
     // rendered height and panning the map so the whole popup fits, and wire up the
