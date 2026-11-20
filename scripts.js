@@ -2140,7 +2140,7 @@ map.on('load', function () {
             +       '<div class="social-links">'
             +         '<a href="' + c.WEBSITEURL + '" target="_blank"><img src="img/id-card.svg" alt="Website"></a>'
             +         '<a href="' + c.FACE_BOOK_ + '" target="_blank"><img src="img/facebook.svg" alt="Facebook"></a>'
-            +         '<a href="' + c.TWITTER_UR + '" target="_blank"><img src="img/twitter.svg" alt="Twitter"></a>'
+            +         '<a href="' + c.TWITTER_UR + '" target="_blank"><img src="img/x.svg" alt="X"></a>'
             +         '<a href="' + c.INSTAGRAM_ + '" target="_blank"><img src="img/instagram.svg" alt="Instagram"></a>'
             +       '</div>'
             +     '</div>'
